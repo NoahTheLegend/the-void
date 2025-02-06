@@ -34,52 +34,7 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 	if (damage != 0.0f) //interesting value
 	{
 		bool doknockdown = true;
-
-		if (vely*this.getMass() > 500)
-    	{
-    	    point1 = point1+Vec2f(0, 4);
-
-    	    CMap@ map = getMap();
-    	    if (map !is null)
-    	    {
-    	        TileType tc = map.getTile(point1).type;
-    	        TileType tl = map.getTile(point1-Vec2f(8,0)).type;
-    	        TileType tr = map.getTile(point1+Vec2f(8,0)).type;
-    	        if (isServer() && (isTileIce(tc) || isTileExposure(tc)))
-    	        {
-    	            TileType utc = map.getTile(point1+Vec2f(0,8)).type;
-    	            TileType utl = map.getTile(point1-Vec2f(8,-8)).type;
-    	            TileType utr = map.getTile(point1+Vec2f(8,8)).type;
-	
-    	            if (!isSolid(map, utc))
-    	                for (u8 i = 0; i < 4; i++) {map.server_DestroyTile(point1, 15.0f, this);}
-    	            if (isTileIce(tl) && !isSolid(map, utl))
-    	                for (u8 i = 0; i < 4; i++) {map.server_DestroyTile(point1-Vec2f(8,0), 15.0f, this);}
-    	            if (isTileIce(tr) && !isSolid(map, utr))
-    	                for (u8 i = 0; i < 4; i++) {map.server_DestroyTile(point1+Vec2f(8,0), 15.0f, this);}
-    	        }
-    	        else if (isTileSnow(tc) || isTileExposure(tc))
-    	        {
-					damage = 0.0f;
-					playsound = false;
-					
-					if (isServer())
-					{
-						TileType atc = map.getTile(point1+Vec2f(0,-8)).type;
-    	            	TileType atl = map.getTile(point1-Vec2f(8,8)).type;
-    	            	TileType atr = map.getTile(point1+Vec2f(8,-8)).type;
-
-    	            	if (!isSolid(map, atc))
-    	            	    for (u8 i = 0; i < 3; i++) {map.server_DestroyTile(point1, 15.0f, this);}
-    	            	if (isTileSnow(tl) && !isSolid(map, atl))
-    	            	    for (u8 i = 0; i < 3; i++) {map.server_DestroyTile(point1-Vec2f(8,0), 15.0f, this);}
-    	            	if (isTileSnow(tr) && !isSolid(map, atr))
-    	            	    for (u8 i = 0; i < 3; i++) {map.server_DestroyTile(point1+Vec2f(8,0), 15.0f, this);}
-					}
-    	        }
-    	    }
-    	}
-
+		
 		if (damage > 0.0f)
 		{
 			// check if we aren't touching a trampoline

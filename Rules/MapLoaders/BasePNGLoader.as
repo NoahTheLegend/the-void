@@ -202,22 +202,10 @@ class PNGLoader
 			{
 			// Custom
 			// tiles
-			case map_colors::tile_snow_ground:      map.SetTile(offset, CMap::tile_ground);           break;   
-			case map_colors::tile_snow_ground_back: map.SetTile(offset, CMap::tile_ground_back);      break;   
-			case map_colors::tile_snow:             map.SetTile(offset, CMap::tile_snow);          	  break;   
-			case map_colors::tile_snow_pile:        map.SetTile(offset, CMap::tile_snow_pile);        break;    
-			case map_colors::tile_snow_pile_v0:     map.SetTile(offset, CMap::tile_snow_pile_v0);     break;    
-			case map_colors::tile_snow_pile_v1:     map.SetTile(offset, CMap::tile_snow_pile_v1);     break;    
-			case map_colors::tile_snow_pile_v2:     map.SetTile(offset, CMap::tile_snow_pile_v2);     break;    
-			case map_colors::tile_snow_pile_v3:     map.SetTile(offset, CMap::tile_snow_pile_v3);     break;    
-			case map_colors::tile_snow_pile_v4:     map.SetTile(offset, CMap::tile_snow_pile_v4);     break;    
-			case map_colors::tile_snow_pile_v5:     map.SetTile(offset, CMap::tile_snow_pile_v5);     break;
 			case map_colors::tile_ice:              map.SetTile(offset, CMap::tile_ice);              break;
 			case map_colors::tile_thick_ice:    	map.SetTile(offset, CMap::tile_thick_ice);        break;
 			case map_colors::tile_bice:    			map.SetTile(offset, CMap::tile_bice);   	      break;
 			case map_colors::tile_bglass:           map.SetTile(offset, CMap::tile_bglass);           break;
-			case map_colors::tile_snow_bricks:      map.SetTile(offset, CMap::tile_snow_bricks);      break;
-			case map_colors::tile_bsnow_bricks:     map.SetTile(offset, CMap::tile_bsnow_bricks);     break;
 
 			case map_colors::tile_steel:            map.SetTile(offset, CMap::tile_steel);            break;
 			case map_colors::tile_bsteel:           map.SetTile(offset, CMap::tile_bsteel);           break;
@@ -225,18 +213,12 @@ class PNGLoader
 			case map_colors::tile_caution_v0:       map.SetTile(offset, CMap::tile_caution_v0);       break;
 			case map_colors::tile_caution_v1:       map.SetTile(offset, CMap::tile_caution_v1);       break;
 			case map_colors::tile_caution_v2:       map.SetTile(offset, CMap::tile_caution_v2);       break;
+			case map_colors::tile_polishedmetal:    map.SetTile(offset, CMap::tile_polishedmetal);    break;
+			case map_colors::tile_bpolishedmetal:   map.SetTile(offset, CMap::tile_bpolishedmetal);   break;
 
-			case map_colors::tile_elderbrick:       map.SetTile(offset, CMap::tile_elderbrick);       break;
-			case map_colors::tile_polishedstone:    map.SetTile(offset, CMap::tile_polishedstone);    break;
-			case map_colors::tile_bpolishedstone:   map.SetTile(offset, CMap::tile_bpolishedstone);   break;
-
-			// blobs
-			case map_colors::spawnalpha:     		spawnBlob(map, "spawnalpha", offset); break;
-			case map_colors::spawnbeta:     		spawnBlob(map, "spawnbeta", offset); break;
-			
+			// blobs	
 			case map_colors::locker:     			spawnBlob(map, "locker", offset); break;
 			case map_colors::barrel:     			spawnBlob(map, "barrel", offset); break;
-			case map_colors::trashcontainer:     	spawnBlob(map, "trashcontainer", offset); break;
 
 			// Tiles
 			case map_colors::tile_ground:           map.SetTile(offset, CMap::tile_ground);           break;

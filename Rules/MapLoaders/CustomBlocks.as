@@ -18,57 +18,49 @@ namespace CMap
 		tile_caution_v1,
 		tile_caution_v2,
 
-		tile_elderbrick = tile_steel - 80,
-		tile_elderbrick_v0,
-		tile_elderbrick_d0,
-		tile_elderbrick_d1,
-		tile_elderbrick_d2,
-		tile_elderbrick_d3,
-		tile_elderbrick_d4,
-
-		tile_polishedstone = tile_steel - 64,
-		tile_polishedstone_v0,
-		tile_polishedstone_v1,
-		tile_polishedstone_v2,
-		tile_polishedstone_v3,
-		tile_polishedstone_v4,
-		tile_polishedstone_v5,
-		tile_polishedstone_v6,
-		tile_polishedstone_v7,
-		tile_polishedstone_v8,
-		tile_polishedstone_v9,
-		tile_polishedstone_v10,
-		tile_polishedstone_v11,
-		tile_polishedstone_v12,
-		tile_polishedstone_v13,
-		tile_polishedstone_v14,
-		tile_polishedstone_d0 = tile_polishedstone + 16,
-		tile_polishedstone_d1,
-		tile_polishedstone_d2,
-		tile_polishedstone_d3,
-		tile_polishedstone_d4,
+		tile_polishedmetal = tile_steel - 64,
+		tile_polishedmetal_v0,
+		tile_polishedmetal_v1,
+		tile_polishedmetal_v2,
+		tile_polishedmetal_v3,
+		tile_polishedmetal_v4,
+		tile_polishedmetal_v5,
+		tile_polishedmetal_v6,
+		tile_polishedmetal_v7,
+		tile_polishedmetal_v8,
+		tile_polishedmetal_v9,
+		tile_polishedmetal_v10,
+		tile_polishedmetal_v11,
+		tile_polishedmetal_v12,
+		tile_polishedmetal_v13,
+		tile_polishedmetal_v14,
+		tile_polishedmetal_d0 = tile_polishedmetal + 16,
+		tile_polishedmetal_d1,
+		tile_polishedmetal_d2,
+		tile_polishedmetal_d3,
+		tile_polishedmetal_d4,
 		
-		tile_bpolishedstone = tile_steel - 32,
-		tile_bpolishedstone_v0,
-		tile_bpolishedstone_v1,
-		tile_bpolishedstone_v2,
-		tile_bpolishedstone_v3,
-		tile_bpolishedstone_v4,
-		tile_bpolishedstone_v5,
-		tile_bpolishedstone_v6,
-		tile_bpolishedstone_v7,
-		tile_bpolishedstone_v8,
-		tile_bpolishedstone_v9,
-		tile_bpolishedstone_v10,
-		tile_bpolishedstone_v11,
-		tile_bpolishedstone_v12,
-		tile_bpolishedstone_v13,
-		tile_bpolishedstone_v14,
-		tile_bpolishedstone_d0 = tile_bpolishedstone + 16,
-		tile_bpolishedstone_d1,
-		tile_bpolishedstone_d2,
-		tile_bpolishedstone_d3,
-		tile_bpolishedstone_d4,
+		tile_bpolishedmetal = tile_steel - 32,
+		tile_bpolishedmetal_v0,
+		tile_bpolishedmetal_v1,
+		tile_bpolishedmetal_v2,
+		tile_bpolishedmetal_v3,
+		tile_bpolishedmetal_v4,
+		tile_bpolishedmetal_v5,
+		tile_bpolishedmetal_v6,
+		tile_bpolishedmetal_v7,
+		tile_bpolishedmetal_v8,
+		tile_bpolishedmetal_v9,
+		tile_bpolishedmetal_v10,
+		tile_bpolishedmetal_v11,
+		tile_bpolishedmetal_v12,
+		tile_bpolishedmetal_v13,
+		tile_bpolishedmetal_v14,
+		tile_bpolishedmetal_d0 = tile_bpolishedmetal + 16,
+		tile_bpolishedmetal_d1,
+		tile_bpolishedmetal_d2,
+		tile_bpolishedmetal_d3,
+		tile_bpolishedmetal_d4,
 
 		tile_steel = 512,
 		tile_steel_v0,
@@ -124,27 +116,7 @@ namespace CMap
 		tile_bglass_v13,
 		tile_bglass_v14,
 
-		tile_snow = tile_bglass + 16,
-		tile_snow_v0,
-		tile_snow_v1,
-		tile_snow_v2,
-		tile_snow_v3,
-		tile_snow_v4,
-		tile_snow_v5,
-		tile_snow_d0,
-		tile_snow_d1,
-		tile_snow_d2,
-		tile_snow_d3,
-
-		tile_snow_pile = tile_snow + 16,
-		tile_snow_pile_v0,
-		tile_snow_pile_v1,
-		tile_snow_pile_v2,
-		tile_snow_pile_v3,
-		tile_snow_pile_v4,
-		tile_snow_pile_v5,
-
-		tile_ice = tile_snow_pile + 16,
+		tile_ice = tile_bglass + 48,
 		tile_ice_v0,
 		tile_ice_v1,
 		tile_ice_v2,
@@ -202,13 +174,6 @@ namespace CMap
 		tile_bice_v12,
 		tile_bice_v13,
 		tile_bice_v14,
-
-		tile_snow_bricks = tile_bice + 16,
-		tile_snow_bricks_d0,
-		tile_snow_bricks_d1,
-		tile_bsnow_bricks = tile_snow_bricks + 3,
-		tile_bsnow_bricks_d0,
-		tile_bsnow_bricks_d1
 	};
 };
 
@@ -219,8 +184,8 @@ bool isSolid(u32 type)
 
 bool isSolid(CMap@ map, u32 type) // thin ice is not solid
 {
-	return map.isTileSolid(type) || map.isTileGround(type) || isTileSteel(type) || isTilePolishedStone(type) || isTileCaution(type)
-		|| isTileSnow(type) || isTileAnyIce(type) || isTileElderBrick(type) || isTileSnowBricks(type);
+	return map.isTileSolid(type) || map.isTileGround(type) || isTileSteel(type) || isTilePolishedMetal(type) || isTileCaution(type)
+		|| isTileAnyIce(type);
 }
 
 bool isSolid(CMap@ map, Vec2f pos)
@@ -231,7 +196,8 @@ bool isSolid(CMap@ map, Vec2f pos)
 
 bool isHardSolid(CMap@ map, u32 type) // only tiles with friction
 {
-	return map.isTileSolid(type) || map.isTileGround(type) || isTileSteel(type) || isTilePolishedStone(type) || isTileCaution(type) || isTileElderBrick(type) || isTileSnowBricks(type);
+	return map.isTileSolid(type) || map.isTileGround(type)
+		|| isTileSteel(type) || isTilePolishedMetal(type) || isTileCaution(type);
 }
 
 bool isHardSolid(CMap@ map, Vec2f pos) // thin ice is not solid
@@ -247,7 +213,7 @@ bool isHardSolid(u32 type)
 
 bool isTileExposure(u32 index) // for RoomDetector.as
 {
-	return index == CMap::tile_empty || isTileSnowPile(index);
+	return index == CMap::tile_empty;
 }
 
 bool isTileCaution(u32 index)
@@ -259,23 +225,11 @@ bool isTileSteel(u32 index)
 bool isTileBackSteel(u32 index)
 {return index >= CMap::tile_bsteel && index <= CMap::tile_bsteel_d4;}
 
-bool isTileSnow(TileType tile)
-{return (tile >= CMap::tile_snow && tile <= CMap::tile_snow_d3) || isTileGround(tile);}
+bool isTilePolishedMetal(u32 index)
+{return index >= CMap::tile_polishedmetal && index <= CMap::tile_polishedmetal_d4;}
 
-bool isTileGround(TileType tile)
-{{return getMap().isTileGround(tile);}}
-
-bool isTileSnowPile(TileType tile)
-{return tile >= CMap::tile_snow_pile && tile <= CMap::tile_snow_pile_v5;}
-
-bool isTileElderBrick(u32 index)
-{return index >= CMap::tile_elderbrick && index <= CMap::tile_elderbrick_d4;}
-
-bool isTilePolishedStone(u32 index)
-{return index >= CMap::tile_polishedstone && index <= CMap::tile_polishedstone_d4;}
-
-bool isTileBackPolishedStone(u32 index)
-{return index >= CMap::tile_bpolishedstone && index <= CMap::tile_bpolishedstone_d4;}
+bool isTileBackpolishedmetal(u32 index)
+{return index >= CMap::tile_bpolishedmetal && index <= CMap::tile_bpolishedmetal_d4;}
 
 bool isTileIce(u32 index)
 {return index >= CMap::tile_ice && index <= CMap::tile_ice_d3;}
@@ -288,9 +242,3 @@ bool isTileAnyIce(u32 index)
 
 bool isTileBackGlass(u32 index)
 {return index >= CMap::tile_bglass_d0 && index <= CMap::tile_bglass_v14;}
-
-bool isTileSnowBricks(u32 index)
-{return index >= CMap::tile_snow_bricks && index <= CMap::tile_snow_bricks_d1;}
-
-bool isTileBackSnowBricks(u32 index)
-{return index >= CMap::tile_bsnow_bricks && index <= CMap::tile_bsnow_bricks_d1;}

@@ -54,24 +54,11 @@ namespace map_colors
 	enum color
 	{
 		// CUSTOM
-		tile_snow_ground       = 0xFFc0d4d4, // just ground, but with white pixel
-		tile_snow_ground_back  = 0xFF8a9d9e,
-		tile_snow              = 0xFFaffaff,
-
-		tile_snow_pile         = 0xFFfafaff, // biggest
-		tile_snow_pile_v0      = 0xFF9ee9ee, 
-		tile_snow_pile_v1      = 0xFF7cc7cc,
-		tile_snow_pile_v2      = 0xFF5aa5aa,
-		tile_snow_pile_v3      = 0xFF4a9297,
-		tile_snow_pile_v4      = 0xFF377478,
-		tile_snow_pile_v5      = 0xFF295d61, // smallest
-
 		tile_ice               = 0xFF4070f1,
 		tile_thick_ice		   = 0xFF1020f1,
 		tile_bice              = 0xFF3b44bc,
 		tile_snow_bricks       = 0xFFc9c9c9,
 		tile_bsnow_bricks      = 0xFFb2b2b2,
-
 		tile_steel             = 0xFF25459c,
 		tile_bsteel            = 0xFF25335c,
 		tile_caution           = 0xFFeeee00,
@@ -79,16 +66,11 @@ namespace map_colors
 		tile_caution_v1        = 0xFFaaaa00,
 		tile_caution_v2        = 0xFF999900,
 		tile_bglass            = 0xFFafafaf,
+		tile_polishedmetal     = 0xFF556677,
+		tile_bpolishedmetal    = 0xFF334455,
 
-		tile_elderbrick        = 0xFF779977,
-		tile_polishedstone     = 0xFF556677,
-		tile_bpolishedstone    = 0xFF334455,
-		
-		spawnalpha             = 0xFF99aaff,
-		spawnbeta              = 0xFF99cccc,
 		locker                 = 0xFFaacaaa,
 		barrel                 = 0xFFac7575,
-		trashcontainer         = 0xFF819054,
 
 
 		// TILES

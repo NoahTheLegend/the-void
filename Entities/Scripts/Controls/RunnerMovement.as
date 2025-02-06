@@ -66,32 +66,6 @@ void onTick(CMovement@ this)
 		{
 			blob.Untag(fallscreamtag);
 		}
-
-		/* unfortunately, this doesn't work with archer bow draw stuff;
-			might need to bind separate sounds cause this solution is much better.
-
-			if (vel.y > BaseFallSpeed() * 1.1f)
-			{
-				if (!blob.hasTag(fallscreamtag))
-				{
-					blob.Tag(fallscreamtag);
-
-					CSprite@ sprite = blob.getSprite();
-
-					sprite.SetEmitSoundVolume(1.0f);
-					sprite.SetEmitSound( "man_scream.ogg" );
-					sprite.SetEmitSoundPaused( false );
-					sprite.RewindEmitSound();
-				}
-			}
-		}
-		else
-		{
-			blob.Untag(fallscreamtag);
-			CSprite@ sprite = blob.getSprite();
-
-			sprite.SetEmitSoundPaused( true );
-		}*/
 	}
 
 	u8 crouch_through = blob.get_u8("crouch_through");

@@ -51,17 +51,23 @@ void AddGameMusic(CBlob@ this, CMixer@ mixer)
 	this.set_bool("initialized game", true);
 	mixer.ResetMixer();
 
-    mixer.AddTrack("the-void/Music/Tracks/FTL_Peace_0.ogg", world_intro);
-    mixer.AddTrack("the-void/Music/Tracks/FTL_Peace_1.ogg", world_intro);
-    mixer.AddTrack("the-void/Music/Tracks/FTL_Peace_2.ogg", world_intro);
-    mixer.AddTrack("the-void/Music/Tracks/FTL_Peace_3.ogg", world_intro);
-	mixer.AddTrack("the-void/Music/Tracks/Ambient_1.ogg",   world_intro);
+	mixer.AddTrack("the-void/Music/Tracks/Ambient.ogg",   				world_ambient);
+	mixer.AddTrack("c:/Users/noah/Desktop/Stellar_ambient.ogg", 		world_ambient);
+	mixer.AddTrack("c:/Users/noah/Desktop/Void_ambient_scary.ogg", 		world_ambient);
+	
+    mixer.AddTrack("the-void/Music/Tracks/FTL_Peace_0.ogg", 			world_intro);
+    mixer.AddTrack("the-void/Music/Tracks/FTL_Peace_1.ogg", 			world_intro);
+    mixer.AddTrack("the-void/Music/Tracks/FTL_Peace_2.ogg", 			world_intro);
+    mixer.AddTrack("the-void/Music/Tracks/FTL_Peace_3.ogg", 			world_intro);
 
-    mixer.AddTrack("the-void/Music/Tracks/FTL_Scary_1.ogg", world_battle);
-    mixer.AddTrack("the-void/Music/Tracks/FTL_Scary_2.ogg", world_battle);
-    mixer.AddTrack("the-void/Music/Tracks/FTL_Scary_3.ogg", world_battle);
+	mixer.AddTrack("c:/Users/noah/Desktop/Battle.ogg",  				world_battle);
+	mixer.AddTrack("c:/Users/noah/Desktop/Battle_2.ogg",				world_battle);
 
-    mixer.AddTrack("the-void/Music/Tracks/FTL_Scary_0.ogg", world_timer);
+	mixer.AddTrack("the-void/Music/Tracks/FTL_Scary_1.ogg", 			world_tension);
+    mixer.AddTrack("the-void/Music/Tracks/FTL_Scary_2.ogg", 			world_tension);
+    mixer.AddTrack("the-void/Music/Tracks/FTL_Scary_3.ogg", 			world_tension);
+			
+    mixer.AddTrack("the-void/Music/Tracks/FTL_Scary_0.ogg", 			world_timer);
 }
 
 uint timer = 0;
