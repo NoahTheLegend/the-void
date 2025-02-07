@@ -819,6 +819,7 @@ void Render(int id)
     cam_zoom /= ((0.5) / fDynaDistance);
 
     CBlob@ my_bloba = getLocalPlayerBlob();
+    if (my_bloba is null) return;
 
     // if our blob is dead use camera position
     Vec2f eye_pos_world = my_bloba !is null ? my_bloba.getInterpolatedPosition() : cam.getPosition();

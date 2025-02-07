@@ -8,6 +8,7 @@
 #include "Requirements.as"
 #include "RunnerTextures.as"
 #include "CustomBlocks.as";
+#include "UtilityChecks.as";
 
 bool PlaceBlob(CBlob@ this, CBlob @blob, Vec2f cursorPos, bool repairing = false, CBlob@ repairBlob = null)
 {
@@ -413,7 +414,7 @@ void onTick(CBlob@ this)
 				}
 				else if (snap && this.isKeyJustPressed(key_action1))
 				{
-					this.getSprite().PlaySound("NoAmmo.ogg", 0.5);
+					playSoundInProximity(this, "NoAmmo.ogg", 0.5f);
 				}
 			}
 

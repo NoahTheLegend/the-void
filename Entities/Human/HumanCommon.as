@@ -4,6 +4,7 @@
 #include "PlacementCommon.as";
 #include "CheckSpam.as";
 #include "GameplayEvents.as";
+#include "UtilityChecks.as";
 
 const f32 allow_overlap = 2.0f;
 
@@ -134,7 +135,7 @@ CBlob@ server_BuildBlob(CBlob@ this, BuildBlock[]@ blocks, uint index)
 		{
 			if (this.isMyPlayer())
 			{
-				this.getSprite().PlaySound("/NoAmmo", 0.5);
+				playSoundInProximity(this, "NoAmmo.ogg");
 			}
 			this.set_Vec2f("building space", space);
 			this.set_u32("cant build time", getGameTime());
@@ -143,7 +144,7 @@ CBlob@ server_BuildBlob(CBlob@ this, BuildBlock[]@ blocks, uint index)
 
 		pos = offsetPos + space * map.tilesize * 0.5f;
 
-		this.getSprite().PlaySound("/Construct");
+		playSoundInProximity(this, "Construct");
 		// take inv here instead of in onDetach
 		server_TakeRequirements(inv, b.reqs);
 		DestroyScenary(tl, br);

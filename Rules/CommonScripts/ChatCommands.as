@@ -413,36 +413,68 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 
 bool onClientProcessChat(CRules@ this, const string& in text_in, string& out text_out, CPlayer@ player)
 {
+	bool hide_message = true;
+	bool not_a_command = text_in.substr(0, 1) != "!";
+
 	CBlob@ local = getLocalPlayerBlob();
 	CBlob@ sender = player.getBlob();
+
+	bool in_proximity = inProximity(local, sender);
 	bool radio_connection = hasRadio(local) && hasRadio(sender);
+	bool airspace = isInAirSpace(local) && isInAirSpace(sender);
 
 	// dead players can talk
 	bool in_range = local !is null && sender !is null
-		&& (inProximity(local, sender) || radio_connection);
+		&& (in_proximity || radio_connection);
+
+	bool self = local is sender;
 
 	// we always see the messages when we see the player, if both of us have radio,
 	// when we are dead, or when the sender is dead
 	bool add_to_chat = in_range || local is null || sender is null;
+	bool someone_can_see_this_message = false;
+
+	// check if there are players to see the message
+	if (self)
+	{
+		for (u8 i = 0; i < getPlayersCount(); i++)
+		{
+			CPlayer@ p = getPlayer(i);
+			if (p is null || p is player) continue;
+
+			CBlob@ b = p.getBlob();
+			if (p.getBlob() is null) continue;
+			
+			if (radio_connection && (inProximity(b, sender) && airspace))
+			{
+				someone_can_see_this_message = true;
+				break;
+			}
+		}
+	}
 
 	if (add_to_chat)
 	{
 		string clantag = player.getClantag();
 		if (clantag != "") clantag = clantag + " ";
-		string formatted_name = "["+clantag + player.getCharacterName()+"] ";
+		
+		string radio = "";
+		if (radio_connection && !self && (!in_proximity || airspace)) radio = " [radio]";
+
+		string formatted_name = "<"+clantag + player.getCharacterName() + radio+"> ";
 		client_AddToChat(formatted_name + text_in, SColor(255,0,0,0));
 
 		if (sender !is null && inProximity(local, sender))
 			sender.Chat(text_in);
 
-		return false;
+		hide_message = false;
 	}
-	else
+	if (self && !someone_can_see_this_message && not_a_command)
 	{
 		client_AddToChat("Nobody saw your message.", SColor(255,255,0,0));
 	}
 
-	return true;
+	return hide_message;
 }
 
 void onCommand(CRules@ this, u8 cmd, CBitStream @params)

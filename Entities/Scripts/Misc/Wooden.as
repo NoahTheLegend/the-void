@@ -11,9 +11,9 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 	if (damage > 0.05f) //sound for all damage
 	{
 		f32 angle = (this.getPosition() - worldPoint).getAngle();
-		if (hitterBlob !is this && inProximity(getLocalPlayerBlob(), this))
+		if (hitterBlob !is this)
 		{
-			this.getSprite().PlayRandomSound("/WoodHit", Maths::Min(1.25f, Maths::Max(0.5f, damage)));
+			playSoundInProximity(this, "WoodHit", Maths::Min(1.25f, Maths::Max(0.5f, damage)), 1.0f, true);
 		}
 		else
 		{
@@ -31,15 +31,15 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 void onGib(CSprite@ this)
 {
     CBlob@ blob = this.getBlob();
-    if (blob is null || !inProximity(getLocalPlayerBlob(), blob)) return;
+    if (blob is null) return;
 
 	if (this.getBlob().hasTag("heavy weight"))
 	{
-		this.PlaySound("/WoodDestruct");
+		playSoundInProximity(blob, "WoodDestruct");
 	}
 	else
 	{
-		this.PlaySound("/LogDestruct");
+		playSoundInProximity(blob, "LogDestruct");
 	}
 }
 
@@ -56,7 +56,7 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 	const f32 soundbase = heavy ? 0.7f : 2.5f;
 	const f32 sounddampen = heavy ? soundbase : soundbase * 2.0f;
 
-	if (vellen > soundbase && inProximity(getLocalPlayerBlob(), this))
+	if (vellen > soundbase)
 	{
 		f32 volume = Maths::Min(1.25f, Maths::Max(0.2f, (vellen - soundbase) / soundbase));
 
@@ -64,16 +64,16 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 		{
 			if (vellen > 3.0f)
 			{
-				this.getSprite().PlayRandomSound("/WoodHeavyHit", volume);
+				playSoundInProximity(this, "WoodHeavyHit", volume, 1.0f, true);
 			}
 			else
 			{
-				this.getSprite().PlayRandomSound("/WoodHeavyBump", volume);
+				playSoundInProximity(this, "WoodHeavyBump", volume, 1.0f, true);
 			}
 		}
 		else
 		{
-			this.getSprite().PlayRandomSound("/WoodLightBump", volume);
+			playSoundInProximity(this, "WoodLightBump", volume, 1.0f, true);
 		}
 	}
 

@@ -63,15 +63,15 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 						this.getSprite().PlaySound("Gurgle");
 					}
 				}
-				else if (inProximity(this, getLocalPlayerBlob()))
+				else
 				{
 					if (this.getHealth() > gibHealth / 2.0f)
 					{
-						this.getSprite().PlaySound("WilhelmShort.ogg", this.getSexNum() == 0 ? 1.0f : 1.5f);
+						playSoundInProximity(this, "WilhelmShort.ogg", this.getSexNum() == 0 ? 1.0f : 1.5f);
 					}
 					else if (this.getHealth() > gibHealth)
 					{
-						this.getSprite().PlaySound("Wilhelm.ogg", 1.0f, this.getSexNum() == 0 ? 1.0f : 1.5f);
+						playSoundInProximity(this, "Wilhelm.ogg", this.getSexNum() == 0 ? 1.0f : 1.5f);
 					}
 				}
 			}

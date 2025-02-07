@@ -39,7 +39,70 @@ bool isInAirSpace(Vec2f pos)
     return false; //todo
 }
 
+bool isInAirSpace(CBlob@ blob)
+{
+    if (blob is null) return false;
+    return isInAirSpace(blob.getPosition());
+}
+
 bool hasRadio(CBlob@ blob)
 {
     return blob.get_bool("radio_enabled");
+}
+
+bool playSoundInProximity(CBlob@ blob, string filename, f32 volume = 1.0f, f32 pitch = 1.0f, bool random = false, f32 falloff_start = 512, f32 max_distance = 512.0f)
+{
+    if (!isClient()) return false;
+    if (blob is null) return false;
+
+    CPlayer@ player = getLocalPlayer();
+    if (player is null) return true; // we can hear everything while dead
+
+    Vec2f pos = blob.getPosition();
+    Vec2f playerpos = player.getBlob().getPosition();
+    f32 dist = (pos - playerpos).Length();
+
+    if (inProximity(blob, player.getBlob()))
+    {
+        if (dist < falloff_start)
+        {
+            f32 volume = 1.0f;
+            if (random) blob.getSprite().PlayRandomSound(filename, volume);
+            else blob.getSprite().PlaySound(filename, volume);
+            return true;
+        }
+        else if (dist < max_distance)
+        {
+            f32 volume = 1.0f - Maths::Min((dist - falloff_start) / (max_distance - falloff_start), 1.0f);
+            if (random) blob.getSprite().PlayRandomSound(filename, volume);
+            else blob.getSprite().PlaySound(filename, volume);
+            return true;
+        }
+    }
+    else
+    {
+        if (dist < max_distance / 10)
+        {
+            f32 volume = 1.0f - Maths::Min(dist / (max_distance / 10), 1.0f);
+            if (random) blob.getSprite().PlayRandomSound(filename, volume);
+            else blob.getSprite().PlaySound(filename, volume);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+f32 getSoundFallOff(CBlob@ blob, f32 falloff_start, f32 max_distance = 512.0f)
+{
+    if (blob is null) return 0.0f;
+
+    CPlayer@ player = getLocalPlayer();
+    if (player is null) return 1.0f; // we can hear everything while dead
+
+    Vec2f pos = blob.getPosition();
+    Vec2f playerpos = player.getBlob().getPosition();
+    f32 dist = (pos - playerpos).Length();
+
+    return 1.0f - Maths::Min(dist / max_distance , 1.0f);
 }

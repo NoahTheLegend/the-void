@@ -49,10 +49,7 @@ void onTick(CBlob@ this)
 				CSprite@ sprite = this.getSprite();
 				if (isClient() && this.exists("swing_sound") && sprite !is null)
 				{
-					bool can_play_sound = isInAirSpace(this);
-					if (!holder.isMyPlayer()) can_play_sound = inProximity(this, getLocalPlayerBlob());
-					
-					sprite.PlayRandomSound(this.get_string("swing_sound"), 0.5f, this.get_f32("swing_pitch")+XORRandom(21)*0.01f);
+					playSoundInProximity(this, this.get_string("swing_sound"), 0.5f, this.get_f32("swing_pitch")+XORRandom(21)*0.01f, true);
 				}
 
 				u8 team = holder.getTeamNum();

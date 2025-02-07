@@ -1,6 +1,7 @@
 #include "Hitters.as";
 #include "ParticleSparks.as";
 #include "Knocked.as";
+#include "UtilityChecks.as";
 
 void onInit(CBlob@ this)
 {
@@ -40,7 +41,7 @@ void onTick(CBlob@ this)
 				{
 					if (!this.get_bool("holding")) 
 					{
-						this.getSprite().PlaySound("Lighter_Use", 1.00f, 0.90f + (XORRandom(100) * 0.30f));
+						playSoundInProximity(this, "Lighter_Use", 1.00f, 0.90f + (XORRandom(100) * 0.30f));
 						sparks(this.getPosition(), 1, 0.25f);
 					}
 				}
@@ -67,7 +68,7 @@ void onTick(CBlob@ this)
 			
 				if (isClient())
 				{
-					this.getSprite().PlaySound("Lighter_Use", 1.00f, 0.90f + (XORRandom(100) * 0.30f));
+					playSoundInProximity(this, "Lighter_Use", 1.00f, 0.90f + (XORRandom(100) * 0.30f));
 					sparks(this.getPosition(), 1, 0.25f);
 				}
 				

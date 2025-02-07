@@ -17,7 +17,7 @@ void onTick(CSprite@ this)
 	CBlob@ blob = this.getBlob();
 
 	// no playing sound if it's in shadow
-	if (!blob.isMyPlayer() && !inProximity(blob, getLocalPlayerBlob()))
+	if (!blob.isMyPlayer())
 		return;
 
 	bool has_gravity = false; // todo
@@ -49,15 +49,15 @@ void onTick(CSprite@ this)
 			if (map.isTileWood(tile))
 			{
 				pitch = 1.1f + XORRandom(150) * 0.001f;
-				this.PlayRandomSound("wood_walk", Maths::Min(0.3f, volume), pitch);
+				playSoundInProximity(blob, "wood_walk.ogg", Maths::Min(0.3f, volume), pitch, true);
 			}
 			else if (isMetalTile(tile) || isTileGlass(tile))
 			{
-				this.PlayRandomSound("metalbar_run", Maths::Min(0.3f, volume), pitch);
+				playSoundInProximity(blob, "metalbar_run", Maths::Min(0.3f, volume), pitch, true);
 			}
 			else if (isTileAnyIce(tile))
 			{
-				this.PlayRandomSound("StepIce", Maths::Min(0.3f, volume), pitch);
+				playSoundInProximity(blob, "StepIce", Maths::Min(0.3f, volume), pitch, true);
 			}
 			else if (blob.isOnLadder())
 			{

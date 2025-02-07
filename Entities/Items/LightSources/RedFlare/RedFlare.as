@@ -1,4 +1,5 @@
 #include "ParticleSparks.as";
+#include "UtilityChecks.as";
 
 const u16 duration = 60 * 30;
 const f32 radius = 128.0f;
@@ -37,9 +38,14 @@ void onTick(CSprite@ this)
 
 	if (timer < 0)
 	{
-		if (this.animation.name != "end") this.PlaySound("ExtinguishFire.ogg", 1.0f, 0.85f);
+		if (this.animation.name != "end")
+		{
+			playSoundInProximity(blob, "ExtinguishFire.ogg", 1.0f, 0.85f);
+		}
+		
 		this.SetAnimation("end");
 		this.SetEmitSoundPaused(true);
+		
 		return;
 	}
 	else
@@ -63,8 +69,11 @@ void onTick(CBlob@ this)
 
 	if (isClient())
 	{
-		MakeParticle(this, Vec2f(0, 0.5f - XORRandom(11)*0.1f), "RedFlareFire"+XORRandom(2));
-		MakeParticle(this, Vec2f(0, 0.1f - XORRandom(5)*0.1f), "RedFlareGas");
+		this.getSprite().SetEmitSoundVolume(0.75f * getSoundFallOff(this, 0, 64.0f));
+
+		bool has_gravity = false; // todo
+		MakeParticle(this, Vec2f(0, !has_gravity ? 0.0f - XORRandom(11)*0.1f : 0), "RedFlareFire"+XORRandom(2));
+		//MakeParticle(this, Vec2f(0, 0.1f - XORRandom(5)*0.1f), "RedFlareGas");
 	}
 }
 
@@ -81,10 +90,10 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 			if (sprite !is null)
 			{
 				sprite.SetEmitSound("FlareLoop.ogg");
-				sprite.SetEmitSoundVolume(0.66f);
+				sprite.SetEmitSoundVolume(0.75f);
 				sprite.SetEmitSoundPaused(false);
 
-				sprite.PlaySound("FlareStart.ogg", 1.5f, 0.9f);
+				playSoundInProximity(this, "FlareStart.ogg", 1.5f, 0.9f);
 			}
 		}
 	}
@@ -114,7 +123,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 			if (sprite !is null)
 			{
 				sprite.SetEmitSound("FlareLoop.ogg");
-				sprite.SetEmitSoundVolume(0.66f);
+				sprite.SetEmitSoundVolume(0.5f);
 				sprite.SetEmitSoundPaused(false);
 			}
 		}
@@ -125,16 +134,15 @@ void MakeParticle(CBlob@ this, const Vec2f vel, const string filename = "SmallSt
 {
 	if (!isClient()) return;
 
-	Vec2f offset = Vec2f(0, -8).RotateBy(this.getAngleDegrees());
-	CParticle@ p = ParticleAnimated(filename, this.getPosition() + offset, vel, float(XORRandom(360)), 1.0f, 2 + XORRandom(3), -0.1f, false);
+	Vec2f offset = Vec2f(0, -4).RotateBy(this.getAngleDegrees());
+	CParticle@ p = ParticleAnimated(filename, this.getPosition() + offset, vel, float(XORRandom(360)), 1.0f, 4 + XORRandom(3), 0, false);
 	if (p !is null)
 	{
 		p.deadeffect = -1;
-		p.timeout = 30;
+		p.timeout = 30+XORRandom(16);
 		p.collides = true;
 		p.diesoncollide = false;
 		p.diesonanimate = false;
-		p.windaffect = 5.0f;
 		p.setRenderStyle(RenderStyle::additive);
 	}
 }

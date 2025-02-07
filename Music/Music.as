@@ -92,7 +92,7 @@ void GameMusicLogic(CBlob@ this, CMixer@ mixer)
 
 	if (mixer.getPlayingCount() == 0 && getGameTime() > this.get_u32("next_music"))
 	{
-		mixer.FadeInRandom(type, 5.0f+getRandomFadeOut(5));
+		mixer.FadeInRandom(type, 10.0f+getRandomFadeOut(5));
         setNextMusicTime(this);
 	}
 
