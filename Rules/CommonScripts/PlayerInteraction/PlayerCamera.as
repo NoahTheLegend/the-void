@@ -180,7 +180,7 @@ void onRender(CRules@ this)
 	GUI::SetFont("menu");
 
 	string text = "";
-	text = "You are dead. Wait someone to reanimate you or until dawn.";
+	text = "You are dead. Wait someone to clone you.";
 
 	if (text != "")
 	{

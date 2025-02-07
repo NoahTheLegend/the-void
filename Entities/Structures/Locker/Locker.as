@@ -7,14 +7,10 @@ const string[] anims = {
 	"blue"
 };
 
-void onInit(CSprite@ this)
-{
-	CBlob@ blob = this.getBlob();
-	this.SetZ(-50);
-}
-
 void onInit(CBlob@ this)
 {
+	this.Tag("spawn"); // temporary
+	
 	this.getShape().getConsts().mapCollisions = false;
 	AddIconToken("$store_inventory$", "InteractionIcons.png", Vec2f(32, 32), 28);
 	this.inventoryButtonPos = Vec2f(0, 0);
@@ -36,6 +32,12 @@ void onInit(CBlob@ this)
 		params.write_u16(getLocalPlayer().getNetworkID());
 		this.SendCommand(this.getCommandID("sync"), params);
 	}
+}
+
+void onInit(CSprite@ this)
+{
+	CBlob@ blob = this.getBlob();
+	this.SetZ(-50);
 }
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)

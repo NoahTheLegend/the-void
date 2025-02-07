@@ -2,6 +2,7 @@
 #include "Hitters.as";
 #include "Knocked.as";
 #include "UtilityWeapons.as";
+#include "UtilityChecks.as";
 
 void onInit(CBlob@ this)
 {
@@ -11,6 +12,8 @@ void onInit(CBlob@ this)
 	if (!this.exists("hitter")) this.set_u8("hitter", Hitters::sword);
     if (!this.exists("attack_types_amount")) this.set_u8("attack_types_amount", 1);
 	if (!this.exists("attack_arc")) this.set_f32("attack_arc", 30.0f);
+	if (!this.exists("swing_sound")) this.set_string("swing_sound", "/swing");
+	if (!this.exists("swing_pitch")) this.set_f32("swing_pitch", 1.0f);
 
     AttachmentPoint@ ap = this.getAttachments().getAttachmentPointByName("PICKUP");
 	if (ap !is null)
@@ -46,7 +49,10 @@ void onTick(CBlob@ this)
 				CSprite@ sprite = this.getSprite();
 				if (isClient() && this.exists("swing_sound") && sprite !is null)
 				{
-					sprite.PlayRandomSound(this.get_string("swing_sound"), 0.5f, 1.0f+XORRandom(21)*0.01f);
+					bool can_play_sound = isInAirSpace(this);
+					if (!holder.isMyPlayer()) can_play_sound = inProximity(this, getLocalPlayerBlob());
+					
+					sprite.PlayRandomSound(this.get_string("swing_sound"), 0.5f, this.get_f32("swing_pitch")+XORRandom(21)*0.01f);
 				}
 
 				u8 team = holder.getTeamNum();

@@ -164,7 +164,7 @@ void onSetTile(int offset, uint16 tiletype)
 {
     // uses hardcoded tile solid check! extend for custom tiles!!!
     // i cant think of any way to do it with tile flag, because tile isnt placed yet
-    solids[offset] = isSolid(getMap(), tiletype) && !isTileIce(tiletype);
+    solids[offset] = isSolid(getMap(), tiletype) && !isTileIce(tiletype) && !isTileGlass(tiletype);
 
     tiles_to_update.push_back(offset);
 }
@@ -181,7 +181,7 @@ void onTick(CRules@ this)
                 for(int i = 0; i < map_size; i++)
                 {
                     Tile tile = map.getTile(i);
-                    solids[i] = isSolid(getMap(), tile.type) && !isTileIce(tile.type);
+                    solids[i] = isSolid(getMap(), tile.type) && !isTileIce(tile.type) && !isTileGlass(tile.type);
                 }
                 solid_map = true;
             }

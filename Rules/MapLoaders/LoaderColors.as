@@ -65,6 +65,7 @@ namespace map_colors
 		tile_caution_v0        = 0xFFcccc00,
 		tile_caution_v1        = 0xFFaaaa00,
 		tile_caution_v2        = 0xFF999900,
+		tile_glass             = 0xffe1e1e1,
 		tile_bglass            = 0xFFafafaf,
 		tile_polishedmetal     = 0xFF556677,
 		tile_bpolishedmetal    = 0xFF334455,
@@ -190,7 +191,7 @@ namespace map_colors
 		tunnel_noteam          = 0xFFF3D9FE, // ARGB(255, 243, 217, 254);
 		kitchen                = 0xFFFFD9D9, // ARGB(255, 255, 217, 217);
 		nursery                = 0xFFD9FFDF, // ARGB(255, 217, 255, 223);
-		research               = 0xFFE1E1E1, // ARGB(255, 225, 225, 225);
+		research               = 0xFFE1E1EE, // ARGB(255, 225, 225, 225);
 
 		// MARKERS
 		blue_main_spawn        = 0xFF00FFFF, // ARGB(255,   0, 255, 255);

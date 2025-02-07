@@ -89,14 +89,10 @@ void blobTick(CBlob@ this)
 		if (b is null || !b.hasTag("tool")) continue;
 
 		if (b.hasTag("sharp")) has_sharp = true;
-		else if (b.hasTag("pickaxe")) has_pickaxe = true;
-		else if (b.hasTag("axe")) has_axe = true;
 	}
 }
 
 bool has_sharp = false;
-bool has_pickaxe = false;
-bool has_axe = false;
 
 void ManageCursors(CBlob@ this)
 {
@@ -136,8 +132,6 @@ void ManageCursors(CBlob@ this)
 u8 getCursorFrame(CBlob@ this)
 {
 	if (this.hasTag("carrying_sharp")) return 2;
-	else if (this.hasTag("carrying_pickaxe")) return 4;
-	else if (this.hasTag("carrying_axe")) return 6;
 
 	if (getControls() is null) return 0;
 	CMap@ map = getMap();
@@ -152,8 +146,6 @@ u8 getCursorFrame(CBlob@ this)
 		if (b is null) continue;
 
 		if (has_sharp && useSharp(this, b)) return 2;
-		else if (has_pickaxe && usePickaxe(this, b)) return 4;
-		else if (has_axe && useAxe(this, b)) return 6;
 	}
 
 	return 0;
@@ -170,16 +162,6 @@ bool isAction(CBlob@ this)
 }
 
 bool useSharp(CBlob@ this, CBlob@ blob)
-{
-	return false;
-}
-
-bool usePickaxe(CBlob@ this, CBlob@ blob)
-{
-	return false;
-}
-
-bool useAxe(CBlob@ this, CBlob@ blob)
 {
 	return false;
 }
@@ -203,6 +185,4 @@ f32 getScaleFactor(u8 frame)
 void ResetChecks()
 {
 	has_sharp = false;
-	has_pickaxe = false;
-	has_axe = false;
 }

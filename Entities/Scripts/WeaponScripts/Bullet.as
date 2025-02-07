@@ -224,9 +224,6 @@ class Bullet
                                 {
 		        	    			if (map.isTileWood(tile.type))
 		        	    				map.server_DestroyTile(hitpos, damage * 0.25f);
-                                    else if (isTileSnow(tile.type) 
-                                            || isTileSnowBricks(tile.type))
-                                        map.server_DestroyTile(hitpos, damage * 0.25f);
                                 }
                             }
 

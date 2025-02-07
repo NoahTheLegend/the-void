@@ -52,16 +52,14 @@ void AddGameMusic(CBlob@ this, CMixer@ mixer)
 	mixer.ResetMixer();
 
 	mixer.AddTrack("the-void/Music/Tracks/Ambient.ogg",   				world_ambient);
-	mixer.AddTrack("c:/Users/noah/Desktop/Stellar_ambient.ogg", 		world_ambient);
-	mixer.AddTrack("c:/Users/noah/Desktop/Void_ambient_scary.ogg", 		world_ambient);
-	
-    mixer.AddTrack("the-void/Music/Tracks/FTL_Peace_0.ogg", 			world_intro);
-    mixer.AddTrack("the-void/Music/Tracks/FTL_Peace_1.ogg", 			world_intro);
-    mixer.AddTrack("the-void/Music/Tracks/FTL_Peace_2.ogg", 			world_intro);
-    mixer.AddTrack("the-void/Music/Tracks/FTL_Peace_3.ogg", 			world_intro);
+	mixer.AddTrack("the-void/Music/Tracks/Stellar_ambient.ogg", 		world_ambient);
+	mixer.AddTrack("the-void/Music/Tracks/Void_ambient_scary.ogg", 		world_ambient);
+    mixer.AddTrack("the-void/Music/Tracks/FTL_Peace_0.ogg", 			world_ambient);
+    mixer.AddTrack("the-void/Music/Tracks/FTL_Peace_1.ogg", 			world_ambient);
+    mixer.AddTrack("the-void/Music/Tracks/FTL_Peace_2.ogg", 			world_ambient);
+    mixer.AddTrack("the-void/Music/Tracks/FTL_Peace_3.ogg", 			world_ambient);
 
-	mixer.AddTrack("c:/Users/noah/Desktop/Battle.ogg",  				world_battle);
-	mixer.AddTrack("c:/Users/noah/Desktop/Battle_2.ogg",				world_battle);
+	mixer.AddTrack("the-void/Music/Tracks/Battle.ogg",  				world_battle);
 
 	mixer.AddTrack("the-void/Music/Tracks/FTL_Scary_1.ogg", 			world_tension);
     mixer.AddTrack("the-void/Music/Tracks/FTL_Scary_2.ogg", 			world_tension);
@@ -85,13 +83,20 @@ void GameMusicLogic(CBlob@ this, CMixer@ mixer)
 		mixer.FadeOutAll(0.0f, 5.0f+getRandomFadeOut(5));
 	}
 
-	if (mixer.getPlayingCount() < 1 && getGameTime() > this.get_u32("next_music"))
+	int type = world_ambient;
+	int score_battle = 0;
+	int score_tension = 0;
+	// calculate the scores here
+	if (score_battle != 0 || score_tension != 0)
+		type = score_battle > score_tension ? world_battle : world_tension;
+
+	if (mixer.getPlayingCount() == 0 && getGameTime() > this.get_u32("next_music"))
 	{
-		mixer.FadeInRandom(world_battle, 5.0f+getRandomFadeOut(5));
+		mixer.FadeInRandom(type, 5.0f+getRandomFadeOut(5));
         setNextMusicTime(this);
 	}
 
-    if (mixer.getPlayingCount() > 0) this.add_u32("last_music_duration", 1);
+    if (mixer.getPlayingCount() != 0) this.add_u32("last_music_duration", 1);
     else if (this.get_u32("last_music_duration") > 0)
     {
         onMusicEnd(this);
@@ -99,7 +104,7 @@ void GameMusicLogic(CBlob@ this, CMixer@ mixer)
     }
 }
 
-void onMusicEnd(this)
+void onMusicEnd(CBlob@ this)
 {
     // reduce delay if the track was short
     int time_playing = this.get_u32("last_music_duration");
@@ -108,8 +113,9 @@ void onMusicEnd(this)
     int delay_reduce_threshold = 60 * 30 * 3;
     if (time_playing < delay_reduce_threshold)
     {
-        setNextMusicTime(this, delay_reduce_threshold - time_playing);
-        if (sv_test) print("Reduced delay by "+time_playing);
+		int reduce_time = delay_reduce_threshold - time_playing;
+        setNextMusicTime(this, reduce_time);
+        if (sv_test) print("Reduced delay by "+reduce_time);
     }
 }
 
@@ -128,32 +134,12 @@ f32 getRandomFadeOut(f32 max)
     return XORRandom(100) * max / 100.0f;
 }
 
-// handle fadeouts / fadeins dynamically
-void changeAmbience(CMixer@ mixer, int nextTrack, f32 fadeoutTime = 0.0f, f32 fadeinTime = 0.0f)
-{
-	if (!mixer.isPlaying(nextTrack))
-	{
-		for (u32 i = world_ambient_start + 1; i < world_ambient_end; i++)
-			mixer.FadeOut(i, fadeoutTime);
-	}
-
-	mixer.FadeInRandom(nextTrack, fadeinTime);
-}
-
 enum GameMusicTags
 {
-	world_ambient_start,
-
 	world_ambient,
-	world_ambient_underground,
-	world_ambient_mountain,
-	world_ambient_night,
-
-	world_ambient_end,
-
-	world_intro,
-	world_tension,
-	world_domination,
-	world_battle,
+	world_battle, // fighting the bugs
+	world_tension, // the ship sustained a lot of damage \ is out of electricity
+	world_bugs_ambient,
+	world_bugs_battle,
 	world_timer,
 };

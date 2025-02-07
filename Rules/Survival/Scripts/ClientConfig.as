@@ -185,7 +185,7 @@ class Section {
         SColor col_white = SColor(alpha,255,255,255);
         SColor col_grey = SColor(alpha,235,235,235);
 
-        GUI::SetFont("RockwellMT_18");
+        GUI::SetFont("CascadiaCodePL_18");
         GUI::DrawText(title, pos + Vec2f(title_dim.x + padding.x/2, padding.y), col_white);
         GUI::DrawRectangle(tl+padding + Vec2f(0,28), Vec2f(br.x-padding.x, tl.y+padding.y + 30), col_grey);
         
@@ -261,7 +261,7 @@ class Option {
             check.render(alpha);
         }
 
-        GUI::SetFont("RockwellMT_14");
+        GUI::SetFont("CascadiaCodePL_12");
         GUI::DrawText(text, has_check?pos+Vec2f(25,0):pos, col_white);
     }
 };

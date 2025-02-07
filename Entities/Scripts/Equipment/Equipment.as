@@ -13,10 +13,10 @@ void onInit(CBlob@ this)
 	this.addCommandID("equip_boots");
 	this.addCommandID("none");
 
-	this.addCommandID("switch_hood");
+	this.addCommandID("switch_helmet");
 	this.addCommandID("sync");
 	
-	this.set_bool("wear_hood", false);
+	this.set_bool("wear_helmet", false);
 }
 
 void onCreateInventoryMenu(CBlob@ this, CBlob@ forBlob, CGridMenu@ gridmenu)
@@ -26,8 +26,8 @@ void onCreateInventoryMenu(CBlob@ this, CBlob@ forBlob, CGridMenu@ gridmenu)
 
 	Vec2f MENU_POS = gridmenu.getUpperLeftPosition() + Vec2f(-96, 72);
 
-	CGridMenu@ equipments = CreateGridMenu(MENU_POS+Vec2f(48, 0), this, Vec2f(1, 3), "equipment");
-	CGridMenu@ extraequipments = CreateGridMenu(MENU_POS+Vec2f(0, 0), this, Vec2f(1, 3), "equipment");
+	CGridMenu@ equipments = CreateGridMenu(MENU_POS+Vec2f(0, 0), this, Vec2f(1, 3), "equipment");
+	CGridMenu@ extraequipments = CreateGridMenu(MENU_POS+Vec2f(48, 0), this, Vec2f(1, 3), "equipment");
 
 	int HeadFrame = 3;
 	int TorsoFrame = 4;
@@ -77,21 +77,21 @@ void onCreateInventoryMenu(CBlob@ this, CBlob@ forBlob, CGridMenu@ gridmenu)
 			CGridButton@ head_util = equipments.AddButton("$headimage$", "", this.getCommandID("equip_head"), Vec2f(1, 1), params);
 			if (head_util !is null)
 			{
-				if (this.get_string("equipment_head") != "") head_util.SetHoverText("Unequip head gear\n");
+				if (this.get_string("equipment_head") != "") head_util.SetHoverText("todo\n");
 				else head_util.SetHoverText("Equip head gear\n");
 			}
 
 			CGridButton@ torso_util = equipments.AddButton("$torsoimage$", "", this.getCommandID("equip_torso"), Vec2f(1, 1), params);
 			if (torso_util !is null)
 			{
-				if (this.get_string("equipment_torso") != "") torso_util.SetHoverText("Unequip torso utility\n");
+				if (this.get_string("equipment_torso") != "") torso_util.SetHoverText("todo\n");
 				else torso_util.SetHoverText("Equip torso utility\n");
 			}
 
 			CGridButton@ boots_util = equipments.AddButton("$bootsimage$", "", this.getCommandID("equip_boots"), Vec2f(1, 1), params);
 			if (boots_util !is null)
 			{
-				if (this.get_string("equipment_boots") != "") boots_util.SetHoverText("Unequip boots utility\n");
+				if (this.get_string("equipment_boots") != "") boots_util.SetHoverText("todo\n");
 				else boots_util.SetHoverText("Equip boots utility\n");
 			}
 		}
@@ -105,22 +105,22 @@ void onCreateInventoryMenu(CBlob@ this, CBlob@ forBlob, CGridMenu@ gridmenu)
 
 		if (this !is null)
 		{
-			CGridButton@ head = extraequipments.AddButton("$decor_headimage$", "", this.getCommandID("switch_hood"), Vec2f(1, 1), params);
+			CGridButton@ head = extraequipments.AddButton("$decor_headimage$", "", this.getCommandID("switch_helmet"), Vec2f(1, 1), params);
 			if (head !is null)
 			{
-				head.SetHoverText("Hood\n");
+				head.SetHoverText("Spacesuit Helmet\n");
 			}
 
 			CGridButton@ torso = extraequipments.AddButton("$decor_torsoimage$", "", this.getCommandID("none"), Vec2f(1, 1), params);
 			if (torso !is null)
 			{
-				torso.SetHoverText("Snow suit\n");
+				torso.SetHoverText("\n");
 			}
 
 			CGridButton@ boots = extraequipments.AddButton("$decor_bootsimage$", "", this.getCommandID("none"), Vec2f(1, 1), params);
 			if (boots !is null)
 			{
-				boots.SetHoverText("Warm boots\n");
+				boots.SetHoverText("\n");
 			}
 		}
 	}
@@ -175,10 +175,10 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 
 		caller.ClearMenus();
 	}
-	else if (cmd == this.getCommandID("switch_hood"))
+	else if (cmd == this.getCommandID("switch_helmet"))
 	{
-		bool wearing_hood = this.get_bool("wear_hood");
-		this.set_bool("wear_hood", !wearing_hood);
+		bool wearing_helmet = this.get_bool("wear_helmet");
+		this.set_bool("wear_helmet", !wearing_helmet);
 
 		if (this.isMyPlayer() && this.getSprite() !is null)
 			this.getSprite().PlaySound("CycleInventory.ogg", 1.0f, 1.1f);

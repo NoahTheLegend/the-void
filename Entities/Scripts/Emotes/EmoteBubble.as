@@ -1,7 +1,7 @@
 // Draw an emoticon
 
 #include "EmotesCommon.as";
-#include "RayCasts.as";
+#include "UtilityChecks.as";
 
 void onInit(CBlob@ blob)
 {
@@ -86,7 +86,7 @@ void onTick(CBlob@ blob)
 				}
 			}
 
-            if (!inProximity(blob), getLocalPlayerBlob())
+            if (!inProximity(blob, getLocalPlayerBlob()))
                 visible = false;
 
 			layer.SetVisible(visible);

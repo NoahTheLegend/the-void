@@ -3,7 +3,6 @@
 #include "RunnerCommon.as"
 #include "CustomBlocks.as";
 #include "UtilityChecks.as";
-#include "RayCasts.as";
 
 void onInit(CSprite@ this)
 {
@@ -20,6 +19,9 @@ void onTick(CSprite@ this)
 	// no playing sound if it's in shadow
 	if (!blob.isMyPlayer() && !inProximity(blob, getLocalPlayerBlob()))
 		return;
+
+	bool has_gravity = false; // todo
+	if (!has_gravity) return;
 
 	const bool left		= blob.isKeyPressed(key_left);
 	const bool right	= blob.isKeyPressed(key_right);
@@ -44,18 +46,18 @@ void onTick(CSprite@ this)
 			f32 pitch = 1.0f;
 			CMap@ map = blob.getMap();
 			
-			if (map.isTileCastle(tile))
-			{
-				this.PlayRandomSound("concrete_run", Maths::Min(0.3f, volume), pitch);
-			}
-			else if (map.isTileWood(tile))
+			if (map.isTileWood(tile))
 			{
 				pitch = 1.1f + XORRandom(150) * 0.001f;
 				this.PlayRandomSound("wood_walk", Maths::Min(0.3f, volume), pitch);
 			}
-			else if (isMetalTile(tile))
+			else if (isMetalTile(tile) || isTileGlass(tile))
 			{
 				this.PlayRandomSound("metalbar_run", Maths::Min(0.3f, volume), pitch);
+			}
+			else if (isTileAnyIce(tile))
+			{
+				this.PlayRandomSound("StepIce", Maths::Min(0.3f, volume), pitch);
 			}
 			else if (blob.isOnLadder())
 			{

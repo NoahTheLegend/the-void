@@ -5,7 +5,7 @@
 #include "MapFlags.as"
 #include "DoorCommon.as"
 #include "ShadowCastHooks.as"
-#include "RayCasts.as"
+#include "UtilityChecks.as"
 
 void onInit(CBlob@ this)
 {

@@ -19,13 +19,14 @@ void onInit(CBlob@ this)
 	this.set_f32("damage", damage);
 	this.set_u8("knock_time", knock_time);
 	this.set_u8("hitter", Hitters::sword);
-	this.Tag("hit_only_flesh");
 	this.set_u8("attack_types_amount", 2);
 	this.set_string("swing_sound", "/swing");
+	this.set_f32("swing_pitch", 0.85f);
 
 	this.set_f32("rotation_mod", 5);
 	this.Tag("sharp");
 	this.Tag("tool");
+	this.Tag("hit_only_flesh");
 	this.Tag("side_attack"); // hit only left or right
 	this.set_f32("attack_arc", 45);
 

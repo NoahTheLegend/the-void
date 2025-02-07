@@ -98,7 +98,7 @@ namespace CMap
 		tile_bsteel_d3,
 		tile_bsteel_d4,
 
-		tile_bglass_d0 = tile_bsteel + 15, // intended to be +15!
+		tile_bglass_d0 = tile_bsteel + 15,
 		tile_bglass = tile_bsteel + 16,
 		tile_bglass_v0,
 		tile_bglass_v1,
@@ -115,6 +115,25 @@ namespace CMap
 		tile_bglass_v12,
 		tile_bglass_v13,
 		tile_bglass_v14,
+
+		tile_glass = tile_bglass + 16,
+		tile_glass_v0,
+		tile_glass_v1,
+		tile_glass_v2,
+		tile_glass_v3,
+		tile_glass_v4,
+		tile_glass_v5,
+		tile_glass_v6,
+		tile_glass_v7,
+		tile_glass_v8,
+		tile_glass_v9,
+		tile_glass_v10,
+		tile_glass_v11,
+		tile_glass_v12,
+		tile_glass_v13,
+		tile_glass_v14,
+		tile_glass_d0,
+		tile_glass_d1,
 
 		tile_ice = tile_bglass + 48,
 		tile_ice_v0,
@@ -182,6 +201,11 @@ bool isSolid(u32 type)
 	return isSolid(getMap(), type);
 }
 
+bool isMetalTile(u32 type)
+{
+	return isTileSteel(type) || isTilePolishedMetal(type) || isTileCaution(type);
+}
+
 bool isSolid(CMap@ map, u32 type) // thin ice is not solid
 {
 	return map.isTileSolid(type) || map.isTileGround(type) || isTileSteel(type) || isTilePolishedMetal(type) || isTileCaution(type)
@@ -239,6 +263,9 @@ bool isTileThickIce(u32 index)
 
 bool isTileAnyIce(u32 index)
 {return isTileIce(index) || isTileThickIce(index);}
+
+bool isTileGlass(TileType tile)
+{return tile >= CMap::tile_glass && tile <= CMap::tile_glass_d1;}
 
 bool isTileBackGlass(u32 index)
 {return index >= CMap::tile_bglass_d0 && index <= CMap::tile_bglass_v14;}

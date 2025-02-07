@@ -76,6 +76,7 @@ void onTick(CSprite@ this)
 		const bool down = blob.isKeyPressed(key_down);
 		const bool inair = (!blob.isOnGround() && !blob.isOnLadder());
 		Vec2f pos = blob.getPosition();
+		bool has_gravity = false; // todo
 
 		RunnerMoveVars@ moveVars;
 		if (!blob.get("moveVars", @moveVars))
@@ -98,7 +99,7 @@ void onTick(CSprite@ this)
 		{
 			this.SetAnimation("crouch");
 		}
-		else if (inair)
+		else if (inair || !has_gravity)
 		{
 			RunnerMoveVars@ moveVars;
 			if (!blob.get("moveVars", @moveVars))
@@ -131,8 +132,8 @@ void onTick(CSprite@ this)
 				}
 			}
 		}
-		else if ((left || right) ||
-		         (blob.isOnLadder() && (up || down)))
+		else if (has_gravity && ((left || right) ||
+		         (blob.isOnLadder() && (up || down))))
 		{
 			this.SetAnimation("run");
 		}

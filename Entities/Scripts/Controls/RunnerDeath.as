@@ -1,6 +1,6 @@
 #include "Hitters.as"
 #include "GenericButtonCommon.as"
-#include "RayCasts.as"
+#include "UtilityChecks.as"
 
 const u32 VANISH_BODY_SECS = 60*10; // 10 minutes
 const f32 CARRIED_BLOB_VEL_SCALE = 1.0;

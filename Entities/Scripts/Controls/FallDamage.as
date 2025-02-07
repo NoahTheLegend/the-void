@@ -12,7 +12,6 @@ void onInit(CBlob@ this)
 {
 	this.getCurrentScript().tickIfTag = "dead";
 }
-
 void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point1)
 {
 	if (!solid || this.isInInventory() || this.hasTag("invincible"))
@@ -25,16 +24,15 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 		return; //no falldamage when stomping
 	}
 
-	f32 vely = this.getOldVelocity().y;
+	Vec2f vel = this.getOldVelocity();
 	bool playsound = true;
 
-	if (vely < 0 || Maths::Abs(normal.x) > Maths::Abs(normal.y) * 2) { return; }
+	if (vel.Length() < 0.1f) { return; }
 
-	f32 damage = FallDamageAmount(vely);
+	f32 damage = FallDamageAmount(vel.Length());
 	if (damage != 0.0f) //interesting value
 	{
 		bool doknockdown = true;
-		
 		if (damage > 0.0f)
 		{
 			// check if we aren't touching a trampoline

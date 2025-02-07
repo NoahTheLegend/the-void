@@ -158,8 +158,8 @@ class MessageContainer
             case 604802540: // !
                 return 10;
             case 722245873: // .
-            case 1041020634: // ;
-            case 1057798253: // :
+            case 1041020634:// ;
+            case 1057798253:// :
             case 973910158: // ?
                 return 20;
         }
@@ -212,7 +212,7 @@ class MessageContainer
         Vec2f otl = br - Vec2f(p+6, dim.y + p * (1.0f-(f32(msg_count_slidetime_current)/f32(msg_count_slidetime))));
         Vec2f obr = otl + Vec2f(p, p);
 
-        GUI::SetFont("RockwellMT_18");
+        GUI::SetFont("CascadiaCodePL_18");
         GUI::DrawSunkenPane(otl, obr);
         GUI::DrawTextCentered(count_text, otl + Vec2f(p/2-2, p/2), SColor(255, 255, 255, 0));
     }

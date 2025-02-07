@@ -1,31 +1,38 @@
 #define CLIENT_ONLY
 
-#include "RayCasts.as";
+#include "UtilityChecks.as";
 
 void Sound(CBlob@ this, Vec2f normal)
 {
 	const f32 vellen = this.getShape().vellen;
     if (!inProximity(this, getLocalPlayerBlob())) return;
+	
+	bool has_gravity = false; // todo
+	bool airspace = isInAirSpace(this);
     
-	if (vellen > 4.5f)
+	if (vellen > 5.0f)
 	{
-		if (Maths::Abs(normal.x) > 0.5f)
+		if (airspace)
 		{
-			this.getSprite().PlayRandomSound("FallWall");
-		}
-		else
-		{
-			this.getSprite().PlayRandomSound("FallMedium");
+			if (Maths::Abs(normal.x) > 0.5f)
+			{
+				this.getSprite().PlayRandomSound("FallWall");
+			}
+			else
+			{
+				this.getSprite().PlayRandomSound("FallMedium");
+			}
 		}
 
-		if (vellen > 6.0f)
+		// todo: asteroid tiles only
+		/*if (vellen > 6.0f)
 		{
 			MakeDustParticle(this.getPosition() + Vec2f(0.0f, 6.0f), "/dust.png");
 		}
 		else
 		{
 			MakeDustParticle(this.getPosition() + Vec2f(0.0f, 11.0f), "/DustSmall.png");
-		}
+		}*/
 	}
 	else if (vellen > 2.75f)
 	{

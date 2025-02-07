@@ -205,6 +205,7 @@ class PNGLoader
 			case map_colors::tile_ice:              map.SetTile(offset, CMap::tile_ice);              break;
 			case map_colors::tile_thick_ice:    	map.SetTile(offset, CMap::tile_thick_ice);        break;
 			case map_colors::tile_bice:    			map.SetTile(offset, CMap::tile_bice);   	      break;
+			case map_colors::tile_glass:			map.SetTile(offset, CMap::tile_glass);            break;
 			case map_colors::tile_bglass:           map.SetTile(offset, CMap::tile_bglass);           break;
 
 			case map_colors::tile_steel:            map.SetTile(offset, CMap::tile_steel);            break;
@@ -493,7 +494,7 @@ class PNGLoader
 		map.CreateSkyGradient("Sprites/skygradient.png"); // override sky color with gradient
 
 		// background
-		map.AddBackground("Sprites/Back/BackgroundPlains.png", Vec2f(0.0f, -40.0f), Vec2f(0.06f, 20.0f), color_white);
+		//map.AddBackground("Sprites/Back/BackgroundPlains.png", Vec2f(0.0f, -40.0f), Vec2f(0.06f, 20.0f), color_white);
 		//map.AddBackground("Sprites/Back/BackgroundTrees.png", Vec2f(0.0f,  -100.0f), Vec2f(0.18f, 70.0f), color_white);
 		//map.AddBackground("Sprites/Back/BackgroundIsland.png", Vec2f(0.0f, -220.0f), Vec2f(0.3f, 180.0f), color_white);
 

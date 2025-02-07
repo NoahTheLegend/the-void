@@ -272,6 +272,43 @@ TileType server_onTileHit(CMap@ map, f32 damage, u32 index, TileType oldTileType
 			case CMap::tile_bpolishedmetal_d4:
 				return CMap::tile_empty;
 
+			// glass
+			case CMap::tile_glass:
+				return CMap::tile_glass_d0;
+
+			case CMap::tile_glass_v0:
+			case CMap::tile_glass_v1:
+			case CMap::tile_glass_v2:
+			case CMap::tile_glass_v3:
+			case CMap::tile_glass_v4:
+			case CMap::tile_glass_v5:
+			case CMap::tile_glass_v6:
+			case CMap::tile_glass_v7:
+			case CMap::tile_glass_v8:
+			case CMap::tile_glass_v9:
+			case CMap::tile_glass_v10:
+			case CMap::tile_glass_v11:
+			case CMap::tile_glass_v12:
+			case CMap::tile_glass_v13:
+			case CMap::tile_glass_v14:
+			{
+				Vec2f pos = map.getTileWorldPosition(index);
+				map.server_SetTile(pos, CMap::tile_glass_d0);
+
+				for (u8 i = 0; i < 4; i++)
+				{
+					glass_Update(map, map.getTileWorldPosition(index) + directions[i]);
+				}
+				return CMap::tile_glass_d0;
+			}
+
+			case CMap::tile_glass_d0:
+				return CMap::tile_glass_d1;
+			
+			case CMap::tile_glass_d1:
+				return CMap::tile_empty;
+
+			// bglass
 			case CMap::tile_bglass:
 				return CMap::tile_bglass_d0;
 
@@ -292,7 +329,6 @@ TileType server_onTileHit(CMap@ map, f32 damage, u32 index, TileType oldTileType
 			case CMap::tile_bglass_v14:
 			{
 				Vec2f pos = map.getTileWorldPosition(index);
-
 				map.server_SetTile(pos, CMap::tile_bglass_d0);
 
 				for (u8 i = 0; i < 4; i++)
@@ -527,6 +563,41 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 				OnSteelTileHit(map, index);
 				break;
 
+			case CMap::tile_glass:
+			{
+				Vec2f pos = map.getTileWorldPosition(index);
+
+				glass_SetTile(map, pos);
+				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION | Tile::LIGHT_SOURCE | Tile::LIGHT_PASSES);
+				map.RemoveTileFlag(index, Tile::WATER_PASSES | Tile::BACKGROUND);
+
+				break;
+			}
+			case CMap::tile_glass_v0:
+			case CMap::tile_glass_v1:
+			case CMap::tile_glass_v2:
+			case CMap::tile_glass_v3:
+			case CMap::tile_glass_v4:
+			case CMap::tile_glass_v5:
+			case CMap::tile_glass_v6:
+			case CMap::tile_glass_v7:
+			case CMap::tile_glass_v8:
+			case CMap::tile_glass_v9:
+			case CMap::tile_glass_v10:
+			case CMap::tile_glass_v11:
+			case CMap::tile_glass_v12:
+			case CMap::tile_glass_v13:
+			case CMap::tile_glass_v14:
+				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION | Tile::LIGHT_SOURCE | Tile::LIGHT_PASSES);
+				map.RemoveTileFlag(index, Tile::WATER_PASSES | Tile::BACKGROUND);
+
+				break;
+
+			case CMap::tile_glass_d0:
+			case CMap::tile_glass_d1:
+				OnGlassTileHit(map, index);
+				break;
+
 			case CMap::tile_bglass:
 			{
 				Vec2f pos = map.getTileWorldPosition(index);
@@ -556,7 +627,7 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 				break;
 
 			case CMap::tile_bglass_d0:
-				OnBackGlassTileHit(map, index);
+				OnBGlassTileHit(map, index);
 				break;
 
 			case CMap::tile_bice:
@@ -950,7 +1021,7 @@ u8 polishedmetal_GetMask(CMap@ map, Vec2f pos)
 
 	for (u8 i = 0; i < 4; i++)
 	{
-		if (checkPolishedMetalTile(map, pos + directions[i])) mask |= 1 << i;
+		if (checkPolishedMetalTile(map, pos + directions[i]) || checkGlassTile(map, pos + directions[i])) mask |= 1 << i;
 	}
 
 	return mask;
@@ -1038,6 +1109,94 @@ void OnBackPolishedMetalTileDestroyed(CMap@ map, u32 index)
 	}
 }
 
+void OnGlassTileHit(CMap@ map, u32 index)
+{
+	map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION | Tile::LIGHT_PASSES);
+
+	if (isClient())
+	{
+		Vec2f pos = map.getTileWorldPosition(index);
+
+		Sound::Play("GlassBreak2.ogg", pos, 1.0f, 1.0f);
+		glasssparks(pos, 5 + XORRandom(5));
+	}
+}
+
+void OnBGlassTileHit(CMap@ map, u32 index)
+{
+	map.AddTileFlag(index, Tile::BACKGROUND | Tile::LIGHT_PASSES | Tile::WATER_PASSES | Tile::LIGHT_SOURCE);
+
+	if (isClient())
+	{
+		Vec2f pos = map.getTileWorldPosition(index);
+
+		Sound::Play("GlassBreak2.ogg", pos, 1.0f, 1.0f);
+		glasssparks(pos, 3 + XORRandom(2));
+	}
+}
+
+void OnGlassTileDestroyed(CMap@ map, u32 index)
+{
+	if (isClient())
+	{
+		Vec2f pos = map.getTileWorldPosition(index);
+
+		Sound::Play("GlassBreak1.ogg", pos, 1.0f, 1.0f);
+		glasssparks(pos, 5 + XORRandom(3));
+	}
+}
+
+void glasssparks(Vec2f at, int amount)
+{
+	switch(XORRandom(4))
+	{
+		case 1:
+			at += Vec2f(4, 0);
+			break;
+		case 2:
+			at += Vec2f(0, 4);
+			break;
+		case 3:
+			at += Vec2f(8, 4);
+			break;
+		case 4:
+			at += Vec2f(4, 8);
+			break;
+	}
+	SColor[] colors =
+	{
+		SColor(255, 217, 242, 246),
+		SColor(255, 255, 255, 255),
+		SColor(255, 85, 119, 130),
+		SColor(255, 79, 145, 167),
+		SColor(255, 48, 60, 65),
+		SColor(255, 21, 27, 30)
+	};
+
+	if (isClient())
+	{
+		for (int i = 0; i < amount; i++)
+		{
+			Vec2f vel = getRandomVelocity(0.1f, 1.0f, 180.0f);
+			vel.y = -Maths::Abs(vel.y)+Maths::Abs(vel.x)/4.0f-2.0f-float(XORRandom(100))/100.0f;
+			ParticlePixel(at, vel, colors[XORRandom(6)], true);
+			makeGibParticle("GlassSparks.png", at, vel, 0, XORRandom(5)-1, Vec2f(4.0f, 4.0f), 0.0f, 1, "GlassBreak1.ogg");
+		}
+	}
+}
+
+u8 glass_GetMask(CMap@ map, Vec2f pos)
+{
+	u8 mask = 0;
+
+	for (u8 i = 0; i < 4; i++)
+	{
+		if (checkGlassTile(map, pos + directions[i]) || checkPolishedMetalTile(map, pos + directions[i])) mask |= 1 << i;
+	}
+
+	return mask;
+}
+
 u8 bglass_GetMask(CMap@ map, Vec2f pos)
 {
 	u8 mask = 0;
@@ -1050,6 +1209,16 @@ u8 bglass_GetMask(CMap@ map, Vec2f pos)
 	return mask;
 }
 
+void glass_SetTile(CMap@ map, Vec2f pos)
+{
+	map.SetTile(map.getTileOffset(pos), CMap::tile_glass + glass_GetMask(map, pos));
+
+	for (u8 i = 0; i < 4; i++)
+	{
+		glass_Update(map, pos + directions[i]);
+	}
+}
+
 void bglass_SetTile(CMap@ map, Vec2f pos)
 {
 	map.SetTile(map.getTileOffset(pos), CMap::tile_bglass + bglass_GetMask(map, pos));
@@ -1060,23 +1229,30 @@ void bglass_SetTile(CMap@ map, Vec2f pos)
 	}
 }
 
+void glass_Update(CMap@ map, Vec2f pos)
+{
+	u16 tile = map.getTile(pos).type;
+	if (isGlassTile(map, pos))
+		map.server_SetTile(pos,CMap::tile_glass+glass_GetMask(map,pos));
+}
+
 void bglass_Update(CMap@ map, Vec2f pos)
 {
 	u16 tile = map.getTile(pos).type;
-	if (checkBackGlassTile(map, pos))
+	if (isBGlassTile(map, pos))
 		map.server_SetTile(pos,CMap::tile_bglass+bglass_GetMask(map,pos));
 }
 
-void OnBackGlassTileHit(CMap@ map, u32 index)
+bool isGlassTile(CMap@ map, Vec2f pos)
 {
-	map.AddTileFlag(index, Tile::BACKGROUND | Tile::LIGHT_PASSES | Tile::WATER_PASSES | Tile::LIGHT_SOURCE);
+	u16 tile = map.getTile(pos).type;
+	return tile >= CMap::tile_glass && tile <= CMap::tile_glass_v14;
+}
 
-	if (isClient())
-	{
-		Vec2f pos = map.getTileWorldPosition(index);
-
-		Sound::Play("GlassBreak2.ogg", pos, 1.0f, 1.0f);
-	}
+bool isBGlassTile(CMap@ map, Vec2f pos)
+{
+	u16 tile = map.getTile(pos).type;
+	return tile >= CMap::tile_bglass && tile <= CMap::tile_bglass_v14;
 }
 
 // these are required only for getMask functions
@@ -1084,6 +1260,12 @@ bool checkPolishedMetalTile(CMap@ map, Vec2f pos)
 {
 	u16 tile = map.getTile(pos).type;
 	return tile >= CMap::tile_polishedmetal && tile <= CMap::tile_polishedmetal_v14;
+}
+
+bool checkGlassTile(CMap@ map, Vec2f pos) 
+{
+	u16 tile = map.getTile(pos).type;
+	return tile >= CMap::tile_glass && tile <= CMap::tile_glass_v14;
 }
 
 bool checkBackGlassTile(CMap@ map, Vec2f pos) 

@@ -6,7 +6,7 @@
 #include "KnockedCommon.as";
 #include "UtilityChecks.as";
 #include "CustomBlocks.as";
-#include "RayCasts.as";
+#include "UtilityChecks.as";
 
 void onInit(CMovement@ this)
 {
@@ -48,25 +48,8 @@ void onTick(CMovement@ this)
 	const f32 vellen = shape.vellen;
 	const bool onground = blob.isOnGround() || blob.isOnLadder();
 
-	if (is_client && getGameTime() % 3 == 0)
-	{
-		const string fallscreamtag = "_fallingscream";
-		if (vel.y > 0.2f && inProximity(blob, getLocalPlayerBlob()))
-		{
-			if (vel.y > BaseFallSpeed() * 1.8f && !blob.isInInventory())
-			{
-				if (!blob.hasTag(fallscreamtag))
-				{
-					blob.Tag(fallscreamtag);
-					Sound::Play("man_scream.ogg", pos);
-				}
-			}
-		}
-		else
-		{
-			blob.Untag(fallscreamtag);
-		}
-	}
+	bool has_gravity = false; // todo
+	f32 energy_capacity = 100.0f; // todo
 
 	u8 crouch_through = blob.get_u8("crouch_through");
 	if (crouch_through > 0)
@@ -220,6 +203,7 @@ void onTick(CMovement@ this)
 			moveVars.walljumped_side = Walljump::RIGHT;
 	}
 
+	bool in_proximity = inProximity(blob, getLocalPlayerBlob());
 	if (!blob.isOnCeiling() && !isknocked &&
 	        !blob.isOnLadder() && (up || left || right || down))  //key pressed
 	{
@@ -249,8 +233,6 @@ void onTick(CMovement@ this)
 		bool surface_below = isHardSolid(map,pos + Vec2f(y_ts, x_ts)) || isHardSolid(map,pos + Vec2f(-y_ts, x_ts));
 
 		bool surface = surface_left || surface_right;
-		bool in_proximity = inProximity(blob, getLocalPlayerBlob());
-
 		const f32 slidespeed = 2.45f;
 
 		// crouch through platforms and crates
@@ -519,11 +501,9 @@ void onTick(CMovement@ this)
 		}
 	}
 
-	//jumping
-
-	if (moveVars.jumpFactor > 0.01f && !isknocked)
+	// jumping
+	if (has_gravity && moveVars.jumpFactor > 0.01f && !isknocked)
 	{
-
 		if (onground)
 		{
 			moveVars.jumpCount = 0;
@@ -586,18 +566,9 @@ void onTick(CMovement@ this)
 
 			// sound
 
-			if (moveVars.jumpCount == 1 && is_client && in_proximity)
+			if (moveVars.jumpCount == 1 && is_client)
 			{
 				TileType tile = blob.getMap().getTile(blob.getPosition() + Vec2f(0.0f, blob.getRadius() + 4.0f)).type;
-
-				if (blob.getMap().isTileGroundStuff(tile))
-				{
-					blob.getSprite().PlayRandomSound("/EarthJump");
-				}
-				else
-				{
-					blob.getSprite().PlayRandomSound("/StoneJump");
-				}
 			}
 		}
 	}
@@ -617,137 +588,148 @@ void onTick(CMovement@ this)
 		blob.Untag("dont stop til ground");
 	}
 
+	// Compute basic input booleans (assumed defined: left, right, up, down, stop)
 	bool left_or_right = (left || right);
+	bool up_or_down = (up || down);
+
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// Heavy carrying slowdown (unchanged)
 	{
-		// carrying heavy
-		CBlob@ carryBlob = blob.getCarriedBlob();
-		if (carryBlob !is null)
-		{
-			if (carryBlob.hasTag("medium weight"))
-			{
-				moveVars.walkFactor *= 0.8f;
-				moveVars.jumpFactor *= 0.8f;
-			}
-			else if (carryBlob.hasTag("heavy weight"))
-			{
-				moveVars.walkFactor *= 0.6f;
-				moveVars.jumpFactor *= 0.5f;
-			}
-		}
-
-		bool facingleft = blob.isFacingLeft();
-		bool stand = blob.isOnGround() || blob.isOnLadder();
-		Vec2f walkDirection;
-		const f32 turnaroundspeed = 1.3f;
-		const f32 normalspeed = 1.0f;
-		const f32 backwardsspeed = 0.8f;
-
-		if (right)
-		{
-			if (vel.x < -0.1f)
-			{
-				walkDirection.x += turnaroundspeed;
-			}
-			else if (facingleft)
-			{
-				walkDirection.x += backwardsspeed;
-			}
-			else
-			{
-				walkDirection.x += normalspeed;
-			}
-		}
-
-		if (left)
-		{
-			if (vel.x > 0.1f)
-			{
-				walkDirection.x -= turnaroundspeed;
-			}
-			else if (!facingleft)
-			{
-				walkDirection.x -= backwardsspeed;
-			}
-			else
-			{
-				walkDirection.x -= normalspeed;
-			}
-		}
-
-		f32 force = 1.0f;
-		f32 lim = 0.0f;
-
-		{
-			if (left_or_right)
-			{
-				lim = moveVars.walkSpeed;
-				if (!onground)
-				{
-					lim = moveVars.walkSpeedInAir;
-				}
-
-				lim *= moveVars.walkFactor * Maths::Abs(walkDirection.x);
-			}
-
-			Vec2f stop_force;
-
-			bool greater = vel.x > 0;
-			f32 absx = greater ? vel.x : -vel.x;
-
-			if (moveVars.walljumped)
-			{
-				moveVars.stoppingFactor *= 1.5f;
-				moveVars.walkFactor *= 0.6f;
-
-				//hack - fix gliding
-				if (vel.y > 0 && blob.hasTag("shielded"))
-					moveVars.walkFactor *= 0.6f;
-			}
-
-			f32 ice_stop_factor = 1.0f;
-			f32 ice_move_factor = 1.0f;
-			TileType tile_1 = 0;
-			TileType tile_2 = 0;
-			getSurfaceTiles(blob, tile_1, tile_2);
-			if (isTileAnyIce(tile_1) || isTileAnyIce(tile_2))
-			{
-				ice_stop_factor = 0.05f;
-				ice_move_factor = 0.35f;
-			}
-
-			bool stopped = false;
-			if (absx > lim)
-			{
-				if (stop) //stopping
-				{
-					stopped = true;
-					stop_force.x -= (absx - lim) * (greater ? 1 : -1);
-
-					stop_force.x *= moveVars.overallScale * 30.0f * ice_stop_factor * moveVars.stoppingFactor *
-					                (onground ? moveVars.stoppingForce : moveVars.stoppingForceAir * moveVars.stoppingForceAirFactor);
-
-					if (absx > 3.0f)
-					{
-						f32 extra = (absx - 3.0f);
-						f32 scale = (1.0f / ((1 + extra) * 2));
-						stop_force.x *= scale;
-					}
-
-					blob.AddForce(stop_force);
-				}
-			}
-
-			if (!isknocked && ((absx < lim) || left && greater || right && !greater))
-			{
-				force *= moveVars.walkFactor * moveVars.overallScale * (onground ? 30.0f : 15.0f) * ice_move_factor;
-				if (Maths::Abs(force) > 0.01f)
-				{
-					blob.AddForce(walkDirection * force);
-				}
-			}
-		}
-
+	    CBlob@ carryBlob = blob.getCarriedBlob();
+	    if (carryBlob !is null)
+	    {
+	        if (carryBlob.hasTag("medium weight"))
+	        {
+	            moveVars.walkFactor *= 0.8f;
+	            moveVars.jumpFactor *= 0.8f;
+	        }
+	        else if (carryBlob.hasTag("heavy weight"))
+	        {
+	            moveVars.walkFactor *= 0.6f;
+	            moveVars.jumpFactor *= 0.5f;
+	        }
+	    }
 	}
+
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// Determine desired movement on each axis
+
+	// Horizontal movement logic
+	bool facingleft = blob.isFacingLeft();
+	f32 horzInput = 0.0f;
+	if (right)
+	{
+	    if (vel.x < -0.1f)
+	        horzInput += 1.3f;         // turnaround speed
+	    else if (facingleft)
+	        horzInput += 0.8f;         // backward speed if facing left
+	    else
+	        horzInput += 1.0f;         // normal speed
+	}
+
+	if (left)
+	{
+	    if (vel.x > 0.1f)
+	        horzInput -= 1.3f;         // turnaround speed
+	    else if (!facingleft)
+	        horzInput -= 0.8f;         // backward speed if facing right
+	    else
+	        horzInput -= 1.0f;         // normal speed
+	}
+
+	// Vertical movement logic
+	f32 vertInput = 0.0f;
+	if (up)
+	    vertInput -= 1.0f;             // up: negative y
+	if (down)
+	    vertInput += 1.0f;             // down: positive y
+
+	Vec2f inputForce(horzInput, vertInput);
+
+	if (has_gravity)
+	{
+	    if (moveVars.walljumped)
+	    {
+	        moveVars.stoppingFactor *= 1.5f;
+	        moveVars.walkFactor *= 0.6f;
+
+	        // Hack – fix gliding when shielded
+	        if (vel.y > 0 && blob.hasTag("shielded"))
+	            moveVars.walkFactor *= 0.6f;
+	    }
+	}
+
+	if (energy_capacity > 0 && (left_or_right || up_or_down))
+	{
+	    // --- Calculate per-axis speed limits based on input strength.
+	    // Using the absolute value of the input on each axis avoids cancellation.
+	    f32 horzLimit = moveVars.walkSpeedInAir * moveVars.walkFactor * Maths::Abs(horzInput);
+	    f32 vertLimit = moveVars.walkSpeedInAir * moveVars.walkFactor * Maths::Abs(vertInput);
+
+	    // Get current speeds
+	    f32 currentHorzSpeed = Maths::Abs(vel.x);
+	    f32 currentVertSpeed = Maths::Abs(vel.y);
+
+	    // ~~~~~~~~~~~~~~~
+	    // Apply stopping (braking) force if exceeding limit
+
+	    // Horizontal stopping force
+	    if (currentHorzSpeed > horzLimit && stop)
+	    {
+	        f32 excess = currentHorzSpeed - horzLimit;
+	        // Reverse force direction (if moving right, force is negative, and vice-versa)
+	        f32 stopForceX = excess * (vel.x > 0 ? -1.0f : 1.0f);
+	        stopForceX *= moveVars.overallScale * 30.0f * moveVars.stoppingFactor *
+	                        (onground ? moveVars.stoppingForce : moveVars.stoppingForceAir * moveVars.stoppingForceAirFactor);
+	        if (currentHorzSpeed > 3.0f)
+	        {
+	            f32 extra = currentHorzSpeed - 3.0f;
+	            f32 scale = 1.0f / ((1 + extra) * 2);
+	            stopForceX *= scale;
+	        }
+	        blob.AddForce(Vec2f(stopForceX, 0));
+	    }
+
+	    // Vertical stopping force
+	    if (currentVertSpeed > vertLimit && stop)
+	    {
+	        f32 excess = currentVertSpeed - vertLimit;
+	        f32 stopForceY = excess * (vel.y > 0 ? -1.0f : 1.0f);
+	        stopForceY *= moveVars.overallScale * 30.0f * moveVars.stoppingFactor *
+	                        (onground ? moveVars.stoppingForce : moveVars.stoppingForceAir * moveVars.stoppingForceAirFactor);
+	        if (currentVertSpeed > 3.0f)
+	        {
+	            f32 extra = currentVertSpeed - 3.0f;
+	            f32 scale = 1.0f / ((1 + extra) * 2);
+	            stopForceY *= scale;
+	        }
+	        blob.AddForce(Vec2f(0, stopForceY));
+	    }
+
+	    // ~~~~~~~~~~~~~~~
+	    // Apply movement (driving) force if not knocked and if below limits
+	    if (!isknocked)
+	    {
+	        // For horizontal: also allow force if moving opposite to input (to help turning around)
+	        if (currentHorzSpeed < horzLimit ||
+	            (horzInput < 0 && vel.x > 0) || (horzInput > 0 && vel.x < 0))
+	        {
+	            f32 horzDrive = horzInput * moveVars.walkFactor * moveVars.overallScale *
+	                            (onground && has_gravity ? 30.0f : 15.0f);
+	            blob.AddForce(Vec2f(horzDrive, 0));
+	        }
+
+	        // For vertical: similar logic applies
+	        if (currentVertSpeed < vertLimit ||
+	            (vertInput < 0 && vel.y > 0) || (vertInput > 0 && vel.y < 0))
+	        {
+	            f32 vertDrive = vertInput * moveVars.walkFactor * moveVars.overallScale *
+	                            (onground && has_gravity ? 30.0f : 15.0f);
+	            blob.AddForce(Vec2f(0, vertDrive));
+	        }
+	    }
+	}
+
 
 	//falling count
 	if (!onground && vel.y > 0.1f)

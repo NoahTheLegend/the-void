@@ -10,7 +10,7 @@ int warnTime = 0;
 int lastMoveTime = 0;
 
 const uint checkInterval = 90;
-const uint totalToKickSeconds = 60 * 2 + 30;
+const uint totalToKickSeconds = 60 * 10 + 30;
 const uint warnToKickSeconds = 60;
 const uint idleToWarnSeconds = totalToKickSeconds - warnToKickSeconds;
 

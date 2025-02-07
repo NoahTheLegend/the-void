@@ -8,7 +8,7 @@ const string iconsFilename = "HumanIcons.png";
 const int slotsSize = 6;
 
 const u8[] font_sizes = {14,18,12,10,13};
-const string[] font_names = {"RockwellMT", "RockwellMT-Bold", "CascadiaCodePL", "CascadiaCodePL", "CascadiaCodePL-Bold"};
+const string[] font_names = {"RockwellMT", "CascadiaCodePL", "CascadiaCodePL", "CascadiaCodePL", "CascadiaCodePL-Bold"};
 
 void onInit(CSprite@ this)
 {
@@ -35,7 +35,6 @@ void onInit(CSprite@ this)
 void onTick(CBlob@ this)
 {
 	getHUD().HideCursor();
-	UpdateComponents(this);
 }
 
 void onAttach(CBlob@ this, CBlob@ attached, AttachmentPoint@ ap)

@@ -6,6 +6,7 @@
 #include "MakeSeed.as";
 #include "MakeCrate.as";
 #include "MakeScroll.as";
+#include "UtilityChecks.as";
 
 const bool chatCommandCooldown = false; // enable if you want cooldown on your server
 const uint chatCommandDelay = 3 * 30; // Cooldown in seconds
@@ -45,7 +46,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 	string errorMessage = ""; // so errors can be printed out of wasCommandSuccessful is false
 	SColor errorColor = SColor(255,255,0,0); // ^
 
-	if (!isMod && this.hasScript("Survival_Rules.as") || chatCommandCooldown) // chat command cooldown timer
+	if (!isMod && this.hasScript("Rules.as") || chatCommandCooldown) // chat command cooldown timer
 	{
 		uint lastChatTime = 0;
 		if (blob.exists("chat_last_sent"))
@@ -413,44 +414,32 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 bool onClientProcessChat(CRules@ this, const string& in text_in, string& out text_out, CPlayer@ player)
 {
 	CBlob@ local = getLocalPlayerBlob();
-	CBlob@ pb = player.getBlob();
+	CBlob@ sender = player.getBlob();
+	bool radio_connection = hasRadio(local) && hasRadio(sender);
 
 	// dead players can talk
-	bool sender_dead = pb is null || pb.hasTag("dead");
-	bool in_range = local !is null && pb !is null && inProximity(local, pb);
+	bool in_range = local !is null && sender !is null
+		&& (inProximity(local, sender) || radio_connection);
 
-	// dead players can see the chat
-	if (in_range || local is null)
+	// we always see the messages when we see the player, if both of us have radio,
+	// when we are dead, or when the sender is dead
+	bool add_to_chat = in_range || local is null || sender is null;
+
+	if (add_to_chat)
 	{
-		bool add_to_chat = false;
+		string clantag = player.getClantag();
+		if (clantag != "") clantag = clantag + " ";
+		string formatted_name = "["+clantag + player.getCharacterName()+"] ";
+		client_AddToChat(formatted_name + text_in, SColor(255,0,0,0));
 
-		for (u8 i = 0; i < getPlayersCount(); i++)
-		{
-			CPlayer@ p = getPlayer(i);
-			if (p is null) continue;
+		if (sender !is null && inProximity(local, sender))
+			sender.Chat(text_in);
 
-			CBlob@ b = p.getBlob();
-			if (b is null || b is local) continue;
-
-			if (inProximity(b, local))
-			{
-				add_to_chat = true;
-				break;
-			}
-		}
-
-		if (add_to_chat)
-		{
-			string formatted_name = "["+player.getClantag()+" "+player.getCharacterName()+"] ";
-			client_AddToChat(formatted_name + textIn, SColor(255,0,0,0));
-
-			if (!sender_dead && inProximity(local, pb)) pb.Chat(textIn);
-			return false;
-		}
-		else
-		{
-			client_AddToChat("Nobody saw your message.", SColor(255,255,0,0));
-		}
+		return false;
+	}
+	else
+	{
+		client_AddToChat("Nobody saw your message.", SColor(255,255,0,0));
 	}
 
 	return true;

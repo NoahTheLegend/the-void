@@ -17,8 +17,7 @@ void onInit(CRules@ this)
 		getSecurity().reloadSecurity();
 	}
 
-	sv_gravity = 9.81f;
-	particles_gravity.y = 0.25f;
+	particles_gravity.y = 0.0f;
 	sv_visiblity_scale = 1.25f;
 	cc_halign = 2;
 	cc_valign = 2;
@@ -40,7 +39,7 @@ void onInit(CRules@ this)
 
 	//also restart stuff
 	onRestart(this);
-}
+}	
 
 bool need_sky_check = true;
 void onRestart(CRules@ this)
@@ -65,6 +64,8 @@ void onRestart(CRules@ this)
 
 void onTick(CRules@ this)
 {
+	sv_gravity = 0; // 9.81f
+	
 	//TODO: figure out a way to optimise so we don't need to keep running this hook
 	if (need_sky_check)
 	{

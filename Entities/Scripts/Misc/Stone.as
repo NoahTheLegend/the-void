@@ -61,28 +61,21 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
         normal.Normalize();
 		TileType tile = map.getTile(this.getPosition() - normal * 10).type;
 
-		if (isTileSnow(tile))
+		if (heavy)
 		{
-			Sound::Play("StepSnow"+(XORRandom(4)+1)+".ogg", this.getPosition(), 0.75f, 0.7f+XORRandom(21)*0.01f);
+			if (vellen > 3.0f)
+			{
+				this.getSprite().PlayRandomSound("/WoodHeavyHit", volume);
+			}
+			else
+			{
+				this.getSprite().PlayRandomSound("/WoodHeavyBump", volume);
+			}
 		}
-        else
-        {
-		    if (heavy)
-		    {
-		    	if (vellen > 3.0f)
-		    	{
-		    		this.getSprite().PlayRandomSound("/WoodHeavyHit", volume);
-		    	}
-		    	else
-		    	{
-		    		this.getSprite().PlayRandomSound("/WoodHeavyBump", volume);
-		    	}
-		    }
-		    else
-		    {
-		    	this.getSprite().PlayRandomSound("/WoodLightBump", volume);
-		    }
-        }
+		else
+		{
+			this.getSprite().PlayRandomSound("/WoodLightBump", volume);
+		}
 	}
 
 	const f32 base = heavy ? 5.0f : 7.0f;
