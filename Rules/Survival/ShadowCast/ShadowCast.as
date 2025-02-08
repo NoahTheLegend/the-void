@@ -44,7 +44,7 @@ void onReload(CRules@ this)
 		int id = this.get_s32("render_id");
 		if(id != -1) Render::RemoveScript(id);
 
-        id = Render::addScript(Render::layer_postworld, getCurrentScriptName(), "Render", 0);
+        id = Render::addScript(Render::layer_prehud, getCurrentScriptName(), "Render", 10);
 		this.set_s32("render_id", id);
 
         shadow_material.AddTexture("shadow_tex");

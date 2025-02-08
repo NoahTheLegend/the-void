@@ -218,8 +218,8 @@ class PNGLoader
 			case map_colors::tile_bpolishedmetal:   map.SetTile(offset, CMap::tile_bpolishedmetal);   break;
 
 			// blobs	
-			case map_colors::locker:     			spawnBlob(map, "locker", offset); break;
-			case map_colors::barrel:     			spawnBlob(map, "barrel", offset); break;
+			case map_colors::locker:     			autotile(offset); spawnBlob(map, "locker", offset); break;
+			case map_colors::barrel:     			autotile(offset); spawnBlob(map, "barrel", offset); break;
 
 			// Tiles
 			case map_colors::tile_ground:           map.SetTile(offset, CMap::tile_ground);           break;
@@ -570,6 +570,28 @@ void PlaceMostLikelyTile(CMap@ map, int offset)
 		         (neighborhood.find(CMap::tile_ground_back) != -1))
 		{
 			map.SetTile(offset, CMap::tile_ground_back);
+		}
+		// metal tiles
+		else if ((neighborhood.find(CMap::tile_steel) != -1 ||
+				  neighborhood.find(CMap::tile_bsteel) != -1 ||
+				  neighborhood.find(CMap::tile_polishedmetal) != -1 ||
+				  neighborhood.find(CMap::tile_bpolishedmetal) != -1 ||
+				  neighborhood.find(CMap::tile_caution) != -1))
+		{
+			map.SetTile(offset, CMap::tile_bsteel);
+		}
+		// ice
+		else if ((neighborhood.find(CMap::tile_ice) != -1 ||
+				  neighborhood.find(CMap::tile_thick_ice) != -1 ||
+				  neighborhood.find(CMap::tile_bice) != -1))
+		{
+			map.SetTile(offset, CMap::tile_bice);
+		}
+		// glass
+		else if ((neighborhood.find(CMap::tile_glass) != -1 ||
+				  neighborhood.find(CMap::tile_bglass) != -1))
+		{
+			map.SetTile(offset, CMap::tile_bglass);
 		}
 	}
 	else if(isSolid(map, down) && (map.isTileGrass(left) || map.isTileGrass(right)))

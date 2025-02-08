@@ -5,6 +5,7 @@
 #include "KnockedCommon.as";
 #include "FallDamageCommon.as";
 #include "CustomBlocks.as";
+#include "UtilityChecks.as";
 
 const u8 knockdown_time = 12;
 
@@ -67,11 +68,9 @@ void onCollision(CBlob@ this, CBlob@ blob, bool solid, Vec2f normal, Vec2f point
 		if (!this.hasTag("should be silent") && playsound)
 		{				
 			if (this.getHealth() > damage) //not dead
-				Sound::Play("/BreakBone", this.getPosition());
+				playSoundInProximity(this, "/BreakBone", 1.0f, 1.0f);
 			else
-			{
-				Sound::Play("/FallDeath.ogg", this.getPosition());
-			}
+				playSoundInProximity(this, "/FallDeath", 1.0f, 1.0f);
 		}
 	}
 }

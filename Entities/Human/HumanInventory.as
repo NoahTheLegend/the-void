@@ -3,7 +3,6 @@
 #include "Help.as";
 #include "HumanRecipes.as";
 #include "KnockedCommon.as";
-#include "UtilityChecks.as";
 
 namespace Human
 {
@@ -55,10 +54,7 @@ void onInit(CInventory@ this)
 		blob.set(blocks_property, blocks);
 	}
 
-	if (!blob.exists(inventory_offset))
-	{
-		blob.set_Vec2f(inventory_offset, Vec2f(0, 174));
-	}
+	blob.set_Vec2f(inventory_offset, Vec2f(0, 0));
 
 	AddIconToken("$HUMAN_CLEAR$", "HumanIcons.png", Vec2f(32, 32), 2);
 
@@ -186,10 +182,9 @@ void onCreateInventoryMenu(CInventory@ this, CBlob@ forBlob, CGridMenu@ menu)
 
 	const Vec2f INVENTORY_CE = this.getInventorySlots() * GRID_SIZE / 2 + menu.getUpperLeftPosition();
 	blob.set_Vec2f("backpack position", INVENTORY_CE);
-
 	blob.ClearGridMenusExceptInventory();
 
-	MakeBlocksMenu(this, INVENTORY_CE);
+	//MakeBlocksMenu(this, INVENTORY_CE);
 }
 
 void onCommand(CInventory@ this, u8 cmd, CBitStream@ params)
@@ -217,7 +212,7 @@ void onCommand(CInventory@ this, u8 cmd, CBitStream@ params)
 			{
 				if (blob.isMyPlayer())
 				{
-					playSoundInProximity(blob, "/NoAmmo", 0.5f);
+					blob.getSprite().PlaySound("NoAmmo.ogg", 0.5);
 				}
 
 				return;

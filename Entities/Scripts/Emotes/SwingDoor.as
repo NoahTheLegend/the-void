@@ -6,6 +6,7 @@
 #include "DoorCommon.as"
 #include "ShadowCastHooks.as"
 #include "UtilityChecks.as"
+#include "UtilityChecks.as";
 
 void onInit(CBlob@ this)
 {
@@ -59,8 +60,7 @@ void onSetStatic(CBlob@ this, const bool isStatic)
     setOpen(this, false);
 
 	if (!isStatic) return;
-
-	this.getSprite().PlaySound("/build_door.ogg");
+	playSoundInProximity(this, "/build_door.ogg", 1.0f, 1.0f);
 	
 	int touchingBlobs = this.getTouchingCount();
 	for (int a = 0; a < touchingBlobs; a++)
@@ -260,7 +260,7 @@ void MakeDamageFrame(CBlob@ this, bool repaired=false)
 
 		if(repaired)
 		{
-			sprite.PlaySound("/build_door.ogg");
+			playSoundInProximity(this, "/build_door.ogg", 1.0f, 1.0f);
 		}
 	}
 }

@@ -34,7 +34,12 @@ class GunSettings
 	int G_BACK_T;  //Should we recoil the arm back time? (aim goes up, then back down with this, if > 0, how long should it last)
 
 	string FIRE_SOUND;   //Sound when shooting
+	f32 FIRE_VOLUME;
+	f32 FIRE_PITCH; //Pitch of the shooting sound
+	f32 FIRE_PITCH_RANDOM; //Random pitch of the shooting sound
 	string RELOAD_SOUND; //Sound when reloading
+	f32 RELOAD_PITCH; //Pitch of the reloading sound
+	f32 RELOAD_PITCH_RANDOM; //Random pitch of the reloading sound
 	string AMMO_BLOB; //Ammunition the gun takes
 
 	float B_DAMAGE; //1.0f is 1 heart
@@ -106,8 +111,13 @@ class GunSettings
 		G_BACK_T  = 3;
 
 		//Sound
+		FIRE_VOLUME = 1.0f;
 		FIRE_SOUND   = "RifleFire.ogg";
 		RELOAD_SOUND = "RifleReload.ogg";
+		FIRE_PITCH = 1.0f;
+		FIRE_PITCH_RANDOM = 0.1f;
+		RELOAD_PITCH = 1.0f;
+		RELOAD_PITCH_RANDOM = 0.1f;
 
 		//Offset
 		MUZZLE_OFFSET = Vec2f(-10, 0);
@@ -116,8 +126,30 @@ class GunSettings
 
 f32 getAimAngle(CBlob@ this, CBlob@ holder)
 {
-	Vec2f aimvector = holder.getAimPos() - (this.hasTag("place45") /*&& this.hasTag("a1"))*/ ? holder.getInterpolatedPosition() : this.getInterpolatedPosition());
+	Vec2f aimpos;
+	if (holder.isMyPlayer() && holder.getControls() !is null)
+	{
+		aimpos = getDriver().getWorldPosFromScreenPos(holder.getControls().getInterpMouseScreenPos());
+	}
+	else
+	{
+		aimpos = holder.getAimPos();
+	}
+
+	Vec2f holderpos = holder.getInterpolatedPosition();
+	Vec2f aimvector = holder.getAimPos() - (this.hasTag("place45") ? holderpos : this.getInterpolatedPosition());
+
+	if (aimvector.Length() < holder.getRadius())
+	{
+		aimvector = aimpos - holderpos;
+	}
+
 	f32 angle = holder.isFacingLeft() ? -aimvector.Angle() + 180.0f : -aimvector.Angle();
-	if (holder.isAttached()) this.SetFacingLeft(holder.isFacingLeft());
+
+	if (holder.isAttached())
+	{
+		this.SetFacingLeft(holder.isFacingLeft());
+	}
+
 	return angle;
 }

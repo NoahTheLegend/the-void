@@ -1,5 +1,6 @@
 #include "Hitters.as"
 #include "CustomBlocks.as"
+#include "UtilityChecks.as";
 
 void onInit(CBlob@ this)
 {
@@ -12,7 +13,7 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 	{
 		if (hitterBlob !is this)
 		{
-			this.getSprite().PlaySound("dig_stone", Maths::Min(1.25f, Maths::Max(0.5f, damage)));
+			playSoundInProximity(this, "dig_stone", Maths::Min(1.25f, Maths::Max(0.5f, damage)), 1.0f);
 		}
 
 		makeGibParticle("GenericGibs", worldPoint, getRandomVelocity((this.getPosition() - worldPoint).getAngle(), 1.0f + damage, 90.0f) + Vec2f(0.0f, -2.0f),
@@ -27,11 +28,12 @@ void onGib(CSprite@ this)
 {
 	if (this.getBlob().hasTag("heavy weight"))
 	{
-		this.PlaySound("WoodDestruct");
+		playSoundInProximity(this.getBlob(), "WoodDestruct");
 	}
 	else
 	{
 		this.PlaySound("LogDestruct");
+		playSoundInProximity(this.getBlob(), "LogDestruct");
 	}
 }
 

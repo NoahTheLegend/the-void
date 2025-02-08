@@ -12,6 +12,8 @@
 #include "BulletCase.as";
 #include "Recoil.as";
 #include "CustomBlocks.as";
+#include "UtilityChecks.as";
+#include "TextureCreation.as";
 
 const uint8 NO_AMMO_INTERVAL = 25;
  
@@ -49,6 +51,18 @@ void onInit(CBlob@ this)
 	this.Tag("weapon");
 	this.Tag("no shitty rotation reset");
 	this.Tag("hopperable");
+
+	if (!this.exists("laser_texture")) this.set_string("laser_texture", "Laser_Blue.png");
+	if (!this.exists("laser_distance")) this.set_f32("laser_distance", 32.0f);
+	if (!this.exists("falloff_start")) this.set_f32("falloff_start", 16.0f);
+	if (!this.exists("falloff_max")) this.set_f32("falloff_max", 1.0f);
+	if (!this.exists("laser_offset")) this.set_Vec2f("laser_offset", Vec2f(0,0));
+	this.set_Vec2f("laser_hitpos", Vec2f(-1, -1));
+
+	if (isClient() && this.hasTag("laser"))
+	{
+		int cb_id = Render::addBlobScript(Render::layer_prehud, this, "StandardFire.as", "laserEffects");
+	}
 
 	GunSettings@ settings;
 	this.get("gun_settings", @settings);
@@ -102,15 +116,16 @@ void onInit(CBlob@ this)
 	{
 		sprite.SetEmitSound(settings.FIRE_SOUND);
 		sprite.SetEmitSoundVolume(this.exists("CustomShootVolume") ? this.get_f32("CustomShootVolume") : 2.0f);
+		sprite.SetEmitSoundSpeed(settings.FIRE_PITCH + XORRandom(settings.FIRE_PITCH_RANDOM*100)/100.0f);
 		sprite.SetEmitSoundPaused(true);
 	}
-
+/*
 	// Required or stuff breaks due to wonky mouse syndrome
 #ifndef GUNS
 	if (isServer())
 		getControls().setMousePosition(Vec2f(0,0));
 #endif
-
+*/
 	if (!this.exists("CustomFlash") || (this.exists("CustomFlash") && !this.get_string("CustomFlash").empty()))
 	{
 		// Determine muzzleflash sprite
@@ -145,8 +160,93 @@ void onInit(CBlob@ this)
 	}*/
 }
 
+void laserEffects(CBlob@ this, int id)
+{
+	if (this.isInInventory()) return;
+	//if (!this.get_bool("in_proximity")) return;
+
+	string laser_texture = this.get_string("laser_texture");
+	f32 laser_distance = this.get_f32("laser_distance");
+	f32 falloff_start = this.get_f32("falloff_start");
+	f32 falloff_max = this.get_f32("falloff_max");
+	Vec2f laser_offset = this.get_Vec2f("laser_offset");
+	Vec2f laser_hitpos = this.get_Vec2f("laser_hitpos");
+
+	f32 angle = this.getAngleDegrees();
+	if (this.isFacingLeft())
+	{
+		angle += 180;
+		laser_offset.y = -laser_offset.y;
+	}
+
+	Vec2f thisPos = this.getInterpolatedPosition() + laser_offset.RotateBy(angle);
+	Vec2f endPos = thisPos + Vec2f(laser_distance, 0).RotateBy(angle);
+
+	if (laser_hitpos != Vec2f(-1, -1))
+	{
+		endPos = laser_hitpos;
+		laser_distance = (endPos - thisPos).Length();
+	}
+
+	Vec2f[] v_pos;
+	Vec2f[] v_uv;
+	SColor[] v_col;
+	
+	f32 halfWidth = 0.5f; // Adjust the width of the laser
+	for (f32 i = 0; i < laser_distance; i += 1.0f)
+	{
+		Vec2f currPos = thisPos + Vec2f(i, 0).RotateBy(angle);
+		f32 alpha = 1.0f;
+		if (i > falloff_start)
+		{
+			alpha = 1.0f - ((i - falloff_start) / (laser_distance - falloff_start)) * falloff_max;
+		}
+		alpha = Maths::Clamp(alpha, 0.0f, 1.0f);
+
+		SColor color = SColor(uint8(alpha * 255), 255, 255, 255);
+
+		v_pos.push_back(currPos + Vec2f(-halfWidth, -halfWidth).RotateBy(angle));
+		v_uv.push_back(Vec2f(0, 0));
+		v_col.push_back(color);
+
+		v_pos.push_back(currPos + Vec2f(halfWidth, -halfWidth).RotateBy(angle));
+		v_uv.push_back(Vec2f(1, 0));
+		v_col.push_back(color);
+
+		v_pos.push_back(currPos + Vec2f(halfWidth, halfWidth).RotateBy(angle));
+		v_uv.push_back(Vec2f(1, 1));
+		v_col.push_back(color);
+
+		v_pos.push_back(currPos + Vec2f(-halfWidth, halfWidth).RotateBy(angle));
+		v_uv.push_back(Vec2f(0, 1));
+		v_col.push_back(color);
+	}
+
+	Render::QuadsColored(laser_texture, -10.0f, v_pos, v_uv, v_col);
+}
+
 void onTick(CBlob@ this)
 {
+	this.set_bool("in_proximity", inProximity(this, getLocalPlayerBlob()));
+	if (this.hasTag("laser"))
+	{
+		this.set_Vec2f("laser_hitpos", Vec2f(-1, -1));
+
+		HitInfo@[] hitInfos;
+		if (getMap().getHitInfosFromRay(this.getPosition(), (this.isFacingLeft() ? 180 : 0) + this.getAngleDegrees(), this.get_f32("laser_distance"), this, @hitInfos))
+		{
+			for (uint i = 0; i < hitInfos.length; i++)
+			{
+				HitInfo@ hi = hitInfos[i];
+				if (hi.blob is null)
+				{
+					this.set_Vec2f("laser_hitpos", hi.hitpos);
+					break;
+				}
+			}
+		}
+	}
+
 	if (this.hasTag("a1") && getGameTime() >= this.get_u32("disable_a1")) this.Untag("a1");
 	if (this.hasTag("hold") && getGameTime() >= this.get_u32("disable_hold")) this.Untag("hold");
 	// Server will always get put back to sleep (doesnt need to run any of this)
@@ -171,27 +271,6 @@ void onTick(CBlob@ this)
 				this.Tag("a1");
 				this.set_u32("disable_a1", getGameTime()+t);
 			}
-			//if (point.isKeyPressed(key_action1) || isBot)
-			//{
-			//	u8 t = this.get_u8("holdtime");
-			//	
-			//	this.Tag("hold");
-			//	this.set_u32("disable_hold", getGameTime()+t);
-			//}
-			//if (!this.hasTag("a1") && !this.hasTag("hold")) 
-			//{
-			//	if (holder.isFacingLeft())
-			//	{
-			//		aimangle = 150+180 + Maths::Floor(tempangle/9);
-			//	}
-			//	else 
-			//	{
-			//		f32 dif = 0; // needed to compensate *circled* direction jump from 0 to 360
-			//		if (tempangle > -360.0f && tempangle < -180.0f) dif = 42.0f;
-			//		aimangle = 30+dif + Maths::Floor(tempangle/9);
-			//		//if (getGameTime()%30==0)printf(""+(tempangle));
-			//	}
-			//}
 
 			this.set_f32("gun_recoil_current", Maths::Lerp(this.get_f32("gun_recoil_current"), 0, 0.45f));
 
@@ -214,9 +293,9 @@ void onTick(CBlob@ this)
 					   point.isKeyPressed(key_action1) || holder.isKeyPressed(key_action1)); //semiautomatic
 
 			// Sound
-			const f32 reload_pitch = this.exists("CustomReloadPitch") ? this.get_f32("CustomReloadPitch") : 1.0f;
+			const f32 reload_pitch = settings.RELOAD_PITCH + XORRandom(settings.RELOAD_PITCH_RANDOM*100)/100.0f;
 			const f32 cycle_pitch  = this.exists("CustomCyclePitch")  ? this.get_f32("CustomCyclePitch")  : 1.0f;
-			const f32 shoot_volume = this.exists("CustomShootVolume") ? this.get_f32("CustomShootVolume") : 2.0f;
+			const f32 shoot_volume = settings.FIRE_VOLUME;
 
 			// Loop firing sound
 			if (this.hasTag("CustomSoundLoop"))
@@ -243,7 +322,7 @@ void onTick(CBlob@ this)
 					// Custom cycle sequence 
 					if ((actionInterval == settings.FIRE_INTERVAL / 2) && this.get_bool("justShot"))
 					{
-						sprite.PlaySound(this.get_string("CustomCycle"));
+						playSoundInProximity(this, this.get_string("CustomCycle"));
 						//ParticleCase2(casing, this.getPosition(), this.isFacingLeft() ? oAngle : aimangle);
 						this.set_bool("justShot", false);
 					}
@@ -266,7 +345,8 @@ void onTick(CBlob@ this)
 
 				if (HasAmmo(this) && this.get_u8("clip") < settings.TOTAL) 
 				{
-					if (!this.hasTag("CustomShotgunReload")) sprite.PlaySound(settings.RELOAD_SOUND, 1.0f, reload_pitch);
+					if (!this.hasTag("CustomShotgunReload"))
+						playSoundInProximity(this, settings.RELOAD_SOUND, 1.0f, reload_pitch);
 				}
 			}
 			else if (this.get_bool("doReload")) // End of reload
@@ -280,12 +360,12 @@ void onTick(CBlob@ this)
 				{
 					if (HasAmmo(this) && this.get_u8("clip") < settings.TOTAL)
 					{
-						sprite.PlaySound(settings.RELOAD_SOUND, 1.0f, reload_pitch);
+						playSoundInProximity(this, settings.RELOAD_SOUND, 1.0f, reload_pitch);
 					}
 					else if (this.exists("CustomReloadingEnding"))
 					{
 						actionInterval = settings.RELOAD_TIME * 2;
-						sprite.PlaySound(this.get_string("CustomReloadingEnding"), 1.0f, cycle_pitch);
+						playSoundInProximity(this, this.get_string("CustomReloadingEnding"), 1.0f, cycle_pitch);
 					}
 				}
 
@@ -357,7 +437,8 @@ void onTick(CBlob@ this)
 					}
 
 					// Shooting sound
-					if (!this.hasTag("CustomSoundLoop")) sprite.PlaySound(settings.FIRE_SOUND, shoot_volume);
+					if (!this.hasTag("CustomSoundLoop"))
+						playSoundInProximity(this, settings.FIRE_SOUND, shoot_volume, XORRandom(settings.FIRE_PITCH_RANDOM*100)/100.0f, true);
 
 					// Gun 'kickback' anim
 					this.set_f32("gun_recoil_current", this.exists("CustomGunRecoil") ? this.get_u32("CustomGunRecoil") : 3);
@@ -381,12 +462,12 @@ void onTick(CBlob@ this)
 					actionInterval = settings.RELOAD_TIME;
 					this.set_bool("beginReload", false);
 					this.set_bool("doReload", true);
-					sprite.PlaySound(settings.RELOAD_SOUND, 1.0f, reload_pitch);
+					playSoundInProximity(this, settings.RELOAD_SOUND, 1.0f, reload_pitch);
 				}
-				else if (!this.get_bool("beginReload") && !this.get_bool("doReload"))
+				else if (!this.get_bool("beginReload") && !this.get_bool("doReload") && !this.hasTag("custom_reload"))
 				{
 					// Gun empty sequence
-					sprite.PlaySound(this.exists("CustomSoundEmpty") ? this.get_string("CustomSoundEmpty") : "Gun_Empty.ogg");
+					playSoundInProximity(this, this.exists("CustomSoundEmpty") ? this.get_string("CustomSoundEmpty") : "Gun_Empty.ogg");	
 					actionInterval = NO_AMMO_INTERVAL;
 					this.set_u8("clickReload", 1);
 				}
@@ -397,6 +478,7 @@ void onTick(CBlob@ this)
 
 			sprite.ResetTransform();
 			//sprite.RotateBy( aimangle, holder.isFacingLeft() ? Vec2f(-3,3) : Vec2f(3,3) );
+
 			this.setAngleDegrees(aimangle);
 			sprite.SetOffset(Vec2f(this.get_f32("gun_recoil_current"), 0)); //Recoil effect for gun blob
 		}
@@ -408,6 +490,5 @@ void onTick(CBlob@ this)
 			// Turn off sound if detached
 			this.getSprite().SetEmitSoundPaused(true);
 		}
-		this.getCurrentScript().runFlags |= Script::tick_not_sleeping;
 	}
 }

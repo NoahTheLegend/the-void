@@ -1,10 +1,15 @@
+#include "CustomBlocks.as";
+
 const f32 max_distance = 352.0f;
 
 void onInit(CBlob@ this)
 {
-	this.SetLight(true);
+	this.SetLight(false);
 	this.SetLightRadius(16.0f);
-	this.SetLightColor(SColor(255, 255, 230, 180));
+	this.SetLightColor(SColor(155, 255, 230, 180));
+
+	this.addCommandID("toggle_light");
+	this.set_bool("enabled", false);
 
 	makeLight(this);
 }
@@ -26,7 +31,9 @@ void makeLight(CBlob@ this)
 
 void onTick(CBlob@ this)
 {
-	this.SetLight(this.isAttached());
+	this.SetLight(this.get_bool("enabled"));
+
+	if (getControls().isKeyJustPressed(KEY_KEY_G)) this.AddTorque(180.0f);
 
 	if (isServer())
 	{
@@ -41,37 +48,119 @@ void onTick(CBlob@ this)
 			if (holder !is null)
 			{
 				aim_distance = Maths::Abs((holder.getAimPos() - this.getPosition()).Length());
-				this.setAngleDegrees(getAimAngle(this, holder));
+				angle = getAimAngle(this, holder);
+				this.setAngleDegrees(angle);
 			}
 
 			Vec2f hitPos;
-			Vec2f dir = Vec2f((flip ? -1 : 1), 0.0f).RotateBy(angle);
+			Vec2f dir = Vec2f((this.isFacingLeft() ? -1 : 1), 0.0f).RotateBy(angle);
 			Vec2f startPos = this.getPosition();
-			Vec2f endPos = startPos + dir * Maths::Min(aim_distance, max_distance);
+			Vec2f endPos = startPos + dir * aim_distance;
 
 			HitInfo@[] hitInfos;
 			bool mapHit = getMap().rayCastSolid(startPos, endPos, hitPos);
 			f32 length = (hitPos - startPos).Length();
-			bool blobHit = getMap().getHitInfosFromRay(startPos, angle + (flip ? 180.0f : 0.0f), length, this, @hitInfos);
+			bool blobHit = getMap().getHitInfosFromRay(startPos, angle, length, this, @hitInfos);
+			
+			int exceed = 25;
+			int tries = 0;
+
+			while (mapHit && tries < exceed)
+			{
+				tries++;
+
+				Tile tile = getMap().getTile(hitPos);
+				if (isTileGlass(tile.type))
+				{
+					Vec2f newStartPos = hitPos + dir * 8.0f;
+					mapHit = getMap().rayCastSolid(newStartPos, endPos, hitPos);
+				}
+				else
+				{
+					break;
+				}
+			}
+
+			Vec2f finalPos = mapHit ? hitPos : endPos;
+			if (mapHit && (hitPos - startPos).Length() < aim_distance)
+			{
+				finalPos = hitPos;
+			}
 
 			CBlob@ light = getBlobByNetworkID(this.get_u16("remote_id"));
 			if (light !is null)
 			{
-				light.setPosition(Vec2f_lerp(light.getPosition(), hitPos, 0.2f));
+				light.setPosition(Vec2f_lerp(light.getPosition(), finalPos, 0.33f));
 			}
 		}
 	}
+	/*if (isServer())
+	{
+		if ((getGameTime() + this.getNetworkID()) % 30 == 0)
+		{
+			CBitStream params;
+			params.write_bool(this.get_bool("wear_helmet"));
+			params.write_bool(this.get_bool("flashlight_enabled"));
+			this.SendCommand(this.getCommandID("sync"), params);
+		}
+
+		if (!this.isAttached())
+		{
+			bool flip = this.isFacingLeft();
+			f32 angle = getAimAngle(this);
+			f32 aim_distance = Maths::Abs((this.getAimPos() - this.getPosition()).Length());
+
+			Vec2f hitPos;
+			Vec2f dir = Vec2f((this.isFacingLeft() ? -1 : 1), 0.0f).RotateBy(angle);
+			Vec2f startPos = this.getPosition();
+			Vec2f endPos = startPos + dir * aim_distance;
+
+			HitInfo@[] hitInfos;
+			bool mapHit = getMap().rayCastSolid(startPos, endPos, hitPos);
+			f32 length = (hitPos - startPos).Length();
+			bool blobHit = getMap().getHitInfosFromRay(startPos, angle, length, this, @hitInfos);
+			
+			int exceed = 25;
+			int tries = 0;
+
+			while (mapHit && tries < exceed)
+			{
+				tries++;
+
+				Tile tile = getMap().getTile(hitPos);
+				if (isTileGlass(tile.type))
+				{
+					Vec2f newStartPos = hitPos + dir * 8.0f;
+					mapHit = getMap().rayCastSolid(newStartPos, endPos, hitPos);
+				}
+				else
+				{
+					break;
+				}
+			}
+
+			Vec2f finalPos = mapHit ? hitPos : endPos;
+			if (mapHit && (hitPos - startPos).Length() < aim_distance)
+			{
+				finalPos = hitPos;
+			}
+
+			CBlob@ light = makeLight(this, this.get_bool("flashlight_enabled"));
+			if (light !is null)
+			{
+				light.setPosition(Vec2f_lerp(light.getPosition(), finalPos, 0.33f));
+			}
+		}
+	}*/
 }
 
 void onThisAddToInventory(CBlob@ this, CBlob@ inventoryBlob)
 {
-	this.SetLight(false);
 	onDie(this);
 }
 
 void onThisRemoveFromInventory(CBlob@ this, CBlob@ inventoryBlob)
 {
-	this.SetLight(true);
 	makeLight(this);
 }
 
@@ -88,4 +177,24 @@ f32 getAimAngle(CBlob@ this, CBlob@ holder)
 	f32 angle = holder.isFacingLeft() ? -aimvector.Angle() + 180.0f : -aimvector.Angle();
 	if (holder.isAttached()) this.SetFacingLeft(holder.isFacingLeft());
 	return angle;
+}
+
+void GetButtonsFor(CBlob@ this, CBlob@ caller)
+{
+	if (!this.isAttachedTo(caller)) return;
+	bool enabled = this.get_bool("enabled");
+
+	CBitStream params;
+	caller.CreateGenericButton(enabled ? 27 : 23, Vec2f_zero, this, this.getCommandID("toggle_light"), "Toggle Light", params);
+}
+
+void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
+{
+	if (cmd == this.getCommandID("toggle_light"))
+	{
+		bool lightState = this.get_bool("enabled");
+		
+		this.set_bool("enabled", !lightState);
+		this.SetLight(!lightState);
+	}
 }

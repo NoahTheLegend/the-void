@@ -215,7 +215,7 @@ void onGib(CSprite@ this)
 	}
 }
 
-void onTick(CSprite@ this)
+void onRender(CSprite@ this)
 {
 	CBlob@ blob = this.getBlob();
 	if (blob is null) return;

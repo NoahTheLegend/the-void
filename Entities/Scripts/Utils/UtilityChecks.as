@@ -57,13 +57,15 @@ bool playSoundInProximity(CBlob@ blob, string filename, f32 volume = 1.0f, f32 p
 
     CPlayer@ player = getLocalPlayer();
     if (player is null) return true; // we can hear everything while dead
-
+    
     Vec2f pos = blob.getPosition();
-    Vec2f playerpos = player.getBlob().getPosition();
-    f32 dist = (pos - playerpos).Length();
+    CBlob@ local = getLocalPlayerBlob();
 
-    if (inProximity(blob, player.getBlob()))
+    if (local !is null && inProximity(blob, local)) // we see the source
     {
+        Vec2f playerpos = local.getPosition();
+        f32 dist = (pos - playerpos).Length();
+
         if (dist < falloff_start)
         {
             f32 volume = 1.0f;
@@ -79,8 +81,11 @@ bool playSoundInProximity(CBlob@ blob, string filename, f32 volume = 1.0f, f32 p
             return true;
         }
     }
-    else
+    else if (local !is null) // we are behind a wall, the sound is muffled
     {
+        Vec2f playerpos = local.getPosition();
+        f32 dist = (pos - playerpos).Length();
+        
         if (dist < max_distance / 10)
         {
             f32 volume = 1.0f - Maths::Min(dist / (max_distance / 10), 1.0f);
@@ -88,6 +93,13 @@ bool playSoundInProximity(CBlob@ blob, string filename, f32 volume = 1.0f, f32 p
             else blob.getSprite().PlaySound(filename, volume);
             return true;
         }
+    }
+    else // we are dead and can hear everything
+    {
+        f32 volume = 1.0f;
+        if (random) blob.getSprite().PlayRandomSound(filename, volume);
+        else blob.getSprite().PlaySound(filename, volume);
+        return true;
     }
 
     return false;

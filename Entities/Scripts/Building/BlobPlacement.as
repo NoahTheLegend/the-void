@@ -185,7 +185,8 @@ void PositionCarried(CBlob@ this, CBlob@ carryBlob)
 				hands.offset.Set(0, 0);
 			}
 
-			if (this.isKeyPressed(key_down))      // hack for crouch
+			bool has_gravity = false; // todo
+			if (this.isKeyPressed(key_down) && has_gravity && this.isOnGround())      // hack for crouch
 			{
 				if (this.getName() == "archer" && sprite.isAnimation("crouch")) //hack for archer prone
 				{
@@ -414,7 +415,7 @@ void onTick(CBlob@ this)
 				}
 				else if (snap && this.isKeyJustPressed(key_action1))
 				{
-					playSoundInProximity(this, "NoAmmo.ogg", 0.5f);
+					this.getSprite().PlaySound("NoAmmo.ogg", 0.5);
 				}
 			}
 

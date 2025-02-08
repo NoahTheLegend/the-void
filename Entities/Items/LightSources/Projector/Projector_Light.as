@@ -1,12 +1,13 @@
 
-const f32 max_light_radius = 64.0f;
-const f32 distance_factor = 4.0f;
+const f32 max_light_radius = 80.0f; // more than 80 fails to update light on vanilla
+const f32 distance_factor = 3.0f;
+const f32 min_light_radius = 16.0f;
 
 void onInit(CBlob@ this)
 {
 	this.SetLight(true);
 	this.SetLightRadius(max_light_radius);
-	this.SetLightColor(SColor(255, 225, 200, 150));
+	this.SetLightColor(SColor(155, 225, 200, 150));
 	
 	this.getShape().SetStatic(true);
 	this.getShape().getConsts().mapCollisions = false;
@@ -27,17 +28,18 @@ void onTick(CBlob@ this)
 {
 	if (this.get_u16("remote_id") == 0) return;
 	CBlob@ follow = getBlobByNetworkID(this.get_u16("remote_id"));
-	this.SetLight(follow !is null && follow.isAttached());
+
+	this.SetLight(follow !is null && follow.get_bool("enabled"));
 	if (follow is null) return;
 
-	f32 rad = Maths::Max(24, max_light_radius - Maths::Abs(follow.getDistanceTo(this) / distance_factor));
+	f32 rad = Maths::Max(min_light_radius, max_light_radius - Maths::Abs(follow.getDistanceTo(this) / distance_factor));
 	this.SetLightRadius(Maths::Min(max_light_radius, rad));
 
 	if (!isClient()) return;
 	if (!this.isOnScreen()) return;
 	if (getMap() is null) return;
 	#ifndef STAGING
-	getMap().UpdateLightingAtPosition(this.getOldPosition(), rad+16.0f);
+	getMap().UpdateLightingAtPosition(this.getOldPosition(), rad*2);
 	#endif
 }
 

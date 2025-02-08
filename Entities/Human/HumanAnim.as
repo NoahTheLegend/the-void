@@ -1,5 +1,4 @@
 #include "HumanCommon.as"
-#include "FireCommon.as"
 #include "Requirements.as"
 #include "RunnerAnimCommon.as"
 #include "RunnerCommon.as"
@@ -11,13 +10,11 @@
 void onInit(CSprite@ this)
 {
 	LoadSprites(this);
-
-	this.getCurrentScript().runFlags |= Script::tick_not_infire;
 	this.SetZ(0.0f);
 
 	CBlob@ blob = this.getBlob();
 	if (blob is null) return;
-	blob.set_string("idle_anim", "idle0");
+	blob.set_string("idle_anim", "");
 	blob.set_u32("idle_cooldown", 0);
 }
 
@@ -68,13 +65,13 @@ void onTick(CSprite@ this)
 	const bool action2 = blob.isKeyPressed(key_action2);
 	const bool action1 = blob.isKeyPressed(key_action1);
 
-	if (!blob.hasTag(burning_tag)) //give way to burning anim
 	{
 		const bool left = blob.isKeyPressed(key_left);
 		const bool right = blob.isKeyPressed(key_right);
 		const bool up = blob.isKeyPressed(key_up);
 		const bool down = blob.isKeyPressed(key_down);
 		const bool inair = (!blob.isOnGround() && !blob.isOnLadder());
+		const bool onladder = blob.isOnLadder();
 		Vec2f pos = blob.getPosition();
 		bool has_gravity = false; // todo
 
@@ -107,22 +104,22 @@ void onTick(CSprite@ this)
 				return;
 			}
 			Vec2f vel = blob.getVelocity();
-			f32 vy = vel.y;
-			if (vy < -0.0f && moveVars.walljumped)
+			if (vel.y < -0.0f && moveVars.walljumped)
 			{
 				this.SetAnimation("run");
 			}
-			else
+			else if (has_gravity)
 			{
 				this.SetAnimation("fall");
+
 				this.animation.timer = 0;
 				bool inwater = blob.isInWater();
 
-				if (vy < -1.5 * (inwater ? 0.2 : 1))
+				if (vel.y < -1.5 * (inwater ? 0.7 : 1))
 				{
 					this.animation.frame = 0;
 				}
-				else if (vy > 1.5 * (inwater ? 0.2 : 1))
+				else if (vel.y > 1.5 * (inwater ? 0.7 : 1))
 				{
 					this.animation.frame = 2;
 				}
@@ -131,9 +128,43 @@ void onTick(CSprite@ this)
 					this.animation.frame = 1;
 				}
 			}
+			else
+			{
+				this.SetAnimation("fly");
+
+				// left right up down
+				int seed = getGameTime() + blob.getNetworkID();
+				u8 t = 8;
+				f32 min_vel = 0.33f;
+				f32 max_vel = 1.5f;
+				if (onladder)
+				{
+					min_vel = 0.05f;
+					max_vel = 0.5f;
+				}
+
+				bool fl = blob.isFacingLeft();
+				int frame = 7;
+
+				// backwards left
+				if (fl && vel.x > min_vel) frame = vel.x > max_vel ? 2 : 3;
+				// forward left
+				else if (fl && vel.x < -min_vel) frame = vel.x < -max_vel ? 5 : 4;
+				// backwards right
+				else if (!fl && vel.x < -min_vel) frame = vel.x < -max_vel ? 2 : 3;
+				// forward right
+				else if (!fl && vel.x > min_vel) frame = vel.x > max_vel ? 5 : 4;
+				// up
+				else if (vel.y < -min_vel) frame = 0;
+				// down
+				else if (vel.y > min_vel) frame = 1;
+				else frame = seed % (t*2) >= t ? 6 : 7;
+
+				this.animation.frame = frame;
+			}
 		}
 		else if (has_gravity && ((left || right) ||
-		         (blob.isOnLadder() && (up || down))))
+		         (onladder && (up || down))))
 		{
 			this.SetAnimation("run");
 		}

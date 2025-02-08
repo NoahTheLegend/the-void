@@ -17,7 +17,9 @@ bool canSee(CBlob@ this, CBlob@ other, bool check_if_human = false)
     Vec2f dir = opos - tpos;
 
     f32 obj_height = is_human ? 3.0f : other.getRadius(); // head pos for human, else half height to prevent hitting blobs
-    f32 deg = Maths::ATan(obj_height / dir.Length())%360 * 64;
+    f32 dirLength = dir.Length();
+    if (dirLength == 0) return false;
+    f32 deg = Maths::ATan(obj_height / dirLength) % 360 * 64;
 
     HitInfo@[] infos;
     if (map.getHitInfosFromArc(tpos, -dir.Angle(), deg, dir.Length(), this, @infos))

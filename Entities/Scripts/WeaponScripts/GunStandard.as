@@ -6,6 +6,8 @@
 //  count and despawning
 //
 
+#include "UtilityChecks.as";
+
 void shootGun(const u16 gunID, const f32 aimangle, const u16 hoomanID, const Vec2f pos) 
 {
 	CRules@ rules = getRules();
@@ -204,8 +206,7 @@ void onAttach(CBlob@ this, CBlob@ attached, AttachmentPoint @attachedPoint)
 
 	if (isClient() && this.exists("CustomSoundPickup"))
 	{
-		CSprite@ sprite = this.getSprite();
-		sprite.PlaySound(this.get_string("CustomSoundPickup"));
+		playSoundInProximity(this, this.get_string("CustomSoundPickup"));
 	}
 }
 

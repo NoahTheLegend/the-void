@@ -60,7 +60,7 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 				{
 					if (this.getHealth() > gibHealth)
 					{
-						this.getSprite().PlaySound("Gurgle");
+						playSoundInProximity(this, "Gurgle");
 					}
 				}
 				else
