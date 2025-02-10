@@ -12,12 +12,13 @@
 
 void ParticleBullet(Vec2f CurrentPos, Vec2f Velo)
 {
-	CParticle@ p = ParticlePixel(CurrentPos, getRandomVelocity(-Velo.Angle(), 3.0f, 40.0f), SColor(255, 244, 220, 66),true);
+	CParticle@ p = ParticlePixel(CurrentPos, getRandomVelocity(-Velo.Angle(), 3.0f, 40.0f), SColor(255, 244, 220, 66), true);
 	if (p !is null)
 	{
 		p.fastcollision = true;
 		p.bounce = 0.4f;
 		p.alivetime = 120;
+		p.gravity = Vec2f_zero;
 #ifndef STAGING
 		p.lighting = true;
 		p.lighting_delay = 0;
@@ -47,6 +48,8 @@ void ParticleBulletHit(const string particlePic, Vec2f pos, f32 angle = 0.0f)
 	CParticle@ p = ParticleAnimated(particlePic, pos + Vec2f(0,-6).RotateBy(angle), Vec2f(0, 0), angle, 0.7f, 3, 0.0f, false);
 	if (p !is null)
 	{
+		p.gravity = Vec2f_zero;
+		p.deadeffect = 0;
 		p.width = 8;
 		p.height = 8;
 	}

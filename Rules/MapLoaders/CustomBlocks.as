@@ -209,7 +209,7 @@ bool isMetalTile(u32 type)
 bool isSolid(CMap@ map, u32 type) // thin ice is not solid
 {
 	return map.isTileSolid(type) || map.isTileGround(type) || isTileSteel(type) || isTilePolishedMetal(type) || isTileCaution(type)
-		|| isTileAnyIce(type);
+		|| isTileAnyIce(type) || isTileGlass(type);
 }
 
 bool isSolid(CMap@ map, Vec2f pos)

@@ -7,6 +7,7 @@
 
 #include "BulletModule.as";
 #include "CustomBlocks.as";
+#include "HittersV.as";
 
 class Bullet
 {
@@ -23,6 +24,7 @@ class Bullet
     Vec2f OldPos;
     Vec2f Gravity;
     bool FacingLeft;
+    string hitParticle;
 
     f32 StartingAimAngle;
     f32 Angle;
@@ -30,7 +32,7 @@ class Bullet
     u8 Speed;
     s8 TimeLeft;
 
-    Bullet(u16 humanBlobID, u16 gunID, f32 angle, Vec2f pos, BulletModule@[] pointer)
+    Bullet(u16 humanBlobID, u16 gunID, f32 angle, Vec2f pos, BulletModule@[] pointer, string _hitParticle = "")
     {
         id_hoomanShooter = humanBlobID;
         id_gunBlob = gunID;
@@ -53,6 +55,8 @@ class Bullet
 
             OldPos = CurrentPos;
             LastLerpedPos = CurrentPos;
+
+            hitParticle = _hitParticle;
         }
 
         for (int a = 0; a < modules.length(); a++)
@@ -139,7 +143,7 @@ class Bullet
 
                                         //if (isClient())
                                         //{
-                                        //    Sound::Play(S_OBJECT_HIT, CurrentPos, 1.5f);
+                                        //    Sound::Play(S_OBJECT_HIT, CurrentPos, 1.5f); // todo
                                         //}
                                         if (isServer())
                                         {
@@ -189,7 +193,7 @@ class Bullet
                                         }
                                         //if (isClient())
                                         //{
-                                        //    Sound::Play(S_FLESH_HIT, CurrentPos, 1.5f);
+                                        //    Sound::Play(S_FLESH_HIT, CurrentPos, 1.5f); // todo
                                         //}
 
                                         breakLoop = true;
@@ -229,7 +233,7 @@ class Bullet
 
                             //if (isClient())
                             //{
-                            //    Sound::Play(S_OBJECT_HIT, hitpos, 1.5f);
+                            //    Sound::Play(S_OBJECT_HIT, hitpos, 1.5f); // todo
                             //}
 
                             for (int a = 0; a < modules.length(); a++)
@@ -238,11 +242,26 @@ class Bullet
                             }
 
                             CurrentPos = hitpos;
-                            ParticleBullet(CurrentPos, CurrentVelocity); //Little sparks
+                            if (!gunBlob.hasTag("no_bullet_particle")) ParticleBullet(CurrentPos, CurrentVelocity); //Little sparks
 
                             if (tile.type != CMap::tile_empty && !map.isTileBackground(tile))
                             {
                                 endBullet = true;
+                                if (hitParticle != "") ParticleBulletHit(hitParticle, hitpos, XORRandom(360));
+
+                                if (isServer())
+                                {
+                                    if (ammotype == HittersV::kinetic || ammotype == HittersV::plasma)
+                                    {
+                                        f32 tile_damage = damage;
+                                        bool hit = tile_damage >= 1.0f || XORRandom(100) < tile_damage * 100.0f;
+
+                                        if (hit)
+                                        {
+                                            if (isTileGlass(tile.type)) map.server_DestroyTile(hitpos, 1.0f);
+                                        }
+                                    }
+                                }
                             }
                         }
                     }

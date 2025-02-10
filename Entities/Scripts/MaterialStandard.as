@@ -35,6 +35,7 @@ void onInit(CBlob@ this)
   
   this.Tag('material');
   this.Tag("pushedByDoor");
+  this.set_f32("init_mass", this.getMass());
 
   this.getShape().getVars().waterDragScale = 12.f;
 
@@ -57,6 +58,8 @@ void onQuantityChange(CBlob@ this, int old)
     }
   }
 
+  this.SetMass(Maths::Max(this.getQuantity() * this.get_f32("init_mass"), 1));
+
   if (getNet().isClient())
   {
     Material::updateFrame(this);
@@ -66,8 +69,26 @@ void onQuantityChange(CBlob@ this, int old)
 bool doesCollideWithBlob(CBlob@ this, CBlob@ blob)
 {
   if (blob.hasTag('solid')) return true;
-
   if (blob.getShape().isStatic()) return true;
 
   return false;
+}
+
+void onAttach(CBlob@ this, CBlob@ attached, AttachmentPoint @attachedPoint)
+{
+  this.setAngleDegrees(0);
+  if (this.getShape().isRotationsAllowed())
+  {
+    this.Tag("reset_rotations");
+    this.getShape().SetRotationsAllowed(false);
+  }
+}
+
+void onDetach(CBlob@ this, CBlob@ detached, AttachmentPoint @attachedPoint)
+{
+  if (this.hasTag("reset_rotations"))
+  {
+    this.getShape().SetRotationsAllowed(true);
+    this.Untag("reset_rotations");
+  }
 }

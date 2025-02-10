@@ -96,6 +96,7 @@ bool ActivateBlob(CBlob@ this, CBlob@ blob, Vec2f pos, Vec2f vector, Vec2f vel)
 }
 
 const f32 DEFAULT_THROW_VEL = 6.0f;
+const f32 DEFAULT_THROW_VEL_SELF = 1.0f;
 
 void DoThrow(CBlob@ this, CBlob@ carried, Vec2f pos, Vec2f vector, Vec2f selfVelocity)
 {
@@ -106,10 +107,10 @@ void DoThrow(CBlob@ this, CBlob@ carried, Vec2f pos, Vec2f vector, Vec2f selfVel
 		ourvelscale = this.get_f32("throw ourvel scale");
 	}
 
-	Vec2f vel = getThrowVelocity(this, vector, selfVelocity, ourvelscale);
-
 	if (carried !is null)
 	{
+		Vec2f vel = getThrowVelocity(this, carried, vector, selfVelocity, ourvelscale);
+
 		if (carried.hasTag("medium weight"))
 		{
 			vel *= 0.6f;
@@ -133,18 +134,44 @@ void DoThrow(CBlob@ this, CBlob@ carried, Vec2f pos, Vec2f vector, Vec2f selfVel
 	}
 }
 
-Vec2f getThrowVelocity(CBlob@ this, Vec2f vector, Vec2f selfVelocity, f32 this_vel_affect = 0.1f)
+Vec2f getThrowVelocity(CBlob@ this, CBlob@ carried, Vec2f vector, Vec2f selfVelocity, f32 this_vel_affect = 0.1f)
 {
+	bool has_gravity = false; // todo
+
 	Vec2f vel = vector;
 	f32 len = vel.Normalize();
-	vel *= DEFAULT_THROW_VEL;
+	
+	// Calculate throw velocity based on mass difference
+	f32 massThis = this.getMass();
+	f32 massCarried = carried.getMass();
+	f32 massRatio = massThis / massCarried;
+	
+	// Adjust the throw velocity based on the mass ratio
+	f32 throwVelCarried = DEFAULT_THROW_VEL * (massRatio < 1.0f ? massRatio : 1.0f);
+	
+	// Apply a limit to the force applied to the player
+	f32 maxForce = Maths::Min(DEFAULT_THROW_VEL_SELF, DEFAULT_THROW_VEL_SELF * (1.0f / massRatio));
+	f32 throwVelThis = DEFAULT_THROW_VEL_SELF * (massCarried / (massThis + massCarried));
+	if (throwVelThis > maxForce)
+	{
+		throwVelThis = maxForce;
+	}
+	
+	vel *= throwVelCarried;
 	vel *= this.get_f32("throw scale");
 	vel += selfVelocity * this_vel_affect; // blob velocity
 
 	f32 closeDist = this.getRadius() + 64.0f;
-	if (selfVelocity.getLengthSquared() < 0.1f && len < closeDist)
+	if (len < closeDist)
 	{
 		vel *= len / closeDist;
 	}
-	return vel;
+	
+	// Apply opposite force to 'this'
+	Vec2f oppositeForce = -vector * throwVelThis;
+	oppositeForce *= this.get_f32("throw scale");
+	oppositeForce += selfVelocity * this_vel_affect; // blob velocity
+
+	this.AddForce(oppositeForce);
+	return vel + this.getVelocity() / 2;
 }

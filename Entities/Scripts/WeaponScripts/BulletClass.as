@@ -107,15 +107,15 @@ class BulletHolder
 		}
 	}
 
-	Bullet@ CreateNewBullet(u16 humanBlobID, u16 gunID, f32 angle, Vec2f pos)
+	Bullet@ CreateNewBullet(u16 humanBlobID, u16 gunID, f32 angle, Vec2f pos, string hitParticle = "")
 	{
 		BulletModule@[] module = {};
-		return CreateNewBullet(humanBlobID, gunID, angle, pos, module);
+		return CreateNewBullet(humanBlobID, gunID, angle, pos, module, hitParticle);
 	}
 
-	Bullet@ CreateNewBullet(u16 humanBlobID, u16 gunID, f32 angle, Vec2f pos, BulletModule@[] modules)
+	Bullet@ CreateNewBullet(u16 humanBlobID, u16 gunID, f32 angle, Vec2f pos, BulletModule@[] modules, string hitParticle = "")
 	{
-		Bullet@ bullet = Bullet(humanBlobID, gunID, angle, pos, modules);
+		Bullet@ bullet = Bullet(humanBlobID, gunID, angle, pos, modules, hitParticle);
 		bullet.onTick(getMap());
 		bullets.push_back(bullet);
 		return bullet;

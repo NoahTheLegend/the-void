@@ -95,7 +95,7 @@ void onCreateInventoryMenu(CBlob@ this, CBlob@ forBlob, CGridMenu@ gridmenu)
 			if (boots_util !is null)
 			{
 				if (this.get_string("equipment_boots") != "") boots_util.SetHoverText("todo\n");
-				else boots_util.SetHoverText("Equip boots utility\n");
+				else boots_util.SetHoverText("Equip belt utility\n");
 			}
 		}
 	}
@@ -123,7 +123,7 @@ void onCreateInventoryMenu(CBlob@ this, CBlob@ forBlob, CGridMenu@ gridmenu)
 			CGridButton@ boots = extraequipments.AddButton("$decor_bootsimage$", "Plasma cutter", this.getCommandID("switch_plasmacutter"), Vec2f(1, 1), params);
 			if (boots !is null)
 			{
-				boots.SetHoverText("Pick plasma cutter\nCutting consumes Oxygen, shooting consumes Hydrogen\n");
+				boots.SetHoverText("Pick plasma cutter (debug)\n");
 			}
 		}
 	}

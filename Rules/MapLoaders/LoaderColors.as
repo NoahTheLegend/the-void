@@ -70,8 +70,10 @@ namespace map_colors
 		tile_polishedmetal     = 0xFF556677,
 		tile_bpolishedmetal    = 0xFF334455,
 
-		locker                 = 0xFFaacaaa,
-		barrel                 = 0xFFac7575,
+		locker_b                 = 0xFF0acaaa,
+		locker_r                 = 0xFFaaca0a,
+		barrel_b                 = 0xFF0c7575,
+		barrel_r                 = 0xFFac7505,
 
 
 		// TILES

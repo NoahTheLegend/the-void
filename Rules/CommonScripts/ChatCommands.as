@@ -64,16 +64,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 
 	if (isMod)
 	{
-		if (text_in == "!can")
-		{
-			CBlob@ b = server_CreateBlobNoInit("foodcan");
-			b.setPosition(blob.getPosition());
-
-			b.set_u8("type", XORRandom(6));
-
-			b.Init();
-		}
-		else if (text_in == "!bot")
+		if (text_in == "!bot")
 		{
 			AddBot("Henry");
 			return true;
@@ -112,44 +103,9 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 		{
 			server_MakeSeed(pos, "tree_pine", 600, 1, 16);
 		}
-		else if (text_in == "!weather")
-		{
-			CBlob@[] blobs1;
-			getBlobsByName('blizzard', @blobs1);
-			for (int i = 0; i < blobs1.length; i++) if (blobs1[i] !is null) blobs1[i].server_Die();
-		}
 		else if (text_in == "!btree") // bushy tree (seed)
 		{
 			server_MakeSeed(pos, "tree_bushy", 400, 2, 16);
-		}
-		else if (text_in == "!allarrows") // 30 normal arrows, 2 water arrows, 2 fire arrows, 1 bomb arrow (full inventory for archer)
-		{
-			server_CreateBlob('mat_arrows', -1, pos);
-			server_CreateBlob('mat_waterarrows', -1, pos);
-			server_CreateBlob('mat_firearrows', -1, pos);
-			server_CreateBlob('mat_bombarrows', -1, pos);
-		}
-		else if (text_in == "!arrows") // 3 mats of 30 arrows (90 arrows)
-		{
-			for (int i = 0; i < 3; i++)
-			{
-				server_CreateBlob('mat_arrows', -1, pos);
-			}
-		}
-		else if (text_in == "!allbombs") // 2 normal bombs, 1 water bomb
-		{
-			for (int i = 0; i < 2; i++)
-			{
-				server_CreateBlob('mat_bombs', -1, pos);
-			}
-			server_CreateBlob('mat_waterbombs', -1, pos);
-		}
-		else if (text_in == "!bombs") // 3 (unlit) bomb mats
-		{
-			for (int i = 0; i < 3; i++)
-			{
-				server_CreateBlob('mat_bombs', -1, pos);
-			}
 		}
 		else if (text_in == "!spawnwater" && player.isMod())
 		{
@@ -171,10 +127,6 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 		else if (text_in == "!coins") // adds 100 coins to the player's coins
 		{
 			player.server_setCoins(player.getCoins() + 100);
-		}
-		else if (text_in == "!coinoverload") // + 10000 coins
-		{
-			player.server_setCoins(player.getCoins() + 10000);
 		}
 		else if (text_in == "!fishyschool") // spawns 12 fishies
 		{
@@ -201,51 +153,6 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 			//gold
 			server_CreateBlob('mat_gold', -1, pos);
 		}
-		else if (text_in == "!woodstone") // 250 wood, 500 stone
-		{
-			server_CreateBlob('mat_wood', -1, pos);
-
-			for (int i = 0; i < 2; i++)
-			{
-				server_CreateBlob('mat_stone', -1, pos);
-			}
-		}
-		else if (text_in == "!stonewood") // 500 wood, 250 stone
-		{
-			server_CreateBlob('mat_stone', -1, pos);
-
-			for (int i = 0; i < 2; i++)
-			{
-				server_CreateBlob('mat_wood', -1, pos);
-			}
-		}
-		else if (text_in == "!wood") // 250 wood
-		{
-			server_CreateBlob('mat_wood', -1, pos);
-		}
-		else if (text_in == "!stones" || text_in == "!stone") // 250 stone
-		{
-			server_CreateBlob('mat_stone', -1, pos);
-		}
-		else if (text_in == "!gold") // 200 gold
-		{
-			server_CreateBlob('mat_gold', -1, pos);
-		}
-		// removed/commented out since this can easily be abused...
-		/*else if (text_in == "!sharkpit") // spawns 5 sharks, perfect for making shark pits
-		{
-			for (int i = 0; i < 5; i++)
-			{
-				CBlob@ b = server_CreateBlob('shark', -1, pos);
-			}
-		}
-		else if (text_in == "!bisonherd") // spawns 5 bisons
-		{
-			for (int i = 0; i < 5; i++)
-			{
-				CBlob@ b = server_CreateBlob('bison', -1, pos);
-			}
-		}*/
 		else
 		{
 			string[]@ tokens = text_in.split(" ");
@@ -365,26 +272,33 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					}
 				}
 			}
-			else
+		}
+
+		string name = text_in;
+		string[] spl = name.split(" ");
+		name = spl.size() > 0 ? spl[0].substr(1, spl[0].size()) : "";
+
+		if (name != "")
+		{
+			u16 quantity = 0;
+			if (spl.length > 1)
 			{
-				string name = text_in.substr(1, text_in.size());
-				if (!isMod && isBlacklisted(name))
+				quantity = parseInt(spl[1]);
+			}
+
+			CBlob@ newBlob = server_CreateBlob(name, team, Vec2f(0, -5) + pos); // currently any blob made will come back with a valid pointer
+
+			if (newBlob !is null)
+			{
+				if (newBlob.getName() != name)  // invalid blobs will have 'broken' names
 				{
 					wasCommandSuccessful = false;
-					errorMessage = "blob is currently blacklisted";
+					errorMessage = "blob " + text_in + " not found";
 				}
-				else
-				{
-					CBlob@ newBlob = server_CreateBlob(name, team, Vec2f(0, -5) + pos); // currently any blob made will come back with a valid pointer
 
-					if (newBlob !is null)
-					{
-						if (newBlob.getName() != name)  // invalid blobs will have 'broken' names
-						{
-							wasCommandSuccessful = false;
-							errorMessage = "blob " + text_in + " not found";
-						}
-					}
+				if (quantity != 0)
+				{
+					newBlob.server_SetQuantity(quantity);
 				}
 			}
 		}

@@ -170,7 +170,7 @@ void onCommand(CRules@ this, u8 cmd, CBitStream @params)
 				{
 					if (!gunBlob.hasTag("CustomSpread")) tempAngle = angle;
 					tempAngle += r.NextRanged(2) != 0 ? -r.NextRanged(settings.B_SPREAD) : r.NextRanged(settings.B_SPREAD);
-					Bullet@ bullet = BulletGrouped.CreateNewBullet(hoomanBlob.getNetworkID(), gunBlob.getNetworkID(), tempAngle, pos);
+					Bullet@ bullet = BulletGrouped.CreateNewBullet(hoomanBlob.getNetworkID(), gunBlob.getNetworkID(), tempAngle, pos, settings.HIT_PARTICLE);
 
 					for (u32 timeSpawned = timeSpawnedAt; timeSpawned < getGameTime(); timeSpawned++) // Catch up to everybody else
 					{
@@ -180,7 +180,7 @@ void onCommand(CRules@ this, u8 cmd, CBitStream @params)
 			}
 			else //Guns that fire only one bullet
 			{
-				Bullet@ bullet = BulletGrouped.CreateNewBullet(hoomanBlob.getNetworkID(), gunBlob.getNetworkID(), angle, pos);
+				Bullet@ bullet = BulletGrouped.CreateNewBullet(hoomanBlob.getNetworkID(), gunBlob.getNetworkID(), angle, pos, settings.HIT_PARTICLE);
 				//timeSpawnedAt -= 50;
 				for (;timeSpawnedAt < getGameTime(); timeSpawnedAt++) // Catch up to everybody else
 				{

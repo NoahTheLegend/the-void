@@ -218,8 +218,12 @@ class PNGLoader
 			case map_colors::tile_bpolishedmetal:   map.SetTile(offset, CMap::tile_bpolishedmetal);   break;
 
 			// blobs	
-			case map_colors::locker:     			autotile(offset); spawnBlob(map, "locker", offset); break;
-			case map_colors::barrel:     			autotile(offset); spawnBlob(map, "barrel", offset); break;
+			//case map_colors::locker:     			autotile(offset); spawnBlob(map, "locker", offset); break;
+			//case map_colors::barrel:     			autotile(offset); spawnBlob(map, "barrel", offset); break;
+			case map_colors::locker_b:    			autotile(offset); spawnBlob(map, "locker", offset, 0); break;
+			case map_colors::locker_r:    			autotile(offset); spawnBlob(map, "locker", offset, 1); break;
+			case map_colors::barrel_b:    			autotile(offset); spawnBlob(map, "barrel", offset, 0); break;
+			case map_colors::barrel_r:    			autotile(offset); spawnBlob(map, "barrel", offset, 1); break;
 
 			// Tiles
 			case map_colors::tile_ground:           map.SetTile(offset, CMap::tile_ground);           break;

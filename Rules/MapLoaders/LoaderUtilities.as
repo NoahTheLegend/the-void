@@ -6,6 +6,7 @@
 #include "CustomBlocks.as";
 #include "ShadowCastHooks.as"
 #include "CustomSparks.as";
+#include "UtilityChecks.as";
 
 const Vec2f[] directions =
 {
@@ -410,9 +411,7 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 		case CMap::tile_empty:
 		case CMap::tile_ground_back:
 		{
-			if (tile_old == CMap::tile_ice_d3)
-				OnIceTileDestroyed(map, index);
-			else if (tile_old == CMap::tile_thick_ice_d3)
+			if (tile_old == CMap::tile_ice_d3 || tile_old == CMap::tile_thick_ice_d3 || tile_old == CMap::tile_bice)
 				OnIceTileDestroyed(map, index);
 			else if (tile_old == CMap::tile_steel_d8 || tile_old == CMap:: tile_bsteel_d4)
 				OnSteelTileDestroyed(map, index);
@@ -420,7 +419,9 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 				OnPolishedMetalTileDestroyed(map, index);
 			else if (tile_old == CMap::tile_bpolishedmetal_d4)
 				OnBackPolishedMetalTileDestroyed(map, index);
-
+			else if (tile_old == CMap::tile_glass_d1 || tile_old == CMap::tile_bglass_d0)
+				OnGlassTileDestroyed(map, index);
+				
 			break;
 		}
 	}
@@ -525,7 +526,7 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
 				map.RemoveTileFlag(index, Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
 
-				if (isClient()) Sound::Play("build_wall.ogg", map.getTileWorldPosition(index), 1.0f, 1.1f);
+				if (isClient()) playSoundInProximityAtPos(map.getTileWorldPosition(index), "StepIce", 1.0f, 1.1f, true);
 
 				break;
 			}
@@ -603,7 +604,7 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 				Vec2f pos = map.getTileWorldPosition(index);
 				bglass_SetTile(map, pos);
 				map.AddTileFlag(index, Tile::BACKGROUND | Tile::LIGHT_PASSES | Tile::WATER_PASSES | Tile::LIGHT_SOURCE);
-				if (isClient()) Sound::Play("build_wall.ogg", map.getTileWorldPosition(index), 1.0f, 1.0f);
+				if (isClient()) playSoundInProximityAtPos(map.getTileWorldPosition(index), "build_wall.ogg", 1.0f, 1.0f);
 
 				break;
 			}
@@ -666,8 +667,7 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 				map.AddTileFlag(index, Tile::BACKGROUND | Tile::WATER_PASSES | Tile::LIGHT_PASSES);
 				map.RemoveTileFlag(index, Tile::LIGHT_SOURCE | Tile::SOLID | Tile::COLLISION);
 
-				if (isClient()) Sound::Play("build_wall.ogg", map.getTileWorldPosition(index), 1.0f, 1.1f);
-
+				if (isClient()) playSoundInProximityAtPos(map.getTileWorldPosition(index), "build_wall.ogg", 1.0f, 1.1f);
 				break;
 			}
 
@@ -676,7 +676,7 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 			case CMap::tile_bsteel_v2:
 				map.AddTileFlag(index, Tile::BACKGROUND | Tile::LIGHT_PASSES | Tile::WATER_PASSES);
 
-				if (isClient()) Sound::Play("build_wall.ogg", map.getTileWorldPosition(index), 1.0f, 1.1f);
+				if (isClient()) playSoundInProximityAtPos(map.getTileWorldPosition(index), "build_wall.ogg", 1.0f, 1.1f);
 				break;
 
 			case CMap::tile_bsteel_d0:
@@ -697,7 +697,7 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
 				map.RemoveTileFlag(index, Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
 
-				if (isClient()) Sound::Play("build_wall.ogg", map.getTileWorldPosition(index), 1.0f, 1.1f);
+				if (isClient()) playSoundInProximityAtPos(map.getTileWorldPosition(index), "build_wall.ogg", 1.0f, 1.1f);
 
 				break;
 			}
@@ -710,7 +710,7 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
 				map.RemoveTileFlag(index, Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
 
-				if (isClient()) Sound::Play("build_wall.ogg", map.getTileWorldPosition(index), 1.0f, 0.925f);
+				if (isClient()) playSoundInProximityAtPos(map.getTileWorldPosition(index), "build_wall.ogg", 1.0f, 0.925f);
 
 				break;
 			}
@@ -753,7 +753,7 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 				map.AddTileFlag(index, Tile::BACKGROUND | Tile::WATER_PASSES | Tile::LIGHT_PASSES);
 				map.RemoveTileFlag(index, Tile::SOLID | Tile::LIGHT_SOURCE | Tile::COLLISION);
 
-				if (isClient()) Sound::Play("build_wall.ogg", map.getTileWorldPosition(index), 1.0f, 0.925f);
+				if (isClient()) playSoundInProximityAtPos(map.getTileWorldPosition(index), "build_wall.ogg", 1.0f, 0.925f);
 
 				break;
 			}
@@ -894,7 +894,7 @@ void OnIceTileHit(CMap@ map, u32 index)
 	{
 		Vec2f pos = map.getTileWorldPosition(index);
 
-		Sound::Play("GlassBreak2.ogg", pos, 1.0f, 0.8f);
+		playSoundInProximityAtPos(pos, "IceBreak", 1.0f, 0.95f+XORRandom(6)*0.01f, true);
 		customSparks(pos, 1, rnd_vel(2,1,10.0f), SColor(255,25,75+XORRandom(75),200+XORRandom(55)));
 	}
 }
@@ -905,7 +905,7 @@ void OnIceTileDestroyed(CMap@ map, u32 index)
 	{
 		Vec2f pos = map.getTileWorldPosition(index);
 
-		Sound::Play("GlassBreak1.ogg", pos, 1.0f, 0.7f);
+		playSoundInProximityAtPos(pos, "IceBreak", 1.0f, 0.8f+XORRandom(6)*0.01f, true);
 	}
 }
 
@@ -947,7 +947,7 @@ void OnSteelTileHit(CMap@ map, u32 index)
 	{
 		Vec2f pos = map.getTileWorldPosition(index);
 
-		Sound::Play("dig_stone.ogg", pos, 1.0f, 0.95f);
+		playSoundInProximityAtPos(pos, "MetalBreak", 1.0f, 0.95f+XORRandom(6)*0.01f, true);
 		sparks(pos, 1, 1);
 	}
 }
@@ -958,7 +958,7 @@ void OnSteelTileDestroyed(CMap@ map, u32 index)
 	{
 		Vec2f pos = map.getTileWorldPosition(index);
 
-		Sound::Play("destroy_stone.ogg", pos, 1.0f, 0.9f);
+		playSoundInProximityAtPos(pos, "MetalBreak", 1.0f, 0.8f+XORRandom(6)*0.01f, true);
 	}
 }
 
@@ -970,7 +970,7 @@ void OnBackSteelTileHit(CMap@ map, u32 index)
 	{
 		Vec2f pos = map.getTileWorldPosition(index);
 
-		Sound::Play("dig_stone.ogg", pos, 1.0f, 1.0f);
+		playSoundInProximityAtPos(pos, "MetalBreak", 1.0f, 1.025f+XORRandom(6)*0.01f, true);
 		sparks(pos, 1, 1);
 	}
 }
@@ -1043,7 +1043,7 @@ void OnPolishedMetalTileHit(CMap@ map, u32 index)
 	{
 		Vec2f pos = map.getTileWorldPosition(index);
 
-		Sound::Play("PickStone" + (1 + XORRandom(3)), pos, 1.0f, 0.95f);
+		playSoundInProximityAtPos(pos, "MetalBreak", 1.0f, 0.95f+XORRandom(6)*0.01f, true);
 	}
 }
 
@@ -1053,7 +1053,7 @@ void OnPolishedMetalTileDestroyed(CMap@ map, u32 index)
 	{
 		Vec2f pos = map.getTileWorldPosition(index);
 
-		Sound::Play("destroy_wall.ogg", pos, 1.0f, 0.9f);
+		playSoundInProximityAtPos(pos, "MetalBreak", 1.0f, 1.025f+XORRandom(6)*0.01f, true);
 	}
 }
 
@@ -1095,7 +1095,7 @@ void OnBackPolishedMetalTileHit(CMap@ map, u32 index)
 	{
 		Vec2f pos = map.getTileWorldPosition(index);
 
-		Sound::Play("PickStone" + (1 + XORRandom(3)), pos, 1.0f, 0.9f);
+		playSoundInProximityAtPos(pos, "dig_stone" + (1 + XORRandom(3)), 1.0f, 0.9f);
 	}
 }
 
@@ -1105,7 +1105,7 @@ void OnBackPolishedMetalTileDestroyed(CMap@ map, u32 index)
 	{
 		Vec2f pos = map.getTileWorldPosition(index);
 
-		Sound::Play("destroy_wall.ogg", pos, 1.0f, 0.85f);
+		playSoundInProximityAtPos(pos, "MetalBreak", 1.0f, 0.85f+XORRandom(6)*0.01f, true);
 	}
 }
 
@@ -1117,8 +1117,8 @@ void OnGlassTileHit(CMap@ map, u32 index)
 	{
 		Vec2f pos = map.getTileWorldPosition(index);
 
-		Sound::Play("GlassBreak2.ogg", pos, 1.0f, 1.0f);
-		glasssparks(pos, 5 + XORRandom(5));
+		playSoundInProximityAtPos(pos, "GlassBreak2.ogg", 1.0f, 1.5f+XORRandom(6)*0.01f);
+		glasssparks(pos, 3 + XORRandom(5));
 	}
 }
 
@@ -1130,7 +1130,7 @@ void OnBGlassTileHit(CMap@ map, u32 index)
 	{
 		Vec2f pos = map.getTileWorldPosition(index);
 
-		Sound::Play("GlassBreak2.ogg", pos, 1.0f, 1.0f);
+		playSoundInProximityAtPos(pos, "GlassBreak2.ogg", 1.0f, 1.0f);
 		glasssparks(pos, 3 + XORRandom(2));
 	}
 }
@@ -1141,8 +1141,8 @@ void OnGlassTileDestroyed(CMap@ map, u32 index)
 	{
 		Vec2f pos = map.getTileWorldPosition(index);
 
-		Sound::Play("GlassBreak1.ogg", pos, 1.0f, 1.0f);
-		glasssparks(pos, 5 + XORRandom(3));
+		playSoundInProximityAtPos(pos, "GlassBreak1.ogg", 1.0f, 1.0f);
+		glasssparks(pos, 3 + XORRandom(3));
 	}
 }
 
@@ -1179,8 +1179,13 @@ void glasssparks(Vec2f at, int amount)
 		{
 			Vec2f vel = getRandomVelocity(0.1f, 1.0f, 180.0f);
 			vel.y = -Maths::Abs(vel.y)+Maths::Abs(vel.x)/4.0f-2.0f-float(XORRandom(100))/100.0f;
+
 			ParticlePixel(at, vel, colors[XORRandom(6)], true);
-			makeGibParticle("GlassSparks.png", at, vel, 0, XORRandom(5)-1, Vec2f(4.0f, 4.0f), 0.0f, 1, "GlassBreak1.ogg");
+			CParticle@ p = makeGibParticle("GlassSparks.png", at, vel, 0, XORRandom(5)-1, Vec2f(4.0f, 4.0f), 0.0f, 1, "GlassBreak1.ogg");
+			if (p !is null)
+			{
+				p.gravity = Vec2f_zero;
+			}
 		}
 	}
 }

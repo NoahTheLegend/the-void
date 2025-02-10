@@ -33,8 +33,6 @@ void onTick(CBlob@ this)
 {
 	this.SetLight(this.get_bool("enabled"));
 
-	if (getControls().isKeyJustPressed(KEY_KEY_G)) this.AddTorque(180.0f);
-
 	if (isServer())
 	{
 		if (this.getVelocity() != Vec2f_zero || this.isAttached()) //only tick if moving 

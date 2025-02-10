@@ -7,6 +7,7 @@
 #include "PlacementCommon.as";
 #include "ParticleSparks.as";
 #include "MaterialCommon.as";
+#include "UtilityChecks.as";
 
 //can't be <2 - needs one frame less for gathering infos
 const s32 hit_frame = 2;

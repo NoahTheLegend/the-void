@@ -162,6 +162,9 @@ void onInit(CBlob@ this)
 
 void laserEffects(CBlob@ this, int id)
 {
+	bool laser_enabled = this.get_bool("laser_enabled");
+	if (!laser_enabled) return;
+	
 	if (this.isInInventory()) return;
 	//if (!this.get_bool("in_proximity")) return;
 
@@ -227,7 +230,9 @@ void laserEffects(CBlob@ this, int id)
 
 void onTick(CBlob@ this)
 {
+	this.Untag("just_shot");
 	this.set_bool("in_proximity", inProximity(this, getLocalPlayerBlob()));
+	
 	if (this.hasTag("laser"))
 	{
 		this.set_Vec2f("laser_hitpos", Vec2f(-1, -1));
@@ -288,9 +293,9 @@ void onTick(CBlob@ this)
 					   holder.isAttachedToPoint("PASSENGER") || holder.isAttachedToPoint("PILOT") : true;
 
 			// Keys
-			const bool pressing_shoot = (this.hasTag("CustomSemiAuto") ?
+			const bool pressing_shoot = (!this.get_bool("force_nofire") && (this.hasTag("CustomSemiAuto") ?
 					   point.isKeyJustPressed(key_action1) || holder.isKeyJustPressed(key_action1) : //automatic
-					   point.isKeyPressed(key_action1) || holder.isKeyPressed(key_action1)); //semiautomatic
+					   point.isKeyPressed(key_action1) || holder.isKeyPressed(key_action1))); //semiautomatic
 
 			// Sound
 			const f32 reload_pitch = settings.RELOAD_PITCH + XORRandom(settings.RELOAD_PITCH_RANDOM*100)/100.0f;
@@ -424,6 +429,7 @@ void onTick(CBlob@ this)
 						}
 						else
 						{
+							this.Tag("just_shot");
 							// Local hosts / clients will run this
 							if (isClient())
 							{

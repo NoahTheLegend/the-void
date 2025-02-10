@@ -6,7 +6,6 @@
 #include "DoorCommon.as"
 #include "ShadowCastHooks.as"
 #include "UtilityChecks.as"
-#include "UtilityChecks.as";
 
 void onInit(CBlob@ this)
 {
@@ -98,8 +97,8 @@ void setOpen(CBlob@ this, bool open, bool faceLeft = false)
 		this.getCurrentScript().tickFrequency = 3;
 		sprite.SetFacingLeft(faceLeft);   // swing left or right
 		
-		Sound::Play("/DoorOpen.ogg", this.getPosition());
-
+		playSoundInProximity(this, "/DoorOpen.ogg", 1.0f, 1.0f);
+		
         SET_TILE_CALLBACK@ set_tile_func;
 	    getRules().get("SET_TILE_CALLBACK", @set_tile_func);
 	    if (set_tile_func !is null)
@@ -114,7 +113,7 @@ void setOpen(CBlob@ this, bool open, bool faceLeft = false)
 		this.getShape().getConsts().collidable = true;
 		this.getCurrentScript().tickFrequency = 0;
 
-		Sound::Play("/DoorClose.ogg", this.getPosition());
+		playSoundInProximity(this, "/DoorClose.ogg", 1.0f, 1.0f);
         
         SET_TILE_CALLBACK@ set_tile_func;
 	    getRules().get("SET_TILE_CALLBACK", @set_tile_func);

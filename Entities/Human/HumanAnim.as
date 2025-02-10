@@ -26,6 +26,7 @@ void onPlayerInfoChanged(CSprite@ this)
 void LoadSprites(CSprite@ this)
 {
 	ensureCorrectRunnerTexture(this, "human", "Human");
+	//ensureCorrectRunnerTexture(this, "human", "HumanMars");
 }
 
 void onTick(CSprite@ this)
@@ -135,7 +136,7 @@ void onTick(CSprite@ this)
 				// left right up down
 				int seed = getGameTime() + blob.getNetworkID();
 				u8 t = 8;
-				f32 min_vel = 0.33f;
+				f32 min_vel = 0.35f;
 				f32 max_vel = 1.5f;
 				if (onladder)
 				{

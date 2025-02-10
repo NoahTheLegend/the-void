@@ -41,6 +41,7 @@ class GunSettings
 	f32 RELOAD_PITCH; //Pitch of the reloading sound
 	f32 RELOAD_PITCH_RANDOM; //Random pitch of the reloading sound
 	string AMMO_BLOB; //Ammunition the gun takes
+	string HIT_PARTICLE; //Particle that appears when a bullet hits something
 
 	float B_DAMAGE; //1.0f is 1 heart
 
@@ -118,6 +119,8 @@ class GunSettings
 		FIRE_PITCH_RANDOM = 0.1f;
 		RELOAD_PITCH = 1.0f;
 		RELOAD_PITCH_RANDOM = 0.1f;
+
+		HIT_PARTICLE = "";
 
 		//Offset
 		MUZZLE_OFFSET = Vec2f(-10, 0);

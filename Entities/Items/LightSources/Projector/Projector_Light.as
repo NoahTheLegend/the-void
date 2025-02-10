@@ -1,7 +1,7 @@
 
 const f32 max_light_radius = 80.0f; // more than 80 fails to update light on vanilla
-const f32 distance_factor = 3.0f;
-const f32 min_light_radius = 16.0f;
+const f32 distance_factor = 2.0f;
+const f32 min_light_radius = 24.0f;
 
 void onInit(CBlob@ this)
 {
