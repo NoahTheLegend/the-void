@@ -71,10 +71,12 @@ void onTick(CSprite@ this)
 		const bool right = blob.isKeyPressed(key_right);
 		const bool up = blob.isKeyPressed(key_up);
 		const bool down = blob.isKeyPressed(key_down);
+		const bool moving = left || right || up || down;
 		const bool inair = (!blob.isOnGround() && !blob.isOnLadder());
 		const bool onladder = blob.isOnLadder();
 		Vec2f pos = blob.getPosition();
 		bool has_gravity = false; // todo
+		const bool fl = blob.isFacingLeft();
 
 		RunnerMoveVars@ moveVars;
 		if (!blob.get("moveVars", @moveVars))
@@ -160,6 +162,101 @@ void onTick(CSprite@ this)
 				// down
 				else if (vel.y > min_vel) frame = 1;
 				else frame = seed % (t*2) >= t ? 6 : 7;
+
+				const int sound_rate = 2;
+				if (moving && frame < 6 && seed % sound_rate == 0)
+				{
+					playSoundInProximity(blob, "SteamHiss", 0.75f, 1.5f, true);
+
+					Vec2f ppos = blob.getInterpolatedPosition() + blob.getVelocity() + Vec2f(fl ? 6 : -6, 0);
+					Vec2f pvel = Vec2f_zero;
+					Vec2f offset = Vec2f_zero;
+
+					bool particle_secondary = false;
+					Vec2f pvel_s = Vec2f_zero;
+					Vec2f offset_s = Vec2f_zero;
+
+					switch (frame)
+					{
+						case 0: // up
+							offset = Vec2f(0, 4);
+							pvel = Vec2f(0, 1);
+							break;
+						case 1: // down
+							offset = Vec2f(fl ? 0.8f : -0.8f, -8);
+							pvel = Vec2f(0, -1);
+							break;
+						case 2: // backwards
+						case 3:
+							offset = Vec2f(fl ? -4 : 4, -3);
+							pvel = Vec2f(fl ? -1 : 1, 0);
+
+							if (up && !down)
+							{
+								particle_secondary = true;
+								offset_s = Vec2f(fl ? -1.5f : 1.5f, 3);
+								pvel_s = Vec2f(fl ? 1 : -1, 1);
+							}
+							else if (down && !up)
+							{
+								particle_secondary = true;
+								offset_s = Vec2f(fl ? 3 : -3, -4);
+								pvel_s = Vec2f(fl ? 1 : -1, 0);
+							}
+
+							break;
+						case 4: // forward
+						case 5:
+							offset = Vec2f(fl ? -3 : 3, -4);
+							pvel = Vec2f(fl ? 1 : -1, 0);
+
+							if (up && !down)
+							{
+								particle_secondary = true;
+								offset_s = Vec2f(fl ? -3 : 3, 4);
+								pvel_s = Vec2f(fl ? -0.5f : 0.5f, 1);
+							}
+							else if (down && !up)
+							{
+								particle_secondary = true;
+								offset_s = Vec2f(fl ? -5 : 5, -5);
+								pvel_s = Vec2f(fl ? -0.5f : 0.5f, -1);
+							}
+							break;
+						default:
+							pvel = Vec2f(0, 0);
+							break;
+					}
+
+					CParticle@ p = ParticleAnimated("MediumSteam", ppos + offset, pvel, XORRandom(360), 0.4f, 2, 0.0f, false);
+					if (p !is null)
+					{
+						p.Z = -1;
+						p.collides = true;
+						p.fastcollision = false;
+						p.growth = -0.1f;
+						p.timeout = 10;
+						p.gravity = Vec2f_zero;
+						p.deadeffect = -1;
+						p.setRenderStyle(RenderStyle::additive);
+					}
+
+					if (particle_secondary)
+					{
+						CParticle@ p_s = ParticleAnimated("MediumSteam", ppos + offset_s, pvel_s, XORRandom(360), 0.25f, 2, 0.0f, false);
+						if (p_s !is null)
+						{
+							p_s.Z = -1;
+							p_s.collides = true;
+							p_s.fastcollision = false;
+							p_s.growth = -0.1f;
+							p.timeout = 10;
+							p_s.gravity = Vec2f_zero;
+							p_s.deadeffect = -1;
+							p_s.setRenderStyle(RenderStyle::additive);
+						}
+					}
+				}
 
 				this.animation.frame = frame;
 			}

@@ -12,14 +12,15 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
 const u16 max_times_used = 5; // max ammo
 const f32 light_radius = 16.0f;
 
-const u16 times_cut_per_time_used = 1; // how many cuts to decrease ammo by 1
+const u16 times_cut_per_time_used = 3; // how many cuts to decrease ammo by 1
 const f32 drill_damage = 0.1f;
 const u16 drill_frequency_tiles = 30;
 const u16 drill_frequency_blobs = 8; // how often to drill
 const u32 drill_spinup = 20; // sound spinup
 const f32 spinup_throttle = 0.5f; // drop active_time to drill_spinup * spinup_throttle when loop sound changes
-const f32 max_volume = 0.5f;
-const f32 max_pitch = 1.0f;
+const f32 max_volume = 0.35f;
+const f32 max_pitch = 0.95f;
+const u8 particle_frequency = 3;
 
 void onInit(CBlob@ this)
 {	
@@ -49,7 +50,7 @@ void onInit(CBlob@ this)
 	settings.G_BACK_T = 1; //Should we recoil the arm back time? (aim goes up, then back down with this, if > 0, how long should it last)
 
 	//Sound
-	settings.FIRE_VOLUME = 2.0f; //Sound volume
+	settings.FIRE_VOLUME = 1.0f; //Sound volume
     settings.FIRE_SOUND = "PlasmaCutterFire.ogg"; //Sound when shooting
 	settings.RELOAD_SOUND = ""; // no reload
 	settings.FIRE_PITCH = 1.1f;
@@ -71,7 +72,7 @@ void onInit(CBlob@ this)
 	this.set_u32("reload", 0);
 	
 	this.set_string("laser_texture", "Laser_Blue.png");
-	this.set_f32("laser_distance", 24.0f);
+	this.set_f32("laser_distance", 32.0f);
 	this.set_f32("falloff_start", 0.0f);
 	this.set_Vec2f("laser_offset", Vec2f(3, -1.5f));
 
@@ -160,6 +161,11 @@ void onTick(CBlob@ this)
 	int tile_hit = -1;
 	Vec2f tilepos_hit = Vec2f_zero;
 
+	u16[] hit_blob_ids;
+
+	bool found_tile = false;
+	bool found_blob = false;
+	
 	u32 seed = getGameTime() + this.getNetworkID();
 	bool was_hit = false;
 
@@ -177,8 +183,11 @@ void onTick(CBlob@ this)
 		f32 distance = this.get_f32("laser_distance");
 		Vec2f end = pos + dir * distance;
 
+		f32 angle = dir.getAngle();
+		Vec2f offset = this.get_Vec2f("laser_offset").RotateBy(this.isFacingLeft() ? -angle + 180 : -angle);
+
 		HitInfo@[] hitInfos;
-		if (getMap().getHitInfosFromRay(pos, -dir.getAngle(), distance, holder, @hitInfos))
+		if (getMap().getHitInfosFromRay(pos + offset, -angle, distance, holder, @hitInfos))
 		{
 			for (uint i = 0; i < hitInfos.length; i++)
 			{
@@ -188,7 +197,13 @@ void onTick(CBlob@ this)
 				{
 					if (isEnemy(this, b))
 					{
-						if (seed % drill_frequency_blobs == 0 && isServer()) this.server_Hit(b, b.getPosition(), dir, drill_damage, HittersV::plasma, true);
+						found_blob = true;
+						print(""+b.getName());
+						if (seed % drill_frequency_blobs == 0)
+						{
+							if (isServer()) this.server_Hit(b, b.getPosition(), dir, drill_damage, HittersV::plasma, true);
+							was_hit = true;
+						}
 					}
 				}
 				else
@@ -200,9 +215,15 @@ void onTick(CBlob@ this)
 						TileType tile = map.getTile(tilePos).type;
 						if (isSolid(tile))
 						{
-							if (seed % drill_frequency_tiles == 0 && isServer()) map.server_DestroyTile(tilePos, drill_damage);
+							found_tile = true;
 							tile_hit = tile;
 							tilepos_hit = tilePos;
+
+							if (seed % drill_frequency_tiles == 0)
+							{
+								if (isServer()) map.server_DestroyTile(tilePos, drill_damage);
+								was_hit = true;
+							}
 						}
 					}
 				}
@@ -212,12 +233,12 @@ void onTick(CBlob@ this)
 			{
 				u16 times_cut = this.get_u16("times_cut");
 				if (was_hit) times_cut++;
-
-				if (times_cut > times_cut_per_time_used)
+	
+				if (times_cut >= times_cut_per_time_used)
 				{
 					times_cut = 0;
 					this.set_u8("clip", this.get_u8("clip") - 1);
-
+	
 					Sync(this);
 				}
 				this.set_u16("times_cut", times_cut);
@@ -244,19 +265,37 @@ void onTick(CBlob@ this)
 	{
 		if (!a2)
 			drill_active_time--;
+		else
+		{
+			// particles
+			if (found_tile)
+			{
+				u32 seed = getGameTime() + this.getNetworkID();
+				if (seed % particle_frequency == 0)
+				{
+					makeHitParticle(this, tilepos_hit + Vec2f(XORRandom(4) - 2, XORRandom(4) - 2));
+				}
+
+				makeRayParticles(this, tilepos_hit);
+			}
+		}
 			
 		if (was_hit)
 		{
 			string hitsound = getHitSound(tile_hit);
-			if (hitsound != "") playSoundInProximityAtPos(tilepos_hit, hitsound, 0.75f, 0.9f + XORRandom(11)*0.01f, true);
+			if (hitsound != "")
+				playSoundInProximityAtPos(tilepos_hit, hitsound, 0.75f, 0.9f + XORRandom(11)*0.01f, true);
 		}
 
 		string matching_sound = getMatchingLoopSound(tile_hit);
 		if (matching_sound != this.get_string("laser_sound"))
+		{
 			drill_active_time = Maths::Min(drill_active_time, drill_spinup * spinup_throttle);
 
-		sprite.SetEmitSound(matching_sound);
-		this.set_string("laser_sound", getMatchingLoopSound(tile_hit));
+			sprite.SetEmitSound(matching_sound);
+			sprite.RewindEmitSound();
+			this.set_string("laser_sound", getMatchingLoopSound(tile_hit));
+		}
 
 		if (drill_active_time == 0)
 		{
@@ -277,22 +316,43 @@ void onTick(CBlob@ this)
 	this.set_u32("drill_active_time", drill_active_time);
 }
 
+void makeHitParticle(CBlob@ this, Vec2f endpos)
+{
+	CParticle@ p = ParticleAnimated("PlasmaExplosion.png", endpos, Vec2f(0, 0), XORRandom(360), 0.5f, 3, 0.0f, false);
+	if (p is null) return;
+
+	p.gravity = Vec2f_zero;
+	p.fastcollision = true;
+	p.collides = false;
+	p.lighting = false;
+	p.Z = 999.0f;
+	p.deadeffect = -1;
+	p.timeout = 10+XORRandom(5);
+}
+
 void makeRayParticles(CBlob@ this, Vec2f endpos)
 {
-	// create an incoming stream of particles from both sides of the laser, coming from hitpos to laser_offset
+	// create an incoming stream of particles from endpos to thispos with a velocity equal to dist/5
 	Vec2f pos = this.getPosition();
 	Vec2f diff = endpos - pos;
 	f32 distance = diff.Length();
 	diff.Normalize();
-	Vec2f offset = diff * 8.0f;
+	Vec2f step = diff * 8.0f; // step size
 
-	for (u8 i = 0; i < diff.Length(); i++)
+	for (f32 d = 8.0f; d < distance; d += step.Length())
 	{
-		Vec2f rnd_offset = Vec2f(XORRandom(8) - 4, XORRandom(8) - 4);
-		Vec2f partpos = pos + diff * i + offset + rnd_offset;
+		Vec2f partpos = pos + diff * d;
+		f32 scale = 1.0f - (d / distance);
+		Vec2f rnd_offset = Vec2f((XORRandom(4) - 2) * scale, (XORRandom(4) - 2) * scale);
+		partpos += rnd_offset;
 
+		u8 lifetime = 5;
 		u8 rnd = XORRandom(21);
-		CParticle@ p = ParticlePixelUnlimited(partpos, Vec2f_zero, SColor(255, 98+rnd, 208+rnd, 208+rnd), true);
+
+		Vec2f next_step = pos + diff * (d + step.Length());
+		Vec2f velocity = (partpos -  next_step) / lifetime; // calculate velocity between current step and next step
+
+		CParticle@ p = ParticlePixelUnlimited(partpos + rnd_offset, velocity, SColor(255, 98 + rnd, 208 + rnd, 208 + rnd), true);
 		if (p !is null)
 		{
 			p.Z = 1000.0f;
@@ -301,6 +361,7 @@ void makeRayParticles(CBlob@ this, Vec2f endpos)
 			p.fastcollision = true;
 			p.gravity = Vec2f_zero;
 			p.lighting = true;
+			p.timeout = lifetime;
 		}
 	}
 }
@@ -308,6 +369,8 @@ void makeRayParticles(CBlob@ this, Vec2f endpos)
 bool isEnemy(CBlob@ this, CBlob@ blob)
 {
 	if (blob is null) return false;
+	if (blob.hasTag("invincible")) return false;
+
 	if (blob.getTeamNum() == this.getTeamNum()) return false;
 
 	return true;
@@ -412,6 +475,8 @@ void onThisAddToInventory(CBlob@ this, CBlob@ blob)
 
 	CSprite@ sprite = this.getSprite();
 	if (sprite is null) return;
+
+	this.SetLight(false);
 
 	sprite.SetEmitSoundPaused(true);
 	sprite.SetEmitSoundVolume(0.0f);

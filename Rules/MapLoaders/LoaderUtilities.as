@@ -947,7 +947,7 @@ void OnSteelTileHit(CMap@ map, u32 index)
 	{
 		Vec2f pos = map.getTileWorldPosition(index);
 
-		playSoundInProximityAtPos(pos, "MetalBreak", 1.0f, 0.95f+XORRandom(6)*0.01f, true);
+		playSoundInProximityAtPos(pos, "MetalBreak", 1.0f, 0.75f+XORRandom(6)*0.01f, true);
 		sparks(pos, 1, 1);
 	}
 }
@@ -970,7 +970,7 @@ void OnBackSteelTileHit(CMap@ map, u32 index)
 	{
 		Vec2f pos = map.getTileWorldPosition(index);
 
-		playSoundInProximityAtPos(pos, "MetalBreak", 1.0f, 1.025f+XORRandom(6)*0.01f, true);
+		playSoundInProximityAtPos(pos, "MetalBreak", 1.0f, 0.85f+XORRandom(6)*0.01f, true);
 		sparks(pos, 1, 1);
 	}
 }
@@ -1043,7 +1043,7 @@ void OnPolishedMetalTileHit(CMap@ map, u32 index)
 	{
 		Vec2f pos = map.getTileWorldPosition(index);
 
-		playSoundInProximityAtPos(pos, "MetalBreak", 1.0f, 0.95f+XORRandom(6)*0.01f, true);
+		playSoundInProximityAtPos(pos, "MetalBreak", 1.0f, 0.75f+XORRandom(6)*0.01f, true);
 	}
 }
 
@@ -1053,7 +1053,7 @@ void OnPolishedMetalTileDestroyed(CMap@ map, u32 index)
 	{
 		Vec2f pos = map.getTileWorldPosition(index);
 
-		playSoundInProximityAtPos(pos, "MetalBreak", 1.0f, 1.025f+XORRandom(6)*0.01f, true);
+		playSoundInProximityAtPos(pos, "MetalBreak", 1.0f, 0.8f+XORRandom(6)*0.01f, true);
 	}
 }
 

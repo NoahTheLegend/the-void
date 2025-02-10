@@ -52,7 +52,7 @@ void AddGameMusic(CBlob@ this, CMixer@ mixer)
 	mixer.ResetMixer();
 
 	mixer.AddTrack("Ambient.ogg",                   world_ambient);
-	mixer.AddTrack("Stellar_ambient.ogg",           world_ambient);
+	mixer.AddTrack("StellarAmbient.ogg",            world_ambient);
 	mixer.AddTrack("Void_ambient_scary.ogg",        world_ambient);
 	mixer.AddTrack("FTL_SpaceCruiseAmbient.ogg",    world_ambient);
 	mixer.AddTrack("FTL_WastelandAmbient.ogg",      world_ambient);
@@ -64,6 +64,7 @@ void AddGameMusic(CBlob@ this, CMixer@ mixer)
 	mixer.AddTrack("FTL_MantisAmbient.ogg",         world_ambient);
 	mixer.AddTrack("FTL_MilkyWayAmbient.ogg",       world_ambient);
 	mixer.AddTrack("FTL_RockmanAmbient.ogg",        world_ambient);
+	mixer.AddTrack("butterdog_Bracket.ogg",         world_ambient);
 
 	mixer.AddTrack("FTL_VoidBattle.ogg",            world_battle);
 	mixer.AddTrack("FTL_WastelandBattle.ogg",       world_battle);
@@ -141,7 +142,9 @@ void onMusicEnd(CBlob@ this)
 
 void setNextMusicTime(CBlob@ this, int delay = 0)
 {
-    this.set_u32("next_music", getGameTime() + delay + getMusicDelay());
+	u32 gt = getGameTime();
+	u32 base_delay = getMusicDelay();
+    this.set_u32("next_music", delay > gt + base_delay ? 0 : gt + delay + getMusicDelay());
 }
 
 uint getMusicDelay()
