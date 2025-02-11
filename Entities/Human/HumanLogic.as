@@ -53,6 +53,9 @@ void onTick(CBlob@ this)
 
 	const bool ismyplayer = this.isMyPlayer();
 
+	CShape@ shape = this.getShape();
+	shape.SetRotationsAllowed(this.hasTag("dead"));
+
 	if (ismyplayer && getHUD().hasMenus())
 	{
 		return;

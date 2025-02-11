@@ -25,8 +25,14 @@ void onPlayerInfoChanged(CSprite@ this)
 
 void LoadSprites(CSprite@ this)
 {
-	ensureCorrectRunnerTexture(this, "human", "Human");
-	//ensureCorrectRunnerTexture(this, "human", "HumanMars");
+	CBlob@ blob = this.getBlob();
+	if (blob is null) return;
+
+	// todo
+	Random@ rand = Random(blob.getNetworkID());
+	bool is_mars = rand.NextRanged(2) == 0;
+	if (is_mars) ensureCorrectRunnerTexture(this, "human_mars", "HumanMars");
+	else ensureCorrectRunnerTexture(this, "human", "Human");
 }
 
 void onTick(CSprite@ this)

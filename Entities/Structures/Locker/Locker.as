@@ -9,8 +9,6 @@ const string[] anims = {
 
 void onInit(CBlob@ this)
 {
-	this.Tag("spawn"); // temporary
-	
 	this.getShape().getConsts().mapCollisions = false;
 	AddIconToken("$store_inventory$", "InteractionIcons.png", Vec2f(32, 32), 28);
 	this.inventoryButtonPos = Vec2f(0, 0);

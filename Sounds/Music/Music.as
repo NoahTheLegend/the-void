@@ -5,7 +5,7 @@
 #define CLIENT_ONLY
 
 const u32 min_minutes_delay = 4;
-const u32 minutes_delay_rnd = 3;
+const u32 minutes_delay_rnd = 4;
 
 void onInit(CBlob@ this)
 {

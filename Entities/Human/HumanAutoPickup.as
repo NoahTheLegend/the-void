@@ -11,7 +11,7 @@ void onInit(CBlob@ this)
 void Take(CBlob@ this, CBlob@ blob)
 {
 	const string blobName = blob.getName();
-
+	/* todo
 	if (
 		blobName == "mat_gold" && pickupCriteria(this, blob, 50) ||
 		blobName == "mat_stone" ||
@@ -25,7 +25,7 @@ void Take(CBlob@ this, CBlob@ blob)
 			}
 		}
 	}
-
+	*/
 	CBlob@ carryblob = this.getCarriedBlob();
 	if (carryblob !is null && carryblob.getName() == "crate")
 	{
@@ -81,13 +81,14 @@ void IgnoreCollisionLonger(CBlob@ this, CBlob@ blob)
 	}
 
 	const string blobName = blob.getName();
-
+	/*
 	if (blobName == "mat_gold" || blobName == "mat_stone" ||
 	        blobName == "mat_wood" || blobName == "grain")
 	{
 		blob.set_u32("autopick time", getGameTime() +  getTicksASecond() * 7);
 		blob.SetDamageOwnerPlayer(this.getPlayer());
 	}
+	*/
 }
 
 

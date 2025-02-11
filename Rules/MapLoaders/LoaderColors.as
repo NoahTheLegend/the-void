@@ -54,7 +54,7 @@ namespace map_colors
 	enum color
 	{
 		// CUSTOM
-		tile_ice               = 0xFF4070f1,
+		tile_ice               = 0xFF4070f1, // light passes
 		tile_thick_ice		   = 0xFF1020f1,
 		tile_bice              = 0xFF3b44bc,
 		tile_snow_bricks       = 0xFFc9c9c9,
@@ -65,16 +65,47 @@ namespace map_colors
 		tile_caution_v0        = 0xFFcccc00,
 		tile_caution_v1        = 0xFFaaaa00,
 		tile_caution_v2        = 0xFF999900,
-		tile_glass             = 0xffe1e1e1,
+		tile_glass             = 0xffe1e1e1, // light passes
 		tile_bglass            = 0xFFafafaf,
 		tile_polishedmetal     = 0xFF556677,
 		tile_bpolishedmetal    = 0xFF334455,
+		
+		// main team number is 1 (red)
+		core_b				   = 0xFF0a0a0a,
+		core_r				   = 0xFFac0a0a,
 
-		locker_b                 = 0xFF0acaaa,
-		locker_r                 = 0xFFaaca0a,
-		barrel_b                 = 0xFF0c7575,
-		barrel_r                 = 0xFFac7505,
+		locker_b               = 0xFF0acaaa,
+		locker_r               = 0xFFaaca0a,
+		barrel_b               = 0xFF0c7575,
+		barrel_r               = 0xFFac7505,
+		
+		// light sources
+		lamp_1x1_b_0		   = 0xFFa9a900, // looking down
+		lamp_1x1_r_0		   = 0xFFafa900,
+		lamp_1x1_b_90		   = 0xFFa9a901, // looking left
+		lamp_1x1_r_90		   = 0xFFafa901,
+		lamp_1x1_b_180		   = 0xFFa9a902, // looking up
+		lamp_1x1_r_180		   = 0xFFafa902,
+		lamp_1x1_b_270		   = 0xFFa9a903, // looking right
+		lamp_1x1_r_270		   = 0xFFafa903,
 
+		lamp_2x1_b_0		   = 0xFFb9a900, // looking down
+		lamp_2x1_r_0		   = 0xFFbfa900,
+		lamp_2x1_b_90		   = 0xFFb9a901, // looking left
+		lamp_2x1_r_90		   = 0xFFbfa901,
+		lamp_2x1_b_180		   = 0xFFb9a902, // looking up
+		lamp_2x1_r_180		   = 0xFFbfa902,
+		lamp_2x1_b_270		   = 0xFFb9a903, // looking right
+		lamp_2x1_r_270		   = 0xFFbfa903,
+
+		lamp_3x1_b_0		   = 0xFFc9a900, // looking down
+		lamp_3x1_r_0		   = 0xFFcfa900,
+		lamp_3x1_b_90		   = 0xFFc9a901, // looking left
+		lamp_3x1_r_90		   = 0xFFcfa901,
+		lamp_3x1_b_180		   = 0xFFc9a902, // looking up
+		lamp_3x1_r_180		   = 0xFFcfa902,
+		lamp_3x1_b_270		   = 0xFFc9a903, // looking right
+		lamp_3x1_r_270		   = 0xFFcfa903,
 
 		// TILES
 		tile_ground            = 0xFF844715, // ARGB(255, 132,  71,  21);

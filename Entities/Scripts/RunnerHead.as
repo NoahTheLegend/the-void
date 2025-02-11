@@ -101,7 +101,9 @@ void onPlayerInfoChanged(CSprite@ this)
 
 void LoadHelmet(CSprite@ this, CBlob@ blob)
 {
-	CSpriteLayer@ helmet = this.addSpriteLayer("helmet", "HelmetHead.png", 16, 16, blob.getTeamNum(), 0);
+	Random@ rand = Random(blob.getNetworkID());
+	bool is_mars = rand.NextRanged(2) == 0;
+	CSpriteLayer@ helmet = this.addSpriteLayer("helmet", is_mars ? "HelmetHeadMars.png" : "HelmetHead.png", 16, 16, blob.getTeamNum(), 0);
 	if (helmet !is null)
 	{
 		helmet.SetVisible(false);

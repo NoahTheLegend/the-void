@@ -371,9 +371,13 @@ bool isEnemy(CBlob@ this, CBlob@ blob)
 	if (blob is null) return false;
 	if (blob.hasTag("invincible")) return false;
 
-	if (blob.getTeamNum() == this.getTeamNum()) return false;
+	if (blob.getTeamNum() != this.getTeamNum()
+		&& (blob.hasTag("flesh") || blob.hasTag("structure") || blob.getShape().isStatic()))
+	{
+		return true;
+	}
 
-	return true;
+	return false;
 }
 
 void RequestSync(CBlob@ this)
