@@ -2,6 +2,7 @@
 
 #include "EmotesCommon.as"
 #include "StandardControlsCommon.as"
+#include "ThrowCommon.as"
 
 bool zoomModifier = false; // decides whether to use the 3 zoom system or not
 int zoomModifierLevel = 4; // for the extra zoom levels when pressing the modifier key
@@ -64,6 +65,11 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 
 		if (owner !is null && pick !is null)
 		{
+			// todo
+			//Vec2f impulse_pick = pick.getVelocity() * pick.getMass();
+			//Vec2f impulse_owner = owner.getVelocity() * owner.getMass();
+			//Vec2f vel = (impulse_pick + impulse_owner) / (owner.getMass() + pick.getMass());
+			//owner.setVelocity(vel);
 			owner.server_Pickup(pick);
 		}
 	}

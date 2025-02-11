@@ -1,4 +1,3 @@
-// doesn't work, picking items doesn't attach them to the player
 #define CLIENT_ONLY
 
 void onInit(CBlob@ this)
@@ -25,5 +24,3 @@ void onTick(CBlob@ this)
 
     sprite.setRenderStyle(highlight ? RenderStyle::outline : RenderStyle::normal);
 }
-
-// try to do something with onRemoveFromInventory hook

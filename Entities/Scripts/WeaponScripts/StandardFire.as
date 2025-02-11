@@ -109,7 +109,6 @@ void onInit(CBlob@ this)
 	}
 
 	this.set_u8("clip", settings.CLIP); //Clip u8 for easy maneuverability
-
 	CSprite@ sprite = this.getSprite();
 
 	if (this.hasTag("CustomSoundLoop"))
@@ -162,6 +161,8 @@ void onInit(CBlob@ this)
 
 void laserEffects(CBlob@ this, int id)
 {
+	if (!isClient()) return;
+
 	bool laser_enabled = this.get_bool("laser_enabled");
 	if (!laser_enabled) return;
 	
@@ -182,7 +183,8 @@ void laserEffects(CBlob@ this, int id)
 		laser_offset.y = -laser_offset.y;
 	}
 
-	Vec2f thisPos = this.getInterpolatedPosition() + laser_offset.RotateBy(angle);
+	Vec2f pos = getDriver().getWorldPosFromScreenPos(this.getScreenPos());
+	Vec2f thisPos = Vec2f_lerp(pos - this.getVelocity(), pos, getInterpolationFactor()) + laser_offset.RotateBy(angle);
 	Vec2f endPos = thisPos + Vec2f(laser_distance, 0).RotateBy(angle);
 
 	if (laser_hitpos != Vec2f(-1, -1))

@@ -34,7 +34,6 @@ void onInit(CBlob@ this)
 	this.getCurrentScript().runFlags |= Script::tick_not_attached;
 	this.getCurrentScript().removeIfTag = "dead";
 
-	this.SetChatBubbleFont("RockwellMT_14");
 	this.maxChatBubbleLines = 2;
 }
 

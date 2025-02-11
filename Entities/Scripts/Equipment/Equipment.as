@@ -133,12 +133,14 @@ void onTick(CBlob@ this)
 {
 	if (isServer())
 	{
-		if ((getGameTime() + this.getNetworkID()) % 30 == 0)
+		if ((getGameTime() + this.getNetworkID()) % 90 == 0 || this.hasTag("require_update"))
 		{
 			CBitStream params;
 			params.write_bool(this.get_bool("wear_helmet"));
 			params.write_bool(this.get_bool("flashlight_enabled"));
 			this.SendCommand(this.getCommandID("sync"), params);
+
+			this.Untag("require_update");
 		}
 
 		if (!this.isAttached())
@@ -211,6 +213,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		{
 			bool wearing_helmet = this.get_bool("wear_helmet");
 			this.set_bool("wear_helmet", !wearing_helmet);
+			this.Tag("require_update");
 		}
 
 		if (this.isMyPlayer() && this.getSprite() !is null)
@@ -222,6 +225,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		{
 			bool flashlight_enabled = this.get_bool("flashlight_enabled");
 			this.set_bool("flashlight_enabled", !flashlight_enabled);
+			this.Tag("require_update");
 		}
 	}
 	else if (cmd == this.getCommandID("switch_plasmacutter"))

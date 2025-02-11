@@ -134,6 +134,7 @@ void DoThrow(CBlob@ this, CBlob@ carried, Vec2f pos, Vec2f vector, Vec2f selfVel
 	}
 }
 
+// delayed, rewrite teleport 
 Vec2f getThrowVelocity(CBlob@ this, CBlob@ carried, Vec2f vector, Vec2f selfVelocity, f32 this_vel_affect = 0.1f)
 {
 	bool has_gravity = false; // todo
@@ -149,14 +150,6 @@ Vec2f getThrowVelocity(CBlob@ this, CBlob@ carried, Vec2f vector, Vec2f selfVelo
 	// Adjust the throw velocity based on the mass ratio
 	f32 throwVelCarried = DEFAULT_THROW_VEL * (massRatio < 1.0f ? massRatio : 1.0f);
 	
-	// Apply a limit to the force applied to the player
-	f32 maxForce = Maths::Min(DEFAULT_THROW_VEL_SELF, DEFAULT_THROW_VEL_SELF * (1.0f / massRatio));
-	f32 throwVelThis = DEFAULT_THROW_VEL_SELF * (massCarried / (massThis + massCarried));
-	if (throwVelThis > maxForce)
-	{
-		throwVelThis = maxForce;
-	}
-	
 	vel *= throwVelCarried;
 	vel *= this.get_f32("throw scale");
 	vel += selfVelocity * this_vel_affect; // blob velocity
@@ -167,11 +160,28 @@ Vec2f getThrowVelocity(CBlob@ this, CBlob@ carried, Vec2f vector, Vec2f selfVelo
 		vel *= len / closeDist;
 	}
 	
-	// Apply opposite force to 'this'
+	// todo
+	// Vec2f oppositeForce = getOppositeForce(this, vector, massThis, massCarried, selfVelocity, this_vel_affect);
+	// CBitStream params;
+	// params.write_Vec2f(oppositeForce);
+	// this.SendCommand(this.getCommandID("add_velocity_to_blob"), params);
+	
+	return vel;
+}
+
+Vec2f getOppositeForce(CBlob@ this, Vec2f vector, f32 massThis, f32 massCarried, Vec2f selfVelocity, f32 this_vel_affect)
+{
+	f32 massRatio = massCarried / massThis;
+	f32 maxForce = Maths::Min(DEFAULT_THROW_VEL_SELF, DEFAULT_THROW_VEL_SELF * massRatio);
+	f32 throwVelThis = DEFAULT_THROW_VEL_SELF * (massCarried / (massThis + massCarried));
+	if (throwVelThis > maxForce)
+	{
+		throwVelThis = maxForce;
+	}
+	
 	Vec2f oppositeForce = -vector * throwVelThis;
 	oppositeForce *= this.get_f32("throw scale");
 	oppositeForce += selfVelocity * this_vel_affect; // blob velocity
-
-	this.AddForce(oppositeForce);
-	return vel + this.getVelocity() / 2;
+	
+	return oppositeForce;
 }

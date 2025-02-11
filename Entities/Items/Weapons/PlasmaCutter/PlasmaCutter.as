@@ -88,6 +88,8 @@ void onInit(CBlob@ this)
 	this.SetLightRadius(light_radius);
 	this.SetLightColor(SColor(255, 118, 228, 228));
 
+	this.getShape().getConsts().net_threshold_multiplier = 0.1f;
+
 	if (!isClient()) return;
 
 	CSprite@ sprite = this.getSprite();
@@ -124,7 +126,7 @@ void onTick(CBlob@ this)
 	if ((was_light && do_light) || (!was_light && !do_light)) getMap().UpdateLightingAtPosition(this.getInterpolatedPosition(), light_radius);
 	#endif
 
-	string anim = ammo_exceed ? "default" : "default_charged";
+	string anim = ammo_exceed ? "default" : reloading ? "reload" : "default_charged";
 	this.set_bool("laser_enabled", do_light);
 
 	AttachmentPoint@ point = this.getAttachments().getAttachmentPointByName("PICKUP");
@@ -138,17 +140,8 @@ void onTick(CBlob@ this)
 			bool hasAmmo = holder.hasBlob("mat_hydrogen", 1);
 			if (hasAmmo)
 			{
-				this.set_u16("times_shot", 0);
-				this.set_u8("clip", max_times_used);
-				this.set_u32("reload", getGameTime() + settings.RELOAD_TIME);
-
 				if (isServer())
-				{
-					holder.TakeBlob("mat_hydrogen", 1);
-					Sync(this);
-				}
-
-				anim = "reload";
+					Reload(this, holder);
 			}
 		}
 	}
@@ -198,7 +191,7 @@ void onTick(CBlob@ this)
 					if (isEnemy(this, b))
 					{
 						found_blob = true;
-						print(""+b.getName());
+
 						if (seed % drill_frequency_blobs == 0)
 						{
 							if (isServer()) this.server_Hit(b, b.getPosition(), dir, drill_damage, HittersV::plasma, true);
@@ -233,13 +226,17 @@ void onTick(CBlob@ this)
 			{
 				u16 times_cut = this.get_u16("times_cut");
 				if (was_hit) times_cut++;
-	
+
 				if (times_cut >= times_cut_per_time_used)
 				{
 					times_cut = 0;
 					this.set_u8("clip", this.get_u8("clip") - 1);
-	
-					Sync(this);
+
+					if (this.get_u8("clip") == 0)
+					{
+						Reload(this, holder);
+					}
+					else Sync(this);
 				}
 				this.set_u16("times_cut", times_cut);
 			}
@@ -316,6 +313,22 @@ void onTick(CBlob@ this)
 	this.set_u32("drill_active_time", drill_active_time);
 }
 
+void Reload(CBlob@ this, CBlob@ holder)
+{
+	GunSettings@ settings;
+	if (!this.get("gun_settings", @settings))
+	{
+		return;
+	}
+
+	this.set_u16("times_shot", 0);
+	this.set_u8("clip", max_times_used);
+	this.set_u32("reload", getGameTime() + settings.RELOAD_TIME);
+
+	holder.TakeBlob("mat_hydrogen", 1);
+	Sync(this);
+}
+
 void makeHitParticle(CBlob@ this, Vec2f endpos)
 {
 	CParticle@ p = ParticleAnimated("PlasmaExplosion.png", endpos, Vec2f(0, 0), XORRandom(360), 0.5f, 3, 0.0f, false);
@@ -390,6 +403,8 @@ void RequestSync(CBlob@ this)
 	params.write_bool(this.get_bool("laser_enabled"));
 	params.write_u16(0);
 	params.write_u16(max_times_used);
+	params.write_u8(this.get_u8("clip"));
+	params.write_u32(this.get_u32("reload"));
 	this.SendCommand(this.getCommandID("sync"), params);
 }
 
@@ -403,6 +418,8 @@ void Sync(CBlob@ this, u16 pid = 0)
 	params.write_bool(this.get_bool("laser_enabled"));
 	params.write_u16(this.get_u16("times_cut"));
 	params.write_u16(this.get_u16("times_shot"));
+	params.write_u8(this.get_u8("clip"));
+	params.write_u32(this.get_u32("reload"));
 
 	if (pid != 0)
 	{
@@ -424,6 +441,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		bool laser_enabled = params.read_bool();
 		u16 times_cut = params.read_u16();
 		u16 max_times_used = params.read_u16();
+		u8 clip = params.read_u8();
+		u32 reload = params.read_u32();
 
 		if (request_sync && isServer())
 		{
@@ -434,6 +453,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 			this.set_bool("laser_enabled", laser_enabled);
 			this.set_u16("times_cut", times_cut);
 			this.set_u16("times_shot", max_times_used);
+			this.set_u8("clip", clip);
+			this.set_u32("reload", reload);
 		}
 	}
 }

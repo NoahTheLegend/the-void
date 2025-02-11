@@ -27,6 +27,8 @@ void onInit(CBlob@ this)
 	// throw
 	this.Tag("can throw");
 	this.addCommandID("throw");
+	this.addCommandID("add_velocity_to_blob");
+	this.addCommandID("set_velocity_to_blob");
 	this.set_f32("throw scale", 1.0f);
 	this.set_bool("throw uses ourvel", true);
 	this.set_f32("throw ourvel scale", 1.0f);
@@ -34,7 +36,21 @@ void onInit(CBlob@ this)
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 {
-	if (cmd == this.getCommandID("activate/throw"))
+	if (cmd == this.getCommandID("add_velocity_to_blob"))
+	{
+		if (!isClient()) return;
+
+		Vec2f oppositeForce = params.read_Vec2f();
+		this.AddForce(oppositeForce);
+	}
+	else if (cmd == this.getCommandID("set_velocity_to_blob"))
+	{
+		if (!isClient()) return;
+
+		Vec2f vel = params.read_Vec2f();
+		this.setVelocity(vel);
+	}
+	else if (cmd == this.getCommandID("activate/throw"))
 	{
 		Vec2f pos = params.read_Vec2f();
 		Vec2f vector = params.read_Vec2f();

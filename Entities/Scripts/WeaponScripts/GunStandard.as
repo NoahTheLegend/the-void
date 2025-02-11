@@ -132,7 +132,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 							s32 taken = Maths::Min(quantity, Maths::Clamp(total - clip, 0, total));
 
 							item.server_SetQuantity(Maths::Max(quantity - (isChickenBot ? 0 : taken), 0));
-
 							this.add_u8("clip", taken);
 						}
 					}
@@ -183,6 +182,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		}
 
 		this.sub_u8("clip", 1);
+		this.Sync("clip", true);
 	}
 	else if (isServer() && cmd == this.getCommandID("sync_interval"))
 	{
