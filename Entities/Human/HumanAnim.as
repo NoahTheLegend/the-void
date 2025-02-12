@@ -178,24 +178,38 @@ void onTick(CSprite@ this)
 					Vec2f pvel = Vec2f_zero;
 					Vec2f offset = Vec2f_zero;
 
+					bool particle_main = false;
 					bool particle_secondary = false;
+
 					Vec2f pvel_s = Vec2f_zero;
 					Vec2f offset_s = Vec2f_zero;
 
 					switch (frame)
 					{
 						case 0: // up
-							offset = Vec2f(0, 4);
-							pvel = Vec2f(0, 1);
+							if (up)
+							{
+								particle_main = true;
+								offset = Vec2f(0, 4);
+								pvel = Vec2f(0, 1);
+							}
 							break;
 						case 1: // down
-							offset = Vec2f(fl ? 0.8f : -0.8f, -8);
-							pvel = Vec2f(0, -1);
+							if (down)
+							{
+								particle_main = true;
+								offset = Vec2f(fl ? 0.8f : -0.8f, -8);
+								pvel = Vec2f(0, -1);
+							}
 							break;
 						case 2: // backwards
 						case 3:
-							offset = Vec2f(fl ? -4 : 4, -3);
-							pvel = Vec2f(fl ? -1 : 1, 0);
+							if ((left && !fl) || (right && fl))
+							{
+								particle_main = true;
+								offset = Vec2f(fl ? -4 : 4, -3);
+								pvel = Vec2f(fl ? -1 : 1, 0);
+							}
 
 							if (up && !down)
 							{
@@ -213,8 +227,12 @@ void onTick(CSprite@ this)
 							break;
 						case 4: // forward
 						case 5:
-							offset = Vec2f(fl ? -3 : 3, -4);
-							pvel = Vec2f(fl ? 1 : -1, 0);
+							if ((left && fl) || (right && !fl))
+							{
+								particle_main = true;
+								offset = Vec2f(fl ? -3 : 3, -4);
+								pvel = Vec2f(fl ? 1 : -1, 0);
+							}
 
 							if (up && !down)
 							{
@@ -234,17 +252,23 @@ void onTick(CSprite@ this)
 							break;
 					}
 
-					CParticle@ p = ParticleAnimated("MediumSteam", ppos + offset, pvel, XORRandom(360), 0.4f, 2, 0.0f, false);
-					if (p !is null)
+					if (particle_main)
 					{
-						p.Z = -1;
-						p.collides = true;
-						p.fastcollision = false;
-						p.growth = -0.1f;
-						p.timeout = 10;
-						p.gravity = Vec2f_zero;
-						p.deadeffect = -1;
-						p.setRenderStyle(RenderStyle::additive);
+						CParticle@ p = ParticleAnimated("MediumSteam", ppos + offset, pvel, XORRandom(360), 0.4f, 2, 0.0f, false);
+						if (p !is null)
+						{
+							p.Z = -1;
+							p.collides = true;
+							p.fastcollision = false;
+							p.growth = -0.1f;
+							#ifdef STAGING
+							p.growth = -0.05f;
+							#endif
+							p.timeout = 10;
+							p.gravity = Vec2f_zero;
+							p.deadeffect = -1;
+							p.setRenderStyle(RenderStyle::additive);
+						}
 					}
 
 					if (particle_secondary)
@@ -256,7 +280,10 @@ void onTick(CSprite@ this)
 							p_s.collides = true;
 							p_s.fastcollision = false;
 							p_s.growth = -0.1f;
-							p.timeout = 10;
+							#ifdef STAGING
+							p_s.growth = -0.04f;
+							#endif
+							p_s.timeout = 10;
 							p_s.gravity = Vec2f_zero;
 							p_s.deadeffect = -1;
 							p_s.setRenderStyle(RenderStyle::additive);

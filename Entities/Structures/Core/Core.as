@@ -25,6 +25,7 @@ void onInit(CBlob@ this)
 
 	sprite.getConsts().accurateLighting = true;
 	sprite.SetZ(-50.0f);
+	sprite.SetRelativeZ(-50.0f);
 }
 
 void onTick(CBlob@ this)
@@ -97,6 +98,7 @@ void InitGrinder(CBlob@ this)
 	if (blob is null) return;
 
 	if (blob.hasScript("AlignToTiles.as")) blob.RemoveScript("AlignToTiles.as");
+	blob.AddScript("IgnoreDamage.as");
 
 	this.set_u16("grinder_id", blob.getNetworkID());
 	blob.set_u16("parent_id", this.getNetworkID());

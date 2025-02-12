@@ -1,10 +1,14 @@
 #include "GenericButtonCommon.as"
 #include "GrinderCommon.as"
+#include "UtilityChecks.as"
+#include "HoverUtils.as"
+#include "ToolTipUtils.as"
 
 const f32 min_spinup_soundspeed = 0.5f;
 const f32 max_spinup_soundspeed = 1.0f;
 const f32 min_spinup_soundvolume = 0.1f;
 const f32 max_spinup_soundvolume = 1.0f;
+const f32 max_shrink = 0.05f;
 
 void onInit(CBlob@ this)
 {
@@ -16,6 +20,7 @@ void onInit(CBlob@ this)
 	this.set_string("product", "");
 	this.set_u16("output_link_id", 0);
 	this.set_u16("failure_time", 0);
+	this.set_f32("current_scale", 1.0f);
 
 	this.Tag("update");
 	this.addCommandID("sync");
@@ -23,12 +28,13 @@ void onInit(CBlob@ this)
 
 	if (!isClient()) return;
 
+	this.set_u16("spinup_time", 0);
+
 	CSprite@ sprite = this.getSprite();
 	if (sprite is null) return;
 
-	sprite.SetZ(-50.0f);
-
-	this.set_u16("spinup_time", 0);
+	sprite.SetZ(-49.0f);
+	sprite.SetRelativeZ(-49.0f);
 }
 
 void onTick(CBlob@ this)
@@ -133,6 +139,56 @@ void onTick(CBlob@ this)
 
 	sprite.SetEmitSoundSpeed(min_spinup_soundspeed + spin_factor * (max_spinup_soundspeed - min_spinup_soundspeed));
 	sprite.SetEmitSoundVolume(min_spinup_soundvolume + spin_factor * (max_spinup_soundvolume - min_spinup_soundvolume));
+
+	f32 current_scale = this.get_f32("current_scale");
+	sprite.ScaleBy(Vec2f(1.0f / current_scale, 1.0f / current_scale));
+
+	if (grinding_time >= max_spinup / 2)
+	{
+		current_scale = Maths::Sin(getGameTime()) * max_shrink + 1.0f;
+		sprite.ScaleBy(Vec2f(current_scale, current_scale));
+	}
+
+	this.set_f32("current_scale", current_scale);
+
+	hover = isMouseOnBlob(getLocalPlayerBlob(), this);
+	alt = isHoldingAlt();
+	setOpacity(hover);
+
+	gui_alpha = opacity_factor;
+	rnd_alpha = opacity_factor_with_random;
+
+	print(""+gui_alpha);
+}
+
+f32 gui_alpha = 0.0f;
+f32 rnd_alpha = 0.0f;
+
+bool hover = false;
+bool alt = false;
+
+const Vec2f tooltip_size = Vec2f(100, 60);
+
+void onRender(CSprite@ this)
+{
+	if (!hover) return;
+
+	CBlob@ blob = this.getBlob();
+	if (blob is null) return;
+
+	CCamera@ camera = getCamera();
+	if (camera is null) return;
+
+	Vec2f blobpos = blob.getInterpolatedPosition();
+	Vec2f offset = Vec2f(0, -blob.getHeight() / 2 - 8);
+
+	Vec2f pos2d = getDriver().getScreenPosFromWorldPos(blobpos + offset);
+	f32 zoom = camera.targetDistance;
+
+	Vec2f tl = pos2d - Vec2f(tooltip_size) / 2;
+	Vec2f br = pos2d + Vec2f(tooltip_size) / 2;
+
+	drawRectangle(tl, br, SColor(gui_alpha,0,0,0), 1, 2, SColor(gui_alpha,25,25,40));
 }
 
 void onRemoveFromInventory(CBlob@ this, CBlob@ blob)

@@ -1,4 +1,4 @@
-const f32 radius = 32.0f;
+const f32 radius = 8.0f;
 void onInit(CBlob@ this)
 {
     this.addCommandID("request_putin_carried");
@@ -36,7 +36,7 @@ void onTick(CBlob@ this)
 
     Vec2f mpos = controls.getMouseWorldPos();
     CBlob@[] blobs;
-    getMap().getBlobsInRadius(mpos, radius, @blobs);
+    getMap().getBlobsInBox(mpos - Vec2f(radius, radius), mpos + Vec2f(radius, radius), @blobs);
 
     f32 temp = 999.0f;
     CBlob@ closest = null;

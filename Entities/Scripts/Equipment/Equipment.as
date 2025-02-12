@@ -150,7 +150,7 @@ void onTick(CBlob@ this)
 			f32 aim_distance = Maths::Abs((this.getAimPos() - this.getPosition()).Length());
 
 			Vec2f hitPos;
-			Vec2f dir = Vec2f((this.isFacingLeft() ? -1 : 1), 0.0f).RotateBy(angle);
+			Vec2f dir = Vec2f(1, 0).RotateBy(angle);
 			Vec2f startPos = this.getPosition();
 			Vec2f endPos = startPos + dir * aim_distance;
 
@@ -365,7 +365,7 @@ CBlob@ makeLight(CBlob@ this, bool enabled)
 f32 getAimAngle(CBlob@ this)
 {
 	Vec2f aimvector = this.getAimPos() - this.getInterpolatedPosition();
-	f32 angle = this.isFacingLeft() ? -aimvector.Angle() + 180.0f : -aimvector.Angle();
+	f32 angle = this.isFacingLeft() ? -aimvector.Angle() : -aimvector.Angle();
 
 	return angle;
 }
