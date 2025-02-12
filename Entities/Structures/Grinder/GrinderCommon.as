@@ -1,10 +1,10 @@
-const u8 spinup_time_small = 30;
+const u8 spinup_time_small = 15;
 const f32 yield_small = 1.0f;
 
 // min value is quantity 1, max value is max quantity
 // the actual time required depends on the quantity relatively to max quantity
 const int[][] mat_grind_time_minmax = {
-    {15, 75}
+    {5, 150}
 };
 
 const string[] mat_grind = {
@@ -17,7 +17,7 @@ const string[] mat_product = {
 
 // output ratio per input
 const f32[][]  mat_input_output_ratio = {
-    {1, 1}
+    {4, 1}
 };
 
 CBlob@ FindNewGrindTarget(CBlob@ this)
@@ -32,7 +32,7 @@ CBlob@ FindNewGrindTarget(CBlob@ this)
 
         for (uint i = 0; i < mat_grind.length; i++)
         {
-            if (item.getName() == mat_grind[i])
+            if (item.getName() == mat_grind[i] && item.getQuantity() > mat_input_output_ratio[i][0])
             {
                 return item;
             }
@@ -50,19 +50,31 @@ bool SetNewGrindTarget(CBlob@ this, CBlob@ target)
     int grinding_index = mat_grind.find(resource);
     if (grinding_index == -1) return false;
 
+    f32 yield = getYield(this, grinding_index);
+    u16 required_quantity = Maths::Ceil(mat_input_output_ratio[grinding_index][0]);
+    if (target.getQuantity() < required_quantity) return false;
+
+    u16 grindable_quantity = (target.getQuantity() / required_quantity) * required_quantity;
+    if (grindable_quantity < required_quantity) return false;
+
     u16 max_quantity = target.getMaxQuantity();
     u16 current_quantity = target.getQuantity();
-    f32 factor = float(current_quantity) / float(max_quantity);
     int min_time = mat_grind_time_minmax[grinding_index][0];
     int max_time = mat_grind_time_minmax[grinding_index][1];
-    u16 grind_time = min_time + int((max_time - min_time) * factor);
+    u16 grind_time = min_time + (max_time - min_time) * (grindable_quantity - required_quantity) / (max_quantity - required_quantity);
     this.set_u16("grinding_time", grind_time);
-    this.set_u16("grinding_quantity", target.getQuantity());
-    this.set_u16("product_quantity", getYield(this, grinding_index) * target.getQuantity());
+    this.set_u16("grinding_quantity", grindable_quantity);
+    this.set_u16("product_quantity", Maths::Ceil(grindable_quantity * yield));
 
     this.set_u16("grinding_id", target.getNetworkID());
     this.set_string("resource", resource);
     this.set_string("product", mat_product[grinding_index]);
+
+    if (isServer())
+    {
+        CBitStream params;
+        this.SendCommand(this.getCommandID("take_item_fx"), params);
+    }
 
     return true;
 }

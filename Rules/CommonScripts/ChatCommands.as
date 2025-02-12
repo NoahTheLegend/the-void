@@ -333,19 +333,22 @@ bool onClientProcessChat(CRules@ this, const string& in text_in, string& out tex
 	CBlob@ local = getLocalPlayerBlob();
 	CBlob@ sender = player.getBlob();
 
+	bool local_dead = local is null;
+	bool sender_dead = sender is null;
+
 	bool in_proximity = inProximity(local, sender);
 	bool radio_connection = hasRadio(local) && hasRadio(sender);
 	bool airspace = isInAirSpace(local) && isInAirSpace(sender);
 
 	// dead players can talk
-	bool in_range = local !is null && sender !is null
+	bool in_range = !local_dead && !sender_dead
 		&& (in_proximity || radio_connection);
 
 	bool self = local is sender;
 
 	// we always see the messages when we see the player, if both of us have radio,
 	// when we are dead, or when the sender is dead
-	bool add_to_chat = in_range || local is null || sender is null;
+	bool add_to_chat = in_range || local_dead || sender_dead;
 	bool someone_can_see_this_message = false;
 
 	// check if there are players to see the message
@@ -372,10 +375,11 @@ bool onClientProcessChat(CRules@ this, const string& in text_in, string& out tex
 		string clantag = player.getClantag();
 		if (clantag != "") clantag = clantag + " ";
 		
-		string radio = "";
-		if (radio_connection && !self && (!in_proximity || airspace)) radio = " [radio]";
+		string suffix = "";
+		if (sender_dead) suffix = " [dead]";
+		else if (radio_connection && !self && (!in_proximity || airspace)) suffix = " [radio]";
 
-		string formatted_name = "<"+clantag + player.getCharacterName() + radio+"> ";
+		string formatted_name = "<"+clantag + player.getCharacterName() + suffix+"> ";
 		client_AddToChat(formatted_name + text_in, SColor(255,0,0,0));
 
 		if (sender !is null && inProximity(local, sender))

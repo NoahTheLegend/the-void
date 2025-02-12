@@ -307,7 +307,28 @@ TileType server_onTileHit(CMap@ map, f32 damage, u32 index, TileType oldTileType
 				return CMap::tile_glass_d1;
 			
 			case CMap::tile_glass_d1:
-				return CMap::tile_empty;
+			{
+				Vec2f pos = map.getTileWorldPosition(index);
+				bool hasEmptyTile = false;
+
+				for (u8 i = 0; i < 4; i++)
+				{
+					if (map.getTile(pos + directions[i]).type == CMap::tile_empty)
+					{
+						hasEmptyTile = true;
+						break;
+					}
+				}
+
+				if (hasEmptyTile)
+				{
+					return CMap::tile_empty;
+				}
+				else
+				{
+					return CMap::tile_bpolishedmetal;
+				}
+			}
 
 			// bglass
 			case CMap::tile_bglass:
@@ -604,7 +625,6 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 				Vec2f pos = map.getTileWorldPosition(index);
 				bglass_SetTile(map, pos);
 				map.AddTileFlag(index, Tile::BACKGROUND | Tile::LIGHT_PASSES | Tile::WATER_PASSES | Tile::LIGHT_SOURCE);
-				if (isClient()) playSoundInProximityAtPos(map.getTileWorldPosition(index), "build_wall.ogg", 1.0f, 1.0f);
 
 				break;
 			}
@@ -667,7 +687,6 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 				map.AddTileFlag(index, Tile::BACKGROUND | Tile::WATER_PASSES | Tile::LIGHT_PASSES);
 				map.RemoveTileFlag(index, Tile::LIGHT_SOURCE | Tile::SOLID | Tile::COLLISION);
 
-				if (isClient()) playSoundInProximityAtPos(map.getTileWorldPosition(index), "build_wall.ogg", 1.0f, 1.1f);
 				break;
 			}
 
@@ -676,7 +695,6 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 			case CMap::tile_bsteel_v2:
 				map.AddTileFlag(index, Tile::BACKGROUND | Tile::LIGHT_PASSES | Tile::WATER_PASSES);
 
-				if (isClient()) playSoundInProximityAtPos(map.getTileWorldPosition(index), "build_wall.ogg", 1.0f, 1.1f);
 				break;
 
 			case CMap::tile_bsteel_d0:
@@ -752,8 +770,6 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 				bpolishedmetal_SetTile(map, pos);
 				map.AddTileFlag(index, Tile::BACKGROUND | Tile::WATER_PASSES | Tile::LIGHT_PASSES);
 				map.RemoveTileFlag(index, Tile::SOLID | Tile::LIGHT_SOURCE | Tile::COLLISION);
-
-				if (isClient()) playSoundInProximityAtPos(map.getTileWorldPosition(index), "build_wall.ogg", 1.0f, 0.925f);
 
 				break;
 			}

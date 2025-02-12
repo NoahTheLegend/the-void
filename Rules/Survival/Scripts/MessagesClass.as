@@ -169,7 +169,7 @@ class MessageContainer
     void render()
     {
         if (vars is null) return;
-        GUI::SetFont("CascadiaCodePL_12");
+        GUI::SetFont("menu");
 
         slider.render(255);
         GUI::DrawPane(tl-Vec2f(0,10), br, SColor(hud_transparency,255,255,255));
@@ -180,7 +180,8 @@ class MessageContainer
         }
         
         handleOrder();
-        int history_size = handleHistory(); // in lines
+
+        int history_size = handleHistory(); // in lines; lag starts at 1000 + calls (staging)
         handleHideBar();
 
         u8 was_scroll = wasMouseScroll(); // 1 - up, 2 - down
@@ -212,7 +213,7 @@ class MessageContainer
         Vec2f otl = br - Vec2f(p+6, dim.y + p * (1.0f-(f32(msg_count_slidetime_current)/f32(msg_count_slidetime))));
         Vec2f obr = otl + Vec2f(p, p);
 
-        GUI::SetFont("CascadiaCodePL_18");
+        GUI::SetFont("menu");
         GUI::DrawSunkenPane(otl, obr);
         GUI::DrawTextCentered(count_text, otl + Vec2f(p/2-2, p/2), SColor(255, 255, 255, 0));
     }
@@ -323,7 +324,7 @@ class MessageContainer
 
                     if (i == l_size) // reserved for title
                     {
-                        GUI::SetFont("CascadiaCodePL-Bold_13");
+                        GUI::SetFont("menu");
                         newtext = title;
                         l_pos.y -= title_offset;
                         copy_color_white.setAlpha(msg.title_alpha);
@@ -338,7 +339,7 @@ class MessageContainer
                 }
 
                 // draw filling line
-                GUI::SetFont("CascadiaCodePL_12");
+                GUI::SetFont("menu");
                 GUI::DrawText(l_text, msg_pos, color_white);
             }
 
@@ -385,7 +386,7 @@ class MessageContainer
     }
 
     // shatters messages from history into lines and assigns them positions relatively
-    // TODO: should be implemented in another way to not run when idle
+    // TODO: should be implemented in another way to not run while idle
     u16 handleHistory()
     {
         f32 scroll = slider.scrolled;
@@ -399,25 +400,17 @@ class MessageContainer
         for (u8 i = 0; i < history.size(); i++)
         {
             Message@ msg = history[i];
-            Message@ prev = order_list.size() > 0 && lines_scrolled == 0 ? order_list[0] : null;
-
             string title = msg.messageText.title;
             u8 title_offset = msg.messageText.title_offset;
 
-            f32 prev_height = 0;
-            if (prev !is null) prev_height = prev.height;
-
             Vec2f l_padding = Vec2f(padding.x, -padding.y);
             u8 l_size = msg.text_lines.size();
-            f32 offset = total_offset+prev_height;
-
-            Vec2f msg_pos = Vec2f_lerp(msg.old_pos, br - Vec2f(dim.x, offset) + l_padding, lines_scrolled == 0 ? 0.5f : 1.0f);
-            msg.old_pos = msg_pos;
+            f32 offset = total_offset;
 
             for (u8 j = 0; j < l_size+1; j++)
             {
                 string newtext;
-                Vec2f l_pos = msg_pos-Vec2f(0, line_height*(j+1)+3);
+                Vec2f l_pos = br - Vec2f(dim.x, offset) + l_padding - Vec2f(0, line_height*(j+1));
                 bool l_title = false;
 
                 if (j == l_size) // reserved for title
@@ -445,20 +438,20 @@ class MessageContainer
     void drawHistory(string[] lines, Vec2f[] offsets, bool[] is_title, u16 lines_outbound, f32 scroll)
     {
         lines_scrolled = lines_outbound - Maths::Round(lines_outbound*scroll);
-        Vec2f scroll_offset = Vec2f(0, line_height*lines_scrolled);
+        Vec2f scroll_offset = Vec2f(0, 0);
+        if (lines_scrolled > 0 && lines_scrolled <= offsets.size())
+            scroll_offset = Vec2f(0, offsets[0].y - offsets[lines_scrolled].y);
 
         for (u8 i = lines_scrolled; i < lines.size(); i++)
         {
             SColor copy_color_white = color_white;
-            Vec2f l_pos = offsets[i]+scroll_offset+Vec2f(0,3.33f*lines_scrolled); // i rly dont know why this should exist
+            Vec2f l_pos = offsets[i]+scroll_offset;
             
             if (l_pos.y < 0) break;
 
-            GUI::SetFont(is_title[i] ? "CascadiaCodePL-Bold_13" : "CascadiaCodePL_12");
+            GUI::SetFont("menu");
             GUI::DrawText(lines[i], l_pos, copy_color_white);
         }
-
-        //GUI::DrawText("out: "+lines_outbound+"\nscrolled: "+scroll+"\nlines scrolled: "+lines_scrolled+"\noffset: "+scroll_offset, tl - Vec2f(170, -20), color_black);
     }
 
     // start message's text runner

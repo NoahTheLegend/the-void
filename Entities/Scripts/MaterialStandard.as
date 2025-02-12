@@ -35,6 +35,9 @@ void onInit(CBlob@ this)
   
   this.Tag('material');
   this.Tag("pushedByDoor");
+  
+  if (!this.exists("throw scale")) this.set_f32("throw scale", 1.0f);
+  this.set_f32("init throw scale", this.get_f32("throw scale"));
   this.set_f32("init_mass", this.getMass());
 
   this.getShape().getVars().waterDragScale = 12.f;
@@ -44,6 +47,9 @@ void onInit(CBlob@ this)
     // Force inventory icon update
     Material::updateFrame(this);
   }
+  Material::updatePhysics(this);
+
+  onQuantityChange(this, this.getQuantity());
 }
 
 void onQuantityChange(CBlob@ this, int old)
@@ -58,12 +64,11 @@ void onQuantityChange(CBlob@ this, int old)
     }
   }
 
-  this.SetMass(Maths::Max(this.getQuantity() * this.get_f32("init_mass"), 1));
-
   if (getNet().isClient())
   {
     Material::updateFrame(this);
   }
+  Material::updatePhysics(this);
 }
 
 bool doesCollideWithBlob(CBlob@ this, CBlob@ blob)
@@ -91,4 +96,9 @@ void onDetach(CBlob@ this, CBlob@ detached, AttachmentPoint @attachedPoint)
     this.getShape().SetRotationsAllowed(true);
     this.Untag("reset_rotations");
   }
+}
+
+void onThisAddToInventory(CBlob@ this, CBlob@ blob)
+{
+  Material::updatePhysics(this);
 }

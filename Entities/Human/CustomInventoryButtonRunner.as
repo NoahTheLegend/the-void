@@ -45,21 +45,22 @@ void onTick(CBlob@ this)
         CBlob@ blob = blobs[i];
         if (blob is null) continue;
         if (!blob.hasTag("custom_inventory")) continue;
-        if (blob.getDistanceTo(this) > blob.get_f32("max_inventory_distance")
-            && !blob.isOverlapping(this)) continue;
-
-        f32 dist = (blob.getPosition() - mpos).Length();
-        if (dist < temp)
+        if (blob.getDistanceTo(this) < blob.get_f32("max_inventory_distance") || blob.isOverlapping(this))
         {
-            temp = dist;
-            @closest = blob;
+            f32 dist = (blob.getPosition() - mpos).Length();
+            if (dist < temp)
+            {
+                temp = dist;
+                @closest = blob;
+            }
         }
     }
-
+    
     if (closest !is null)
     {
         bool holding = this.isKeyPressed(key_use);
         if (holding) closest.set_u32("last_hover_time", getGameTime()+1);
+
 
         Vec2f sc = getDriver().getScreenCenterPos();
         if (this.isKeyJustReleased(key_use) || (holding && this.isKeyJustPressed(key_action1)))
@@ -75,6 +76,10 @@ void onTick(CBlob@ this)
             {
                 //closest.CreateInventoryMenu(sc); // doesnt work, tries to give the items to PICKUP of the structure
                 CreateCustomInventoryMenu(this, closest, sc);
+
+                f32 volume = closest.get_f32("inventory_volume");
+                f32 pitch = closest.get_f32("inventory_pitch") + XORRandom(100 * closest.get_f32("inventory_pitch_random")) * 0.01f;
+                this.getSprite().PlayRandomSound(closest.get_string("inventory_open_sound"), volume, pitch);
             }
         }
     }

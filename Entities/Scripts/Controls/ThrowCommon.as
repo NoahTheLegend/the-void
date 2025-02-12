@@ -142,16 +142,11 @@ Vec2f getThrowVelocity(CBlob@ this, CBlob@ carried, Vec2f vector, Vec2f selfVelo
 	Vec2f vel = vector;
 	f32 len = vel.Normalize();
 	
-	// Calculate throw velocity based on mass difference
-	f32 massThis = this.getMass();
-	f32 massCarried = carried.getMass();
-	f32 massRatio = massThis / massCarried;
-	
-	// Adjust the throw velocity based on the mass ratio
-	f32 throwVelCarried = DEFAULT_THROW_VEL * (massRatio < 1.0f ? massRatio : 1.0f);
+	// Calculate throw velocity without considering mass ratio
+	f32 throwVelCarried = DEFAULT_THROW_VEL;
 	
 	vel *= throwVelCarried;
-	vel *= this.get_f32("throw scale");
+	if (carried.exists("throw scale")) vel *= carried.get_f32("throw scale");
 	vel += selfVelocity * this_vel_affect; // blob velocity
 
 	f32 closeDist = this.getRadius() + 64.0f;

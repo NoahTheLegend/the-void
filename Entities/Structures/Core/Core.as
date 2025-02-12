@@ -1,7 +1,7 @@
 #include "GenericButtonCommon.as"
 
 const u8 update_frequency = 30;
-const Vec2f grinder_offset = Vec2f(23, 12);
+const Vec2f grinder_offset = Vec2f(23, 13);
 
 void onInit(CBlob@ this)
 {

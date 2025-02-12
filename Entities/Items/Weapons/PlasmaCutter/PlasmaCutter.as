@@ -18,7 +18,7 @@ const u16 drill_frequency_tiles = 30;
 const u16 drill_frequency_blobs = 8; // how often to drill
 const u32 drill_spinup = 20; // sound spinup
 const f32 spinup_throttle = 0.5f; // drop active_time to drill_spinup * spinup_throttle when loop sound changes
-const f32 max_volume = 0.35f;
+const f32 max_volume = 0.66f;
 const f32 max_pitch = 0.95f;
 const u8 particle_frequency = 3;
 
@@ -74,6 +74,7 @@ void onInit(CBlob@ this)
 	this.set_string("laser_texture", "Laser_Blue.png");
 	this.set_f32("laser_distance", 32.0f);
 	this.set_f32("falloff_start", 0.0f);
+	this.set_f32("laser_alpha_mod", 0.75f);
 	this.set_Vec2f("laser_offset", Vec2f(3, -1.5f));
 
 	this.set_u16("times_cut", 0);

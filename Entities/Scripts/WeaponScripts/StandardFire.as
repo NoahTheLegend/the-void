@@ -55,6 +55,7 @@ void onInit(CBlob@ this)
 	if (!this.exists("laser_texture")) this.set_string("laser_texture", "Laser_Blue.png");
 	if (!this.exists("laser_distance")) this.set_f32("laser_distance", 32.0f);
 	if (!this.exists("falloff_start")) this.set_f32("falloff_start", 16.0f);
+	if (!this.exists("laser_alpha_mod")) this.set_f32("laser_alpha_mod", 0.0f);
 	if (!this.exists("falloff_max")) this.set_f32("falloff_max", 1.0f);
 	if (!this.exists("laser_offset")) this.set_Vec2f("laser_offset", Vec2f(0,0));
 	this.set_Vec2f("laser_hitpos", Vec2f(-1, -1));
@@ -172,6 +173,7 @@ void laserEffects(CBlob@ this, int id)
 	string laser_texture = this.get_string("laser_texture");
 	f32 laser_distance = this.get_f32("laser_distance");
 	f32 falloff_start = this.get_f32("falloff_start");
+	f32 laser_alpha_mod = this.get_f32("laser_alpha_mod");
 	f32 falloff_max = this.get_f32("falloff_max");
 	Vec2f laser_offset = this.get_Vec2f("laser_offset");
 	Vec2f laser_hitpos = this.get_Vec2f("laser_hitpos");
@@ -206,7 +208,7 @@ void laserEffects(CBlob@ this, int id)
 		{
 			alpha = 1.0f - ((i - falloff_start) / (laser_distance - falloff_start)) * falloff_max;
 		}
-		alpha = Maths::Clamp(alpha, 0.0f, 1.0f);
+		alpha = Maths::Clamp(alpha * laser_alpha_mod, 0.0f, 1.0f);
 
 		SColor color = SColor(uint8(alpha * 255), 255, 255, 255);
 

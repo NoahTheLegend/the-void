@@ -8,10 +8,18 @@ const f32 min_spinup_soundspeed = 0.5f;
 const f32 max_spinup_soundspeed = 1.0f;
 const f32 min_spinup_soundvolume = 0.1f;
 const f32 max_spinup_soundvolume = 1.0f;
-const f32 max_shrink = 0.05f;
+
+void onReload(CBlob@ this)
+{
+	onInit(this);
+}
 
 void onInit(CBlob@ this)
 {
+	initHoverVars(this);
+	setMaxHover(this, 5, 0.5f);
+	setFluctuation(this, 5, 1, 0.25f);
+
 	this.set_u16("grinding_time", 0);
 	this.set_u16("grinding_quantity", 0);
 	this.set_u16("product_quantity", 0);
@@ -20,9 +28,12 @@ void onInit(CBlob@ this)
 	this.set_string("product", "");
 	this.set_u16("output_link_id", 0);
 	this.set_u16("failure_time", 0);
-	this.set_f32("current_scale", 1.0f);
+
+	this.set_bool("hover", false);
+	this.set_bool("render", false);
 
 	this.Tag("update");
+	this.addCommandID("take_item_fx");
 	this.addCommandID("sync");
 	RequestSync(this);
 
@@ -42,7 +53,7 @@ void onTick(CBlob@ this)
 	u32 grinding_time = this.get_u16("grinding_time");
 	if (isServer())
 	{
-		if (grinding_time == 0) // ready
+		if (grinding_time == 0 && !this.hasTag("idle")) // ready
 		{
 			// grind target
 			u16 grinding_id = this.get_u16("grinding_id");
@@ -51,21 +62,32 @@ void onTick(CBlob@ this)
 				CBlob@ grinding_target = getBlobByNetworkID(grinding_id);
 				if (grinding_target !is null)
 				{
+					u16 grinding_quantity = this.get_u16("grinding_quantity");
+					u16 product_quantity = this.get_u16("product_quantity");
+					u16 output_link_id = this.get_u16("output_link_id");
 					string resource = this.get_string("resource");
 					string product = this.get_string("product");
 
-					if (this.hasBlob(resource, this.get_u16("grinding_quantity")))
+					if (this.hasBlob(resource, grinding_quantity)) // Check if there's enough resource
 					{
-						CBlob@ product_blob = server_CreateBlob(product, this.getTeamNum(), this.getPosition());
-						if (product_blob !is null)
-						{
-							bool takeResource = true;
+						CBlob@ storage = getBlobByNetworkID(output_link_id);
 
-							u16 product_quantity = this.get_u16("product_quantity");
-							product_blob.server_SetQuantity(product_quantity);
-							
-							u16 output_link_id = this.get_u16("output_link_id");
-							CBlob@ storage = getBlobByNetworkID(output_link_id);
+						bool takeResource = true;
+						u16 total_products_created = 0;
+
+						//while (product_quantity > 0 && this.hasBlob(resource, grinding_quantity))
+						{
+							//f32 yield = getYield(this, mat_grind.find(resource));
+							//u16 resource_per_product = Maths::Ceil(grinding_quantity * yield);
+							//this.TakeBlob(resource, resource_per_product);
+//
+							//CBlob@ product_blob = server_CreateBlob(product, this.getTeamNum(), this.getPosition());
+							//if (product_blob is null) break;
+//
+							//u16 quantity_to_set = Maths::Min(product_blob.getMaxQuantity(), product_quantity);
+							//product_blob.server_SetQuantity(quantity_to_set);
+							//product_quantity -= quantity_to_set;
+							//total_products_created++;
 
 							bool try_self = true;
 							if (output_link_id != 0 && storage !is null)
@@ -85,16 +107,14 @@ void onTick(CBlob@ this)
 									takeResource = false;
 							}
 
-							if (takeResource)
+							if (!takeResource)
 							{
-								this.TakeBlob(resource, this.get_u16("grinding_quantity"));
-							}
-							else // failure
-							{
+								this.Tag("idle");
 								this.set_u16("failure_time", 90);
 
 								product_blob.Tag("dead");
 								product_blob.server_Die();
+								break;
 							}
 						}
 					}
@@ -117,64 +137,50 @@ void onTick(CBlob@ this)
 				}
 			}
 		}
-		else
+		else if (grinding_time > 0) // grinding
 		{
 			this.sub_u16("grinding_time", 1);
 		}
 	}
 
 	if (this.get_u16("failure_time") > 0) this.sub_u16("failure_time", 1);
-
 	if (!isClient()) return;
 
 	CSprite@ sprite = this.getSprite();
 	if (sprite is null) return;
 
 	u16 max_spinup = this.get_u16("max_spinup_time");
-	if (grinding_time > 0)
-		this.set_u16("spinup_time", Maths::Min(this.get_u16("spinup_time") + 1, max_spinup));
+	u16 spinup = this.get_u16("spinup_time");
 	
+	if (grinding_time > 0 && spinup < max_spinup)
+		spinup++;
+	else if (grinding_time == 0 && spinup > 0)
+		spinup--;
+	this.set_u16("spinup_time", spinup);
+
 	f32 spin_factor = f32(this.get_u16("spinup_time")) / f32(max_spinup);
 	sprite.SetEmitSoundPaused(spin_factor == 0);
 
 	sprite.SetEmitSoundSpeed(min_spinup_soundspeed + spin_factor * (max_spinup_soundspeed - min_spinup_soundspeed));
 	sprite.SetEmitSoundVolume(min_spinup_soundvolume + spin_factor * (max_spinup_soundvolume - min_spinup_soundvolume));
+	
+	if (!this.isOnScreen()) return;
 
-	f32 current_scale = this.get_f32("current_scale");
-	sprite.ScaleBy(Vec2f(1.0f / current_scale, 1.0f / current_scale));
+ 	bool alt = isHoldingAlt();
+	bool hover = alt && isMouseOnBlob(getLocalPlayerBlob(), this);
+	this.set_bool("hover", hover);
+	setOpacity(this, hover);
 
-	if (grinding_time >= max_spinup / 2)
-	{
-		current_scale = Maths::Sin(getGameTime()) * max_shrink + 1.0f;
-		sprite.ScaleBy(Vec2f(current_scale, current_scale));
-	}
-
-	this.set_f32("current_scale", current_scale);
-
-	hover = isMouseOnBlob(getLocalPlayerBlob(), this);
-	alt = isHoldingAlt();
-	setOpacity(hover);
-
-	gui_alpha = opacity_factor;
-	rnd_alpha = opacity_factor_with_random;
-
-	print(""+gui_alpha);
+	this.set_bool("render", this.get_f32("opacity_factor") != 0);
 }
 
-f32 gui_alpha = 0.0f;
-f32 rnd_alpha = 0.0f;
-
-bool hover = false;
-bool alt = false;
-
-const Vec2f tooltip_size = Vec2f(100, 60);
+Vec2f tooltip_size = Vec2f(75, 35);
 
 void onRender(CSprite@ this)
 {
-	if (!hover) return;
-
 	CBlob@ blob = this.getBlob();
 	if (blob is null) return;
+	if (!blob.get_bool("render")) return;
 
 	CCamera@ camera = getCamera();
 	if (camera is null) return;
@@ -185,14 +191,24 @@ void onRender(CSprite@ this)
 	Vec2f pos2d = getDriver().getScreenPosFromWorldPos(blobpos + offset);
 	f32 zoom = camera.targetDistance;
 
-	Vec2f tl = pos2d - Vec2f(tooltip_size) / 2;
-	Vec2f br = pos2d + Vec2f(tooltip_size) / 2;
+	Vec2f tl = pos2d - Vec2f(tooltip_size) * zoom / 2;
+	Vec2f br = pos2d + Vec2f(tooltip_size) * zoom / 2;
 
-	drawRectangle(tl, br, SColor(gui_alpha,0,0,0), 1, 2, SColor(gui_alpha,25,25,40));
+	f32 gui_alpha = blob.get_f32("opacity_factor") * 255;
+	f32 rnd_alpha = blob.get_f32("opacity_factor_with_random") * 255;
+
+	drawRectangle(tl, br, SColor(rnd_alpha, 255, 255, 255), 1, 2, SColor(rnd_alpha, 25, 25, 40));
+}
+
+void onAddToInventory(CBlob@ this, CBlob@ blob)
+{
+	this.Untag("idle");
 }
 
 void onRemoveFromInventory(CBlob@ this, CBlob@ blob)
 {
+	this.Untag("idle");
+
 	if (!isServer()) return;
 	if (blob is null) return;
 
@@ -226,6 +242,15 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 			this.set_u16("output_link_id", params.read_u16());
 			this.set_u16("failure_time", params.read_u16());
 		}
+	}
+	else if (cmd == this.getCommandID("take_item_fx"))
+	{
+		if (!isClient()) return;
+
+		CSprite@ sprite = this.getSprite();
+		if (sprite is null) return;
+
+		playSoundInProximity(this, "GateClose", 1.0f, 1.0f, true);
 	}
 }
 

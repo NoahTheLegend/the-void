@@ -36,6 +36,12 @@ namespace Material
 		this.SetInventoryIcon(consts.filename, frame, size);
 	}
 
+	void updatePhysics(CBlob@ this)
+	{
+		this.SetMass(Maths::Max(this.getQuantity() * this.get_f32("init_mass"), 1));
+  		this.set_f32("throw scale", this.get_f32("init throw scale") * (1.0f - ((this.getQuantity() / this.maxQuantity) * 0.5f)));
+	}
+
 	// Server-side: Hard merge
 	void merge(CBlob@ this, CBlob@ blob)
 	{

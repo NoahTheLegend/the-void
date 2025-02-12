@@ -7,7 +7,7 @@ void onInit(CRules@ this)
 	//if (getLocalPlayer() !is null)
 	if (isClient())
 	{
-		MessageContainer setbox(30, Vec2f(getDriver().getScreenWidth()/3, 150), Vec2f(20, 15), 16);
+		MessageContainer setbox(30, Vec2f(getDriver().getScreenWidth()/3, 150), Vec2f(20, 15), 24);
 		this.set("MessageContainer", @setbox);
 	}
 }
@@ -69,8 +69,8 @@ void blobTick(CBlob@ this)
 
 	if (this.isKeyJustPressed(key_taunts))
 	{
-		if (XORRandom(2) == 0) addMessage(makeText("onetwo,THREEFOURFIVE!!!sixseveneight,nine,teneleventwelvethirteen fourteen fifteen"+XORRandom(999), formDefaultTitle(null)));
-		else addMessage(makeText("lol", formDefaultTitle(null)));
+		/*if (XORRandom(2) == 0) addMessage(makeText("onetwo,THREEFOURFIVE!!!sixseveneight,nine,teneleventwelvethirteen fourteen fifteen"+XORRandom(999), formDefaultTitle(null)));
+		else*/ addMessage(makeText("lol"+(getGameTime()%30), formDefaultTitle(null)));
 	}
 
 	bool a1 = isAction(this);

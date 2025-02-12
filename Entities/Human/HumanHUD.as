@@ -7,7 +7,7 @@
 const string iconsFilename = "HumanIcons.png";
 const int slotsSize = 6;
 
-const u8[] font_sizes = {14,18,12,10,13};
+const u8[] font_sizes = {14,18,11,8,12};
 const string[] font_names = {"RockwellMT", "CascadiaCodePL", "CascadiaCodePL", "CascadiaCodePL", "CascadiaCodePL-Bold"};
 
 void onInit(CSprite@ this)
