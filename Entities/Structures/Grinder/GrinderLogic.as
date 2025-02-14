@@ -21,6 +21,7 @@ void onInit(CBlob@ this)
 	setFluctuation(this, 5, 1, 0.25f);
 
 	this.set_u16("grinding_time", 0);
+	this.set_u16("max_grinding_time", 0);
 	this.set_u16("grinding_quantity", 0);
 	this.set_u16("product_quantity", 0);
 	this.set_u16("grinding_id", 0);
@@ -52,6 +53,7 @@ void onInit(CBlob@ this)
 
 void onTick(CBlob@ this)
 {
+	f32 progress = 0;
 	u32 grinding_time = this.get_u16("grinding_time");
 	if (isServer())
 	{
@@ -129,6 +131,8 @@ void onTick(CBlob@ this)
 			// set new if necessary
 			if (this.hasTag("update"))
 			{
+				ResetGrindTarget(this);
+
 				CBlob@ target = FindNewGrindTarget(this);
 				if (target !is null)
 				{
@@ -141,9 +145,11 @@ void onTick(CBlob@ this)
 		}
 		else if (grinding_time > 0) // grinding
 		{
+			progress = f32(grinding_time) / f32(this.get_u16("max_grinding_time"));
 			this.sub_u16("grinding_time", 1);
 		}
 	}
+	this.set_f32("progress", progress);
 
 	if (this.get_u16("failure_time") > 0) this.sub_u16("failure_time", 1);
 	if (!isClient()) return;
@@ -176,7 +182,7 @@ void onTick(CBlob@ this)
 	this.set_bool("render", this.get_f32("opacity_factor") * 255 > 0);
 }
 
-Vec2f tooltip_size = Vec2f(75, 30);
+Vec2f tooltip_size = Vec2f(60, 30);
 void onRender(CSprite@ this)
 {
 	CBlob@ blob = this.getBlob();
@@ -189,32 +195,47 @@ void onRender(CSprite@ this)
 	Vec2f blobpos = blob.getInterpolatedPosition();
 	Vec2f offset = Vec2f(0, -blob.getHeight() / 2 - 8);
 
+	Vec2f blobpos2d = getDriver().getScreenPosFromWorldPos(blobpos);
 	Vec2f pos2d = getDriver().getScreenPosFromWorldPos(blobpos + offset);
 	f32 zoom = camera.targetDistance;
 
 	Vec2f tl = pos2d - Vec2f(tooltip_size) * zoom / 2;
 	Vec2f br = pos2d + Vec2f(tooltip_size) * zoom / 2;
 
-	f32 gui_alpha = blob.get_f32("opacity_factor") * 255;
-	f32 rnd_alpha = blob.get_f32("opacity_factor_with_random") * 255;
+	f32 opacity_factor = blob.get_f32("opacity_factor");
+	f32 opacity_factor_with_random = blob.get_f32("opacity_factor_with_random");
+	f32 gui_alpha = opacity_factor * 255;
+	f32 rnd_alpha = opacity_factor_with_random * 255;
 	
 	SColor col_hologram = _col_hologram;
 	col_hologram.setAlpha(rnd_alpha * 0.5f);
 	SColor col_hologram_border = _col_hologram_border;
 	col_hologram_border.setAlpha(gui_alpha * 0.5f);
+	SColor col_hologram_cone = _col_hologram_cone;
+	col_hologram_cone.setAlpha(rnd_alpha);
+	SColor col_hologram_progress = _col_hologram_progress;
+	col_hologram_progress.setAlpha(rnd_alpha * 0.625f);
 
 	drawRectangle(tl, br, col_hologram, 1, 4, col_hologram_border);
 
 	u16 input_icon_id = blob.get_u16("input_icon_id");
 	u16 output_icon_id = blob.get_u16("output_icon_id");
 
-	if (input_icon_id == 0 || output_icon_id == 0) return;
-	Vec2f pos_input = tl + Vec2f(4, 2) * zoom;
-	Vec2f pos_output = tl + Vec2f(tooltip_size.x - 26, 2) * zoom;
-	GUI::DrawIcon("Materials.png", input_icon_id, Vec2f(16, 16), pos_input, zoom * 0.75f, SColor(gui_alpha * 0.66f,155,155,255));
-	GUI::DrawIcon("Materials.png", output_icon_id, Vec2f(16, 16), pos_output, zoom * 0.75f, SColor(gui_alpha * 0.66f,155,155,255));
+	if (input_icon_id > 0 && output_icon_id > 0)
+	{
+		Vec2f pos_input = tl + Vec2f(4, 2) * zoom;
+		Vec2f pos_output = tl + Vec2f(tooltip_size.x - 26, 2) * zoom;
 
-	drawInterruptor(tl, br, Vec2f(tooltip_size.x, 4), SColor(gui_alpha*0.1f,0,0,0), zoom, 0.5f, 0); // moving line
+		GUI::DrawIcon("Materials.png", input_icon_id, Vec2f(16, 16), pos_input, zoom * 0.75f, SColor(gui_alpha * 0.66f,155,155,255));
+		GUI::DrawIcon("Materials.png", output_icon_id, Vec2f(16, 16), pos_output, zoom * 0.75f, SColor(gui_alpha * 0.66f,155,155,255));
+		
+		f32 progress = 1.0f - blob.get_f32("progress");
+		drawProgressBarAroundRectangle(tl, tooltip_size * zoom, progress, 2 * zoom, col_hologram_progress);
+	}
+	drawInterruptor(tl, br, Vec2f(tooltip_size.x, 3.5f), SColor(gui_alpha*0.1f,0,0,0), zoom, 0.5f, 0); // moving line
+
+	f32 angle = 90 * opacity_factor;
+	drawCone(blobpos2d, br - Vec2f(br.x - tl.x, 0) / 2, angle, col_hologram_cone);
 }
 
 void onAddToInventory(CBlob@ this, CBlob@ blob)
@@ -251,6 +272,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		else if (!request && isClient())
 		{
 			this.set_u16("grinding_time", params.read_u16());
+			this.set_u16("max_grinding_time", params.read_u16());
 			this.set_u16("grinding_quantity", params.read_u16());
 			this.set_u16("product_quantity", params.read_u16());
 			this.set_u16("grinding_id", params.read_u16());
@@ -260,6 +282,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 			this.set_u16("failure_time", params.read_u16());
 			this.set_u16("input_icon_id", params.read_u16());
 			this.set_u16("output_icon_id", params.read_u16());
+			this.set_u8("clip_time", params.read_u8());
 		}
 	}
 	else if (cmd == this.getCommandID("take_item_fx"))
@@ -271,43 +294,4 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 
 		playSoundInProximity(this, "GateClose", 1.0f, 1.0f, true);
 	}
-}
-
-void Sync(CBlob@ this, u16 pid = 0)
-{
-	if (!isServer()) return;
-
-	CBitStream params;
-	params.write_bool(false);
-	params.write_u16(0);
-	params.write_u16(this.get_u16("grinding_time"));
-	params.write_u16(this.get_u16("grinding_quantity"));
-	params.write_u16(this.get_u16("product_quantity"));
-	params.write_u16(this.get_u16("grinding_id"));
-	params.write_string(this.get_string("resource"));
-	params.write_string(this.get_string("product"));
-	params.write_u16(this.get_u16("output_link_id"));
-	params.write_u16(this.get_u16("failure_time"));
-	params.write_u16(this.get_u16("input_icon_id"));
-	params.write_u16(this.get_u16("output_icon_id"));
-
-	if (pid != 0)
-	{
-		CPlayer@ p = getPlayerByNetworkId(pid);
-		if (p !is null)
-			this.server_SendCommandToPlayer(this.getCommandID("sync"), params, p);
-	}
-
-	if (pid == 0)
-		this.SendCommand(this.getCommandID("sync"), params);
-}
-
-void RequestSync(CBlob@ this)
-{
-	if (!isClient() || getLocalPlayer() is null) return;
-
-	CBitStream params;
-	params.write_bool(true);
-	params.write_u16(getLocalPlayer().getNetworkID());
-	this.SendCommand(this.getCommandID("sync"), params);
 }

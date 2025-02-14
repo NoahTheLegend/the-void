@@ -67,6 +67,7 @@ class Bullet
 
     bool onTick(CMap@ map)
     {
+        // todo: teleport bullet if its out of map
         TimeLeft = Maths::Max(0, TimeLeft - 1);
 
         // Kill bullet at start of new tick (we don't instantly remove it so client can render it going splat)

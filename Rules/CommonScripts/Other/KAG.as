@@ -102,3 +102,11 @@ void onExitChat(CRules @this)
 	if (localblob !is null)
 		set_emote(localblob, "off");
 }
+
+void onBlobCreated(CRules@ this, CBlob@ blob)
+{
+	if (blob is null) return;
+
+	blob.SetMapEdgeFlags(CBlob::map_collide_none | CBlob::map_collide_nodeath);
+	blob.AddScript("TeleportAtEdges.as");
+}
