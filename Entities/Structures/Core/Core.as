@@ -18,8 +18,6 @@ void onInit(CBlob@ this)
 
 	InitGrinder(this);
 
-	if (!isClient()) return;
-
 	CSprite@ sprite = this.getSprite();
 	if (sprite is null) return;
 

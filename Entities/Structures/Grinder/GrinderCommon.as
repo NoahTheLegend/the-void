@@ -93,8 +93,8 @@ void ResetGrindTarget(CBlob@ this)
     this.set_u16("grinding_id", 0);
     this.set_string("resource", "");
     this.set_string("product", "");
-    this.set_s16("input_icon_id", -1);
-    this.set_s16("output_icon_id", -1);
+    this.set_u16("input_icon_id", 0);
+    this.set_u16("output_icon_id", 0);
 }
 
 f32 getYield(CBlob@ this, int index)

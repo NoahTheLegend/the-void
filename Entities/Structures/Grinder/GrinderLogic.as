@@ -28,6 +28,8 @@ void onInit(CBlob@ this)
 	this.set_string("product", "");
 	this.set_u16("output_link_id", 0);
 	this.set_u16("failure_time", 0);
+	this.set_u16("input_icon_id", -1);
+	this.set_u16("output_icon_id", -1);
 
 	this.set_bool("hover", false);
 	this.set_bool("render", false);
@@ -206,7 +208,7 @@ void onRender(CSprite@ this)
 	u16 input_icon_id = blob.get_u16("input_icon_id");
 	u16 output_icon_id = blob.get_u16("output_icon_id");
 
-	if (input_icon_id == -1 || output_icon_id == -1) return;
+	if (input_icon_id == 0 || output_icon_id == 0) return;
 	Vec2f pos_input = tl + Vec2f(4, 2) * zoom;
 	Vec2f pos_output = tl + Vec2f(tooltip_size.x - 26, 2) * zoom;
 	GUI::DrawIcon("Materials.png", input_icon_id, Vec2f(16, 16), pos_input, zoom * 0.75f, SColor(gui_alpha * 0.66f,155,155,255));
