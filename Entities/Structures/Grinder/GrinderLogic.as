@@ -62,66 +62,66 @@ void onTick(CBlob@ this)
 				CBlob@ grinding_target = getBlobByNetworkID(grinding_id);
 				if (grinding_target !is null)
 				{
-					u16 grinding_quantity = this.get_u16("grinding_quantity");
-					u16 product_quantity = this.get_u16("product_quantity");
-					u16 output_link_id = this.get_u16("output_link_id");
+					int grinding_quantity = this.get_u16("grinding_quantity");
+					int product_quantity = this.get_u16("product_quantity");
+					int output_link_id = this.get_u16("output_link_id");
 					string resource = this.get_string("resource");
 					string product = this.get_string("product");
 
-					if (this.hasBlob(resource, grinding_quantity)) // Check if there's enough resource
+					CBlob@ storage = getBlobByNetworkID(output_link_id);
+					while (product_quantity > 0)
 					{
-						CBlob@ storage = getBlobByNetworkID(output_link_id);
-
 						bool takeResource = true;
-						u16 total_products_created = 0;
 
-						//while (product_quantity > 0 && this.hasBlob(resource, grinding_quantity))
+						CBlob@ product_blob = server_CreateBlob(product, this.getTeamNum(), this.getPosition());
+						product_blob.server_SetQuantity(Maths::Min(product_quantity, product_blob.getMaxQuantity()));
+						
+						u16 resource_to_take = 1;
+						int resource_idx = mat_grind.find(resource);
+
+						if (resource_idx != -1)
+							resource_to_take = Maths::Ceil(mat_input_output_ratio[resource_idx][0]) * product_blob.getQuantity();
+						
+						product_quantity -= product_blob.getQuantity();
+						bool try_self = true;
+
+						if (output_link_id != 0 && storage !is null)
 						{
-							//f32 yield = getYield(this, mat_grind.find(resource));
-							//u16 resource_per_product = Maths::Ceil(grinding_quantity * yield);
-							//this.TakeBlob(resource, resource_per_product);
-//
-							//CBlob@ product_blob = server_CreateBlob(product, this.getTeamNum(), this.getPosition());
-							//if (product_blob is null) break;
-//
-							//u16 quantity_to_set = Maths::Min(product_blob.getMaxQuantity(), product_quantity);
-							//product_blob.server_SetQuantity(quantity_to_set);
-							//product_quantity -= quantity_to_set;
-							//total_products_created++;
-
-							bool try_self = true;
-							if (output_link_id != 0 && storage !is null)
+							if (storage.server_PutInInventory(product_blob))
 							{
-								if (storage.server_PutInInventory(product_blob))
-								{
-									try_self = false;
-									takeResource = true;
-								}
-								else
-									takeResource = false;
+								try_self = false;
+								takeResource = true;
 							}
+							else
+								takeResource = false;
+						}
 
-							if (try_self)
-							{
-								if (!this.server_PutInInventory(product_blob))
-									takeResource = false;
-							}
+						if (try_self)
+						{
+							if (!this.server_PutInInventory(product_blob))
+								takeResource = false;
+						}
 
-							if (!takeResource)
-							{
-								this.Tag("idle");
-								this.set_u16("failure_time", 90);
+						if (!takeResource)
+						{
+							this.Tag("idle");
+							this.set_u16("failure_time", 90);
 
-								product_blob.Tag("dead");
-								product_blob.server_Die();
-								break;
-							}
+							product_blob.Tag("dead");
+							product_blob.server_Die();
+							break;
+						}
+						else
+						{
+							grinding_quantity -= resource_to_take;
+							this.TakeBlob(resource, resource_to_take);
 						}
 					}
 				}
 
 				this.Tag("update");
 				ResetGrindTarget(this);
+				Sync(this);
 			}
 
 			// set new if necessary
@@ -165,17 +165,16 @@ void onTick(CBlob@ this)
 	sprite.SetEmitSoundVolume(min_spinup_soundvolume + spin_factor * (max_spinup_soundvolume - min_spinup_soundvolume));
 	
 	if (!this.isOnScreen()) return;
-
  	bool alt = isHoldingAlt();
+
 	bool hover = alt && isMouseOnBlob(getLocalPlayerBlob(), this);
 	this.set_bool("hover", hover);
 	setOpacity(this, hover);
 
-	this.set_bool("render", this.get_f32("opacity_factor") != 0);
+	this.set_bool("render", this.get_f32("opacity_factor") * 255 > 0);
 }
 
-Vec2f tooltip_size = Vec2f(75, 35);
-
+Vec2f tooltip_size = Vec2f(75, 30);
 void onRender(CSprite@ this)
 {
 	CBlob@ blob = this.getBlob();
@@ -196,8 +195,24 @@ void onRender(CSprite@ this)
 
 	f32 gui_alpha = blob.get_f32("opacity_factor") * 255;
 	f32 rnd_alpha = blob.get_f32("opacity_factor_with_random") * 255;
+	
+	SColor col_hologram = _col_hologram;
+	col_hologram.setAlpha(rnd_alpha * 0.5f);
+	SColor col_hologram_border = _col_hologram_border;
+	col_hologram_border.setAlpha(gui_alpha * 0.5f);
 
-	drawRectangle(tl, br, SColor(rnd_alpha, 255, 255, 255), 1, 2, SColor(rnd_alpha, 25, 25, 40));
+	drawRectangle(tl, br, col_hologram, 1, 4, col_hologram_border);
+
+	u16 input_icon_id = blob.get_u16("input_icon_id");
+	u16 output_icon_id = blob.get_u16("output_icon_id");
+
+	if (input_icon_id == -1 || output_icon_id == -1) return;
+	Vec2f pos_input = tl + Vec2f(4, 2) * zoom;
+	Vec2f pos_output = tl + Vec2f(tooltip_size.x - 26, 2) * zoom;
+	GUI::DrawIcon("Materials.png", input_icon_id, Vec2f(16, 16), pos_input, zoom * 0.75f, SColor(gui_alpha * 0.66f,155,155,255));
+	GUI::DrawIcon("Materials.png", output_icon_id, Vec2f(16, 16), pos_output, zoom * 0.75f, SColor(gui_alpha * 0.66f,155,155,255));
+
+	drawInterruptor(tl, br, Vec2f(tooltip_size.x, 4), SColor(gui_alpha*0.1f,0,0,0), zoom, 0.5f, 0); // moving line
 }
 
 void onAddToInventory(CBlob@ this, CBlob@ blob)
@@ -241,6 +256,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 			this.set_string("product", params.read_string());
 			this.set_u16("output_link_id", params.read_u16());
 			this.set_u16("failure_time", params.read_u16());
+			this.set_u16("input_icon_id", params.read_u16());
+			this.set_u16("output_icon_id", params.read_u16());
 		}
 	}
 	else if (cmd == this.getCommandID("take_item_fx"))
@@ -269,6 +286,8 @@ void Sync(CBlob@ this, u16 pid = 0)
 	params.write_string(this.get_string("product"));
 	params.write_u16(this.get_u16("output_link_id"));
 	params.write_u16(this.get_u16("failure_time"));
+	params.write_u16(this.get_u16("input_icon_id"));
+	params.write_u16(this.get_u16("output_icon_id"));
 
 	if (pid != 0)
 	{

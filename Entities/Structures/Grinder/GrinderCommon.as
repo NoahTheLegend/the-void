@@ -4,7 +4,7 @@ const f32 yield_small = 1.0f;
 // min value is quantity 1, max value is max quantity
 // the actual time required depends on the quantity relatively to max quantity
 const int[][] mat_grind_time_minmax = {
-    {5, 150}
+    {30, 13350}
 };
 
 const string[] mat_grind = {
@@ -20,6 +20,10 @@ const f32[][]  mat_input_output_ratio = {
     {4, 1}
 };
 
+const u16[][] mat_frames = {
+    {24, 26}
+};
+
 CBlob@ FindNewGrindTarget(CBlob@ this)
 {
     CInventory@ inv = this.getInventory();
@@ -32,7 +36,7 @@ CBlob@ FindNewGrindTarget(CBlob@ this)
 
         for (uint i = 0; i < mat_grind.length; i++)
         {
-            if (item.getName() == mat_grind[i] && item.getQuantity() > mat_input_output_ratio[i][0])
+            if (item.getName() == mat_grind[i] && item.getQuantity() >= mat_input_output_ratio[i][0])
             {
                 return item;
             }
@@ -65,6 +69,8 @@ bool SetNewGrindTarget(CBlob@ this, CBlob@ target)
     this.set_u16("grinding_time", grind_time);
     this.set_u16("grinding_quantity", grindable_quantity);
     this.set_u16("product_quantity", Maths::Ceil(grindable_quantity * yield));
+    this.set_u16("input_icon_id", mat_frames[grinding_index][0]);
+    this.set_u16("output_icon_id", mat_frames[grinding_index][1]);
 
     this.set_u16("grinding_id", target.getNetworkID());
     this.set_string("resource", resource);
@@ -87,6 +93,8 @@ void ResetGrindTarget(CBlob@ this)
     this.set_u16("grinding_id", 0);
     this.set_string("resource", "");
     this.set_string("product", "");
+    this.set_s16("input_icon_id", -1);
+    this.set_s16("output_icon_id", -1);
 }
 
 f32 getYield(CBlob@ this, int index)

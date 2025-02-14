@@ -100,5 +100,6 @@ void onDetach(CBlob@ this, CBlob@ detached, AttachmentPoint @attachedPoint)
 
 void onThisAddToInventory(CBlob@ this, CBlob@ blob)
 {
+  if (isClient()) Material::updateFrame(this);
   Material::updatePhysics(this);
 }

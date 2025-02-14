@@ -409,6 +409,7 @@ void ManageCamera(CBlob@ this)
 			}
 		}
 
+		// todo: doesnt work in staging
 		// zoom out
 		if (controls.isKeyPressed(KEY_MINUS))
 		{
