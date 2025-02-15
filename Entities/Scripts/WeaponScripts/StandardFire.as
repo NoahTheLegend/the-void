@@ -240,9 +240,11 @@ void onTick(CBlob@ this)
 	if (this.hasTag("laser"))
 	{
 		this.set_Vec2f("laser_hitpos", Vec2f(-1, -1));
-
+		f32 angle_deg = this.getAngleDegrees();
+		Vec2f offset = this.get_Vec2f("laser_offset").RotateBy(angle_deg);
+		
 		HitInfo@[] hitInfos;
-		if (getMap().getHitInfosFromRay(this.getPosition(), (this.isFacingLeft() ? 180 : 0) + this.getAngleDegrees(), this.get_f32("laser_distance"), this, @hitInfos))
+		if (getMap().getHitInfosFromRay(this.getPosition() + offset, (this.isFacingLeft() ? 180 : 0) + angle_deg, this.get_f32("laser_distance"), this, @hitInfos))
 		{
 			for (uint i = 0; i < hitInfos.length; i++)
 			{

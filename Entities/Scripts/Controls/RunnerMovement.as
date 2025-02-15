@@ -30,13 +30,17 @@ void onTick(CMovement@ this)
 		HandleStuckAtTop(blob);
 	}
 
-	const bool left		= blob.isKeyPressed(key_left);
-	const bool right	= blob.isKeyPressed(key_right);
-	const bool up		= blob.isKeyPressed(key_up);
-	const bool down		= blob.isKeyPressed(key_down);
+	bool left		= blob.isKeyPressed(key_left);
+	bool right		= blob.isKeyPressed(key_right);
+	bool up			= blob.isKeyPressed(key_up);
+	bool down		= blob.isKeyPressed(key_down);
+
+	if (isInMenu(blob))
+	{
+		left = right = up = down = false;
+	}
 
 	const bool isknocked = isKnocked(blob);
-
 	const bool is_client = getNet().isClient();
 
 	CMap@ map = blob.getMap();

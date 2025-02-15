@@ -58,7 +58,9 @@ void onInit(CBlob@ this)
 	settings.HIT_PARTICLE = "PlasmaExplosion.png";
 
 	//Offset
-	settings.MUZZLE_OFFSET = Vec2f(-12, -2); //Where the muzzle flash appears
+	settings.MUZZLE_OFFSET = Vec2f(-12, -1.5f); //Where the muzzle flash appears
+	this.set_Vec2f("muzzle_offset", settings.MUZZLE_OFFSET);
+
 	this.set_string("CustomFlash", "PlasmaFlash.png");
 	this.set_string("CustomBullet", "PlasmaProjectile.png");
 	this.set_string("CustomCase", "");
@@ -66,6 +68,7 @@ void onInit(CBlob@ this)
 	this.set("gun_settings", @settings);
 	this.Tag("custom_reload");
 	this.Tag("no_bullet_particle");
+	this.Tag("weapon");
 
 	this.Tag("laser"); // laser tag
 	this.set_bool("laser_enabled", false);
@@ -163,15 +166,17 @@ void onTick(CBlob@ this)
 	u32 seed = getGameTime() + this.getNetworkID();
 	bool was_hit = false;
 
+	f32 angle_deg = this.getAngleDegrees();
+	Vec2f muzzle_offset = Vec2f(0, settings.MUZZLE_OFFSET.y).RotateBy(angle_deg);
 	if (holder !is null && holder.isKeyPressed(key_action2) && do_light)
 	{
 		a2 = true;
 		this.add_u32("drill_active_time", 1);
 		if (this.get_u32("drill_active_time") > drill_spinup) this.set_u32("drill_active_time", drill_spinup);
 
-		Vec2f pos = holder.getPosition();
+		Vec2f pos = this.getPosition();
 		Vec2f aim = holder.getAimPos();
-		Vec2f dir = aim - pos;
+		Vec2f dir = aim - pos - muzzle_offset;
 		dir.Normalize();
 
 		f32 distance = this.get_f32("laser_distance");
@@ -271,7 +276,7 @@ void onTick(CBlob@ this)
 				u32 seed = getGameTime() + this.getNetworkID();
 				if (seed % particle_frequency == 0)
 				{
-					makeHitParticle(this, tilepos_hit + Vec2f(XORRandom(4) - 2, XORRandom(4) - 2));
+					makeHitParticle(this, tilepos_hit + Vec2f(XORRandom(5) - 2, XORRandom(5) - 2));
 				}
 
 				makeRayParticles(this, tilepos_hit);
@@ -306,7 +311,7 @@ void onTick(CBlob@ this)
 			f32 spin = f32(drill_active_time) / f32(drill_spinup);
 
 			sprite.SetEmitSoundPaused(false);
-			sprite.SetEmitSoundVolume(Maths::Min(spin, max_volume));
+			sprite.SetEmitSoundVolume(Maths::Min(spin, max_volume) * getSoundFallOff(this, 0, 64.0f));
 			sprite.SetEmitSoundSpeed(Maths::Min(spin + 0.5f, max_pitch));
 		}
 	}
@@ -344,10 +349,10 @@ void makeHitParticle(CBlob@ this, Vec2f endpos)
 	p.timeout = 10+XORRandom(5);
 }
 
-void makeRayParticles(CBlob@ this, Vec2f endpos)
+void makeRayParticles(CBlob@ this, Vec2f endpos, Vec2f offset = Vec2f_zero)
 {
 	// create an incoming stream of particles from endpos to thispos with a velocity equal to dist/5
-	Vec2f pos = this.getPosition();
+	Vec2f pos = this.getPosition() + offset;
 	Vec2f diff = endpos - pos;
 	f32 distance = diff.Length();
 	diff.Normalize();

@@ -46,5 +46,5 @@ void onInit(CBlob@ this)
 	//this.set_string("CustomCycle", "RifleCycle");
 	//this.set_string("CustomReloadingEnding", "RifleCycle");
 	this.Tag("CustomShotgunReload");
-	this.Tag("sniper");
+	this.Tag("weapon");
 }

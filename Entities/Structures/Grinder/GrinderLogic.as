@@ -167,10 +167,12 @@ void onTick(CBlob@ this)
 	this.set_u16("spinup_time", spinup);
 
 	f32 spin_factor = f32(this.get_u16("spinup_time")) / f32(max_spinup);
-	sprite.SetEmitSoundPaused(spin_factor == 0);
+	f32 sprite_time = spin_factor == 0 ? 0 : ((1.0f - spin_factor) * 5) + 4;
+	if (sprite.animation.time != sprite_time) sprite.animation.time = sprite_time;
 
+	sprite.SetEmitSoundPaused(spin_factor == 0);
+	sprite.SetEmitSoundVolume((min_spinup_soundvolume + spin_factor * (max_spinup_soundvolume - min_spinup_soundvolume)) * getSoundFallOff(this, 64, 128.0f));
 	sprite.SetEmitSoundSpeed(min_spinup_soundspeed + spin_factor * (max_spinup_soundspeed - min_spinup_soundspeed));
-	sprite.SetEmitSoundVolume(min_spinup_soundvolume + spin_factor * (max_spinup_soundvolume - min_spinup_soundvolume));
 	
 	if (!this.isOnScreen()) return;
  	bool alt = isHoldingAlt();

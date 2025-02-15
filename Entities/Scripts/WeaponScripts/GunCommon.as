@@ -139,8 +139,11 @@ f32 getAimAngle(CBlob@ this, CBlob@ holder)
 		aimpos = holder.getAimPos();
 	}
 
-	Vec2f holderpos = holder.getInterpolatedPosition();
-	Vec2f aimvector = holder.getAimPos() - (this.hasTag("place45") ? holderpos : this.getInterpolatedPosition());
+	f32 muzzle_y = 0;
+	if (this.exists("muzzle_offset")) muzzle_y = this.get_Vec2f("muzzle_offset").y;
+
+	Vec2f holderpos = holder.getInterpolatedPosition() + Vec2f(0, muzzle_y);
+	Vec2f aimvector = holder.getAimPos() - (this.hasTag("place45") ? holderpos : this.getInterpolatedPosition()) - Vec2f(0, muzzle_y).RotateBy(this.getAngleDegrees());
 
 	if (aimvector.Length() < holder.getRadius())
 	{

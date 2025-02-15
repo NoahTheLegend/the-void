@@ -1,11 +1,10 @@
 #include "GenericButtonCommon.as"
 
 const u8 update_frequency = 30;
-const Vec2f grinder_offset = Vec2f(23, 13);
+const Vec2f grinder_offset = Vec2f(23, 21);
 
 void onInit(CBlob@ this)
 {
-	this.setPosition(this.getPosition()-Vec2f(0,24));
 	this.inventoryButtonPos = Vec2f(0, 16);
 
 	// defaultnobuild

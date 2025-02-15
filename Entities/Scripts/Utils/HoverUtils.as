@@ -80,6 +80,19 @@ bool isMouseInBox(CBlob@ blob, Vec2f tl, Vec2f br)
     return mousePos.x >= tl.x && mousePos.x <= br.x && mousePos.y >= tl.y && mousePos.y <= br.y;
 }
 
+bool isMouseInScreenBox(CBlob@ blob, Vec2f tl, Vec2f br)
+{
+    if (blob is null) return false;
+    if (!blob.isMyPlayer()) return false;
+
+    CControls@ controls = getControls();
+    if (controls is null) return false;
+
+    Vec2f mousePos = controls.getInterpMouseScreenPos();
+
+    return mousePos.x >= tl.x && mousePos.x <= br.x && mousePos.y >= tl.y && mousePos.y <= br.y;
+}
+
 void setOpacity(CBlob@ blob, bool hover)
 {
     f32 max_hover_time = blob.get_f32("max_hover_time");

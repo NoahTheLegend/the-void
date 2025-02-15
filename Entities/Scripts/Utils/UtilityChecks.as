@@ -177,11 +177,18 @@ f32 getSoundFallOff(CBlob@ blob, f32 falloff_start, f32 max_distance = 512.0f)
     if (blob is null) return 0.0f;
 
     CPlayer@ player = getLocalPlayer();
-    if (player is null) return 1.0f; // we can hear everything while dead
+    if (player is null || player.getBlob() is null) return 1.0f; // we can hear everything while dead
 
     Vec2f pos = blob.getPosition();
     Vec2f playerpos = player.getBlob().getPosition();
     f32 dist = (pos - playerpos).Length();
 
     return 1.0f - Maths::Min(dist / max_distance , 1.0f);
+}
+
+bool isInMenu(CBlob@ blob)
+{
+    if (blob is null) return false;
+    if (getControls().isKeyPressed(KEY_KEY_R)) return true;
+    return blob.get_bool("menu_open");
 }

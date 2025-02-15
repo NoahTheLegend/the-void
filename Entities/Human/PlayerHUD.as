@@ -42,8 +42,7 @@ void onAttach(CBlob@ this, CBlob@ attached, AttachmentPoint@ ap)
 	if (attached !is null)
 	{
 		if (attached.hasTag("sharp")) this.Tag("carrying_sharp");
-		else if (attached.hasTag("pickaxe")) this.Tag("carrying_pickaxe");
-		else if (attached.hasTag("axe")) this.Tag("carrying_axe");
+		else if (attached.hasTag("weapon")) this.Tag("carrying_weapon");
 	}
 }
 
@@ -52,8 +51,7 @@ void onDetach(CBlob@ this, CBlob@ detached, AttachmentPoint@ ap)
 	if (detached !is null)
 	{
 		if (detached.hasTag("sharp")) this.Untag("carrying_sharp");
-		else if (detached.hasTag("pickaxe")) this.Untag("carrying_pickaxe");
-		else if (detached.hasTag("axe")) this.Untag("carrying_axe");
+		else if (detached.hasTag("weapon")) this.Untag("carrying_weapon");
 	}
 }
 

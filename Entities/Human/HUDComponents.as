@@ -7,6 +7,20 @@ const u16 width = getDriver().getScreenWidth();
 const u16 height = getDriver().getScreenHeight();
 bool was_press = false;
 
+const SColor color_global = SColor(255,100,100,200);
+const SColor color_body = SColor(255,215,100,25);
+
+const Vec2f const_drawpos = Vec2f(0, height - 96);
+u8[] frame_order = {};
+u8[] frame_order_icon = {};
+
+const u8 pulse_width = 32;
+const u8 pulse_height = 16;
+const Vec2f pulse_offset = Vec2f(16, 12);
+u32 next = 0;
+u8 pulse_icon = 0;
+Vec2f actual_pulse_pos;
+
 void InitComponents(CBlob@ this)
 {
     this.getCurrentScript().runFlags |= Script::tick_myplayer;
@@ -34,30 +48,24 @@ void RenderComponents(CSprite@ this)
     if (controls is null) return;
 
     Vec2f mpos = controls.getMouseScreenPos();
-    DrawPulse(this, blob, rules, controls, mpos);
+    DrawHUD(this, blob, rules, controls, mpos);
 }
 
-const Vec2f const_t_drawpos = Vec2f(0, height - 180);
-
-const SColor color_global = SColor(255,100,100,200);
-const SColor color_body = SColor(255,215,100,25);
-
-const Vec2f const_p_drawpos = Vec2f(const_t_drawpos)+Vec2f(0,115);
-u8[] frame_order = {};
-u8[] frame_order_icon = {};
-
-const u8 pulse_width = 32;
-const u8 pulse_height = 16;
-const Vec2f pulse_offset = Vec2f(16, 12);
-u32 next = 0;
-u8 pulse_icon = 0;
-Vec2f actual_pulse_pos;
-
-void DrawPulse(CSprite@ this, CBlob@ blob, CRules@ rules, CControls@ controls, Vec2f mpos)
+void DrawHUD(CSprite@ this, CBlob@ blob, CRules@ rules, CControls@ controls, Vec2f mpos)
 {
-    Vec2f p_drawpos = Vec2f(const_p_drawpos);
     u32 gt = getGameTime();
+    Vec2f drawpos = Vec2f(const_drawpos);
 
+    DrawPulse(this, blob, rules, controls, mpos, drawpos + Vec2f(4,29.5f));
+
+    u8 icon = (pulse_icon > 2 ? Maths::Floor(gt/30)%2 : 0);
+    GUI::DrawIcon("HUDWidget.png", icon, Vec2f(112, 48), drawpos, 1.0f);
+}
+
+void DrawPulse(CSprite@ this, CBlob@ blob, CRules@ rules, CControls@ controls, Vec2f mpos, Vec2f drawpos)
+{
+    u32 gt = getGameTime();
+   
     if (frame_order.size() > 0)
     {
         if (next <= gt)
@@ -79,7 +87,7 @@ void DrawPulse(CSprite@ this, CBlob@ blob, CRules@ rules, CControls@ controls, V
 
                 next = gt+pulse_tick_delay-(pulse_icon==3||pulse_icon==2?1:0);
             }
-            actual_pulse_pos = p_drawpos;
+            actual_pulse_pos = drawpos;
         }
         else
         {
@@ -92,6 +100,4 @@ void DrawPulse(CSprite@ this, CBlob@ blob, CRules@ rules, CControls@ controls, V
         u16 actual_pulse_icon = (new ? frame_order_icon[i]+5 : frame_order_icon[i]) * pulse_width;
         GUI::DrawIcon("Pulse.png", actual_pulse_icon + frame_order[i], Vec2f(1, pulse_height), actual_pulse_pos+Vec2f(i*2,0)+pulse_offset, 1.0f, 1.0f, SColor(hud_transparency,255,255,255));
     }
-    GUI::DrawIcon("PulseWidget.png", (pulse_icon > 2 ? Maths::Floor(gt/30)%2 : 0), Vec2f(48, 32), p_drawpos, 1.0f); // canvas icon
-    //if (isClient() && isServer()) GUI::DrawText(""+blob.getHealth(), p_drawpos - Vec2f(-8, 16), SColor(255,255,255,255));
 }

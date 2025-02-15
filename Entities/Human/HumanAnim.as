@@ -73,10 +73,15 @@ void onTick(CSprite@ this)
 	const bool action1 = blob.isKeyPressed(key_action1);
 
 	{
-		const bool left = blob.isKeyPressed(key_left);
-		const bool right = blob.isKeyPressed(key_right);
-		const bool up = blob.isKeyPressed(key_up);
-		const bool down = blob.isKeyPressed(key_down);
+		bool left = blob.isKeyPressed(key_left);
+		bool right = blob.isKeyPressed(key_right);
+		bool up = blob.isKeyPressed(key_up);
+		bool down = blob.isKeyPressed(key_down);
+		if (isInMenu(blob))
+		{
+			left = right = up = down = false;
+		}
+
 		const bool moving = left || right || up || down;
 		const bool inair = (!blob.isOnGround() && !blob.isOnLadder());
 		const bool onladder = blob.isOnLadder();
@@ -143,7 +148,7 @@ void onTick(CSprite@ this)
 
 				// left right up down
 				int seed = getGameTime() + blob.getNetworkID();
-				u8 t = 8;
+				u8 t = 20;
 				f32 min_vel = 0.35f;
 				f32 max_vel = 1.5f;
 				if (onladder)
