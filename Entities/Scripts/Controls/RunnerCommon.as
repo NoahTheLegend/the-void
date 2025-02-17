@@ -6,6 +6,7 @@ shared class RunnerMoveVars
 	f32 walkSpeed;  //target vel
 	f32 walkSpeedInAir;
 	f32 walkFactor;
+	f32 menuDamp;
 
 	//ladder
 	Vec2f walkLadderSpeed;

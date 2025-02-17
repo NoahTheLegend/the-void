@@ -9,6 +9,7 @@ void onInit(CMovement@ this)
 	moveVars.walkSpeed = 2.3f;
 	moveVars.walkSpeedInAir = 2.0f;
 	moveVars.walkFactor = 1.0f;
+	moveVars.menuDamp = 0.9f;
 	moveVars.walkLadderSpeed.Set(0.15f, 0.25f);
 	//jumping vars
 	moveVars.jumpMaxVel = 2.5f;

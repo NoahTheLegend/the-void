@@ -14,6 +14,7 @@ void onInit(CBlob@ this)
 	this.getCurrentScript().tickFrequency = 0; // make it not run ticks until dead
 	
 	this.set_bool("menu_open", false);
+	this.set_u16("menu_id", 0);
 }
 
 f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitterBlob, u8 customData)

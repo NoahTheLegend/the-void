@@ -38,6 +38,7 @@ void onTick(CMovement@ this)
 	if (isInMenu(blob))
 	{
 		left = right = up = down = false;
+		blob.setVelocity(blob.getVelocity() * moveVars.menuDamp);
 	}
 
 	const bool isknocked = isKnocked(blob);

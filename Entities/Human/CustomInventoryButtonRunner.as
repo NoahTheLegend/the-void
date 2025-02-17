@@ -1,3 +1,6 @@
+#include "UtilityChecks.as"
+
+const u8 tap_delay = 10;
 const f32 radius = 8.0f;
 void onInit(CBlob@ this)
 {
@@ -12,6 +15,15 @@ void onInit(CBlob@ this)
 void onTick(CBlob@ this)
 {
     if (!this.isMyPlayer()) return;
+    if (this.isKeyJustPressed(key_pickup)) this.ClearGridMenus();
+
+    bool holding = this.isKeyPressed(key_eat);
+    if (!holding)
+    {
+        if (this.hasTag("ignore_holding")) this.Untag("ignore_holding");
+        else return;
+    }
+    if (isInMenu(this)) return;
 
     CControls@ controls = getControls();
     if (controls is null) return;
@@ -20,50 +32,51 @@ void onTick(CBlob@ this)
     {
         u16 netid = this.get_u16("update_netid");
         CBlob@ blob = getBlobByNetworkID(netid);
-        if (blob is null) return;
+        if (blob !is null)
+        {
+            Vec2f sc = getDriver().getScreenCenterPos();
+            CreateCustomInventoryMenu(this, blob, sc);
 
-        Vec2f sc = getDriver().getScreenCenterPos();
-        CreateCustomInventoryMenu(this, blob, sc);
-
-        this.Untag("request_update");
-        this.set_u16("update_netid", 0);
-        this.set_u32("update_timing", 0);
+            this.Untag("request_update");
+            this.set_u16("update_netid", 0);
+            this.set_u32("update_timing", 0);
+        }
     }
 
     CHUD@ hud = getHUD();
-    if (hud is null) return;
-    if (hud.hasMenus()) return;
+    if (hud is null || hud.hasMenus()) return;
 
     Vec2f mpos = controls.getMouseWorldPos();
     CBlob@[] blobs;
     getMap().getBlobsInBox(mpos - Vec2f(radius, radius), mpos + Vec2f(radius, radius), @blobs);
 
-    f32 temp = 999.0f;
+    f32 closestDist = 999.0f;
     CBlob@ closest = null;
     for (int i = 0; i < blobs.length; i++)
     {
         CBlob@ blob = blobs[i];
-        if (blob is null) continue;
-        if (!blob.hasTag("custom_inventory")) continue;
-        if (blob.getDistanceTo(this) < blob.get_f32("max_inventory_distance") || blob.isOverlapping(this))
+        if (blob !is null && blob.hasTag("custom_inventory") && 
+            (blob.getDistanceTo(this) < blob.get_f32("max_inventory_distance") || blob.isOverlapping(this)))
         {
             f32 dist = (blob.getPosition() - mpos).Length();
-            if (dist < temp)
+            if (dist < closestDist)
             {
-                temp = dist;
+                closestDist = dist;
                 @closest = blob;
             }
         }
     }
-    
+
     if (closest !is null)
     {
-        bool holding = this.isKeyPressed(key_use);
-        if (holding) closest.set_u32("last_hover_time", getGameTime()+1);
-
+        if (holding)
+        {
+            closest.set_u32("last_hover_time", getGameTime() + 1);
+            this.Tag("ignore_holding");
+        }
 
         Vec2f sc = getDriver().getScreenCenterPos();
-        if (this.isKeyJustReleased(key_use) || (holding && this.isKeyJustPressed(key_action1)))
+        if (this.isKeyJustReleased(key_eat) || (holding && this.isKeyJustPressed(key_action1)))
         {
             CBlob@ carried = this.getCarriedBlob();
             if (carried !is null)
@@ -74,7 +87,6 @@ void onTick(CBlob@ this)
             }
             else // open inventory 
             {
-                //closest.CreateInventoryMenu(sc); // doesnt work, tries to give the items to PICKUP of the structure
                 CreateCustomInventoryMenu(this, closest, sc);
 
                 f32 volume = closest.get_f32("inventory_volume");

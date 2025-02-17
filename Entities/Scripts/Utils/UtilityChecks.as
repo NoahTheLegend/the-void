@@ -189,6 +189,28 @@ f32 getSoundFallOff(CBlob@ blob, f32 falloff_start, f32 max_distance = 512.0f)
 bool isInMenu(CBlob@ blob)
 {
     if (blob is null) return false;
-    if (getControls().isKeyPressed(KEY_KEY_R)) return true;
+    
+    u16 menu_id = blob.get_u16("menu_id");
+    CBlob@ menu_runner = menu_id == 0 ? null : getBlobByNetworkID(menu_id);
+
+    if (menu_runner is null)
+    {
+        resetMenu(blob);
+        return false;
+    }
     return blob.get_bool("menu_open");
+}
+
+void attachMenu(CBlob@ blob, CBlob@ menu_runner)
+{
+    if (menu_runner is null) return;
+        
+    blob.set_bool("menu_open", true);
+    blob.set_u16("menu_id", menu_runner.getNetworkID());
+}
+
+void resetMenu(CBlob@ blob)
+{
+    blob.set_bool("menu_open", false);
+    blob.set_u16("menu_id", 0);
 }
