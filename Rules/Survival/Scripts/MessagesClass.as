@@ -26,16 +26,16 @@ class MessageText
 
     u16 max_length;
     u8 delay;
-    bool playsound;
+    bool force_playsound;
 
-    MessageText(string _text, string _title, u8 _title_offset, u16 _max_length, u8 _delay, bool _playsound)
+    MessageText(string _text, string _title, u8 _title_offset, u16 _max_length, u8 _delay, bool _force_playsound)
     {
-        text = _text;                 // full text
-        title = _title;               // constant title
-        title_offset = _title_offset; // gap between title and text
-        max_length = _max_length;     // max message length
-        delay = _delay;               // amount of ticks to wait for next symbom to write
-        playsound = _playsound;       // play bzzt sound
+        text = _text;                             // full text
+        title = _title;                           // constant title
+        title_offset = _title_offset;             // gap between title and text
+        max_length = _max_length;                 // max message length
+        delay = _delay;                           // amount of ticks to wait for next symbom to write
+        force_playsound = _force_playsound;       // play bzzt sound
     }
 };
 
@@ -391,7 +391,7 @@ class MessageContainer
     {
         f32 scroll = slider.scrolled;
         u16 lines_outbound = 0;
-        f32 total_offset = 0;
+        f32 total_offset = order_list.size() > 0 && lines_scrolled == 0 ? order_list[0].height : 0;
 
         lines = array<string>();
         offsets = array<Vec2f>();
@@ -457,7 +457,7 @@ class MessageContainer
     // start message's text runner
     string writeMessage(Message@ msg)
     {
-        if (msg.messageText.playsound)
+        if (msg.messageText.force_playsound || !hidden)
         {
             Sound::Play("text_write.ogg", getDriver().getWorldPosFromScreenPos(getDriver().getScreenCenterPos()), vars.msg_volume_final, vars.msg_pitch_final+XORRandom(11)*0.01f);
         }

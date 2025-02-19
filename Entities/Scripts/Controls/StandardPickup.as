@@ -4,7 +4,8 @@
 #include "StandardControlsCommon.as"
 #include "ThrowCommon.as"
 #include "KnockedCommon.as"
-#include "CustomBlocks.as";
+#include "CustomBlocks.as"
+#include "UtilityChecks.as"
 
 const u32 PICKUP_ERASE_TICKS = 80;
 
@@ -21,11 +22,23 @@ void onInit(CBlob@ this)
 	this.getCurrentScript().removeIfTag = "dead";
 
 	AddIconToken("$filled_bucket$", "Bucket.png", Vec2f(16, 16), 1);
+	this.set_bool("ignoring_pickup", false);
 }
 
 void onTick(CBlob@ this)
 {
-	if (this.isInInventory() || isKnocked(this))
+	bool ignore_pickup = this.get_bool("ignoring_pickup");
+	if (isInMenu(this))
+	{
+		ignore_pickup = true;
+		this.set_bool("ignoring_pickup", true);
+	}
+	else if (!this.isKeyPressed(key_pickup))
+	{
+		this.set_bool("ignoring_pickup", false);
+	}
+
+	if (this.isInInventory() || isKnocked(this) || ignore_pickup)
 	{
 		this.clear("pickup blobs");
 		this.clear("closest blobs");

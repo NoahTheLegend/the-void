@@ -1,5 +1,7 @@
 #include "UtilityChecks.as"
 #include "ToolTipUtils.as"
+#include "MenuUtils.as"
+#include "MenuCommon.as"
 
 void onInit(CBlob@ this)
 {
@@ -9,9 +11,25 @@ void onInit(CBlob@ this)
     this.addCommandID("detach_player");
     
     resetAttached(this);
+
+    this.set_bool("render", false);
+    this.set_f32("fold", 0);
+
+    this.set_s32("selected_item", 0);
     this.set_bool("draw_attached_players", false);
 
 	RequestSync(this);
+    initMenu(this);
+}
+
+void initMenu(CBlob@ this)
+{
+    AddMenuItem(this, "Test 0", "test descritpion amogus 0");
+    AddMenuItem(this, "Test 1", "test descritpion amogus 1");
+    AddMenuItem(this, "Test 2", "test descritpion amogus 2");
+    AddMenuItem(this, "Test 3", "test descritpion amogus 3");
+    AddMenuItem(this, "Test 4", "test descritpion amogus 4");
+    AddMenuItem(this, "Test 5", "test descritpion amogus 5");
 }
 
 void GetButtonsFor(CBlob@ this, CBlob@ caller)
@@ -37,15 +55,16 @@ const u8 max_name_length = 12;
 const u8 charname_height = 30;
 const f32 attached_rect_width = 100;
 
-bool render = false;
-const Vec2f menu_dim = Vec2f(300, 200);
+const f32 tilesize = 64;
+const Vec2f base_menu_grid = Vec2f(4, 2);
+const Vec2f sidebar_dim = Vec2f(150, 200);
 
 void onRender(CSprite@ this)
 {
-    //if (!render) return;
-
     CBlob@ blob = this.getBlob();
     if (blob is null) return;
+
+    //if (!blob.get_bool("render")) return;
 
     CBlob@ local = getLocalPlayerBlob();
     if (local is null) return;
@@ -53,17 +72,27 @@ void onRender(CSprite@ this)
     CPlayer@ player = local.getPlayer();
     if (player is null) return;
 
+    f32 fold = blob.get_f32("fold");
     u8 alpha = 255 * fold;
+
+    s32 selected_item = blob.get_s32("selected_item");
+
+    Vec2f menu_grid = blob.exists("menu_grid") ? blob.get_Vec2f("menu_grid") : base_menu_grid;
+    Vec2f menu_dim = menu_grid * tilesize;
+
     // debug
-    if (getControls().isKeyPressed(KEY_KEY_R))
+    if ((sv_test || player.isMod()) && getControls().isKeyPressed(KEY_KEY_R))
     {
-        GUI::DrawText("Local id: "+local.get_u16("menu_id"), Vec2f(50, 10), SColor(alpha,255,255,5));
-        GUI::DrawText("Blob id: "+blob.getNetworkID(), Vec2f(50, 30), SColor(alpha,255,255,5));
+        GUI::DrawText("Local id: "+local.get_u16("menu_id"), Vec2f(50, 10), SColor(255,255,255,5));
+        GUI::DrawText("Blob id: "+blob.getNetworkID(), Vec2f(50, 30), SColor(255,255,255,5));
+        GUI::DrawText("Blob name: "+blob.getName(), Vec2f(50, 50), SColor(255,255,255,5));
+        GUI::DrawText("Alpha: "+alpha, Vec2f(50, 70), SColor(255,255,255,5));
+        GUI::DrawText("Selected item: "+selected_item, Vec2f(50, 90), SColor(255,255,255,5));
 
         u16[]@ attached_players;
         blob.get("attached_players", @attached_players);
 
-        GUI::DrawText("Attached players: " + attached_players.length, Vec2f(150, 10), SColor(alpha,255,255,5));
+        GUI::DrawText("Attached players: " + attached_players.length, Vec2f(150, 10), SColor(255,255,255,5));
         for (u8 i = 0; i < attached_players.length; i++)
         {
             CPlayer@ p = getPlayerByNetworkId(attached_players[i]);
@@ -72,14 +101,13 @@ void onRender(CSprite@ this)
             CBlob@ b = p.getBlob();
             if (b is null) continue;
 
-            GUI::DrawText(p.getCharacterName(), Vec2f(50, 50 + i * 20), SColor(alpha,255,255,5));
+            GUI::DrawText(p.getCharacterName(), Vec2f(150, 30 + i * 20), SColor(255,255,255,5));
         }
     }
 
     bool draw_attached = blob.get_bool("draw_attached_players");
 
     Vec2f screen_center = getDriver().getScreenCenterPos();
-    Vec2f menu_dim = blob.exists("menu_dim") ? blob.get_Vec2f("menu_dim") : Vec2f(300, 200);
     Vec2f menu_pos = screen_center - menu_dim / 2;
 
     GUI::SetFont("menu");
@@ -91,8 +119,51 @@ void onRender(CSprite@ this)
         u8 attached_len = attached_players.length;
         Vec2f attached_dim = Vec2f(attached_rect_width, attached_len * charname_height);
         Vec2f attached_renderpos = menu_pos - Vec2f(attached_rect_width, 0);
+        
+        // draw main list
+        drawRectangle(menu_pos, menu_pos + Vec2f(menu_dim.x, menu_dim.y * fold), SColor(alpha,0,0,0), 1, 2, SColor(alpha,75,75,75));
+        
+        MenuItemInfo@[]@ menuItems;
+        if (blob.get("MenuItems", @menuItems))
+        {
+            // draw "buttons"
+            for (s32 i = 0; i < menuItems.length; i++)
+            {
+                MenuItemInfo@ item = menuItems[i];
+                if (item is null) continue;
 
-        drawRectangle(attached_renderpos, attached_renderpos + attached_dim, SColor(alpha,0,0,0), 1, 2, SColor(alpha,75,75,75));
+                Vec2f item_pos = menu_pos + Vec2f((i % int(menu_grid.x)) * tilesize, (i / int(menu_grid.x)) * tilesize);
+                Vec2f item_dim = Vec2f(tilesize, tilesize);
+
+                if (selected_item == i)
+                    drawRectangle(item_pos, item_pos + item_dim, SColor(alpha,0,0,0), 1, 2, SColor(alpha,255,255,255));
+
+                GUI::DrawTextCentered(item.text, item_pos + Vec2f(item_dim.x / 2, item_dim.y / 2), SColor(alpha,255,255,255));
+            }
+        
+            // draw current item on the sidebar to the right from list
+            if (selected_item != -1 && selected_item < menuItems.length)
+            {
+                Vec2f sidebar_renderpos = menu_pos + Vec2f(menu_dim.x, 0);
+                drawRectangle(sidebar_renderpos, sidebar_renderpos + sidebar_dim, SColor(alpha,0,0,0), 1, 2, SColor(alpha,75,75,75));
+
+                // draw selected item info
+
+                MenuItemInfo@ item = menuItems[selected_item];
+                if (item !is null)
+                {
+                    item.tl = sidebar_renderpos;
+                    item.dim = sidebar_dim;
+                    item.render(alpha);
+
+                    GUI::DrawTextCentered(item.text, sidebar_renderpos + Vec2f(sidebar_dim.x / 2, 10), SColor(alpha,255,255,255));
+                    GUI::DrawTextCentered(item.description, sidebar_renderpos + Vec2f(sidebar_dim.x / 2, 30), SColor(alpha,255,255,255));
+                }
+            }
+        }
+
+        // draw attached
+        drawRectangle(attached_renderpos, attached_renderpos + Vec2f(attached_dim.x, attached_dim.y * fold), SColor(alpha,0,0,0), 1, 2, SColor(alpha,75,75,75));
 
         for (u8 i = 0; i < attached_len; i++)
         {
@@ -103,6 +174,7 @@ void onRender(CSprite@ this)
             if (b is null) continue;
 
             string character_name = p.getCharacterName();
+
             // if character_name size is more than max_name_length symbols, truncate and add 3 dots
             if (character_name.size() > max_name_length)
                 character_name = character_name.substr(0, max_name_length) + "...";
@@ -118,7 +190,9 @@ void resetAttached(CBlob@ this)
     this.set("attached_players", attached_players);
 }
 
-f32 fold = 0.0f;
+int holding_time = 0;
+const int max_holding_time = 10;
+const int holding_time_step = 3;
 
 void onTick(CBlob@ this)
 {
@@ -152,16 +226,42 @@ void onTick(CBlob@ this)
     u16 local_menu_runner = local.get_u16("menu_id");
 
     bool found = local_menu_runner == this_netid;
-    render = found;
-    fold = render ? Maths::Lerp(fold, 1.0f, 0.25f) : 0;
+    this.set_bool("render", found);
     this.set_bool("draw_attached_players", found);
+
+    f32 fold = found ? Maths::Lerp(this.get_f32("fold"), 1.0f, 0.5f) : 0;
+    this.set_f32("fold", fold);
 
     if (found)
     {
-        bool left = local.isKeyPressed(key_left);
-        bool right = local.isKeyPressed(key_right);
-        bool up = local.isKeyPressed(key_up);
-        bool down = local.isKeyPressed(key_down);
+        bool left = local.isKeyJustPressed(key_left);
+        bool right = local.isKeyJustPressed(key_right);
+        bool up = local.isKeyJustPressed(key_up);
+        bool down = local.isKeyJustPressed(key_down);
+
+        bool holding_left = local.isKeyPressed(key_left);
+        bool holding_right = local.isKeyPressed(key_right);
+        bool holding_up = local.isKeyPressed(key_up);
+        bool holding_down = local.isKeyPressed(key_down);
+
+        if (holding_left || holding_right || holding_up || holding_down)
+        {
+            bool send = holding_time >= max_holding_time && holding_time % holding_time_step == 0;
+            if (holding_time >= max_holding_time + holding_time_step)
+            {
+                holding_time = max_holding_time;
+            }
+
+            holding_time++;
+            if (send)
+            {
+                left = holding_left;
+                right = holding_right;
+                up = holding_up;
+                down = holding_down;
+            }
+        }
+        else holding_time = 0;
 
         if (left || right || up || down)
         {
@@ -187,6 +287,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 {
     if (cmd == this.getCommandID("move_at"))
     {
+        if (!isServer()) return;
+        
         u16 netid = params.read_u16();
         CPlayer@ player = getPlayerByNetworkId(netid);
         if (player is null) return;
@@ -198,6 +300,33 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
         bool right = params.read_bool();
         bool up = params.read_bool();
         bool down = params.read_bool();
+        
+        // select item of list based on grid and set selected item
+        s32 selected_item = this.get_s32("selected_item");
+        Vec2f menu_grid = this.exists("menu_grid") ? this.get_Vec2f("menu_grid") : base_menu_grid;
+
+        MenuItemInfo@[]@ menuItems;
+        if (!this.get("MenuItems", @menuItems))
+        {
+            error("MenuItems not found");
+            return;
+        }
+        
+        s32 last_item_idx = menuItems.length - 1;
+        if (left && !right)
+            selected_item = selected_item == 0 ? last_item_idx : selected_item - 1;
+        if (right && !left)
+            selected_item = selected_item == last_item_idx ? 0 : selected_item + 1;
+        if (down && !up)
+            selected_item = selected_item >= menuItems.length - menu_grid.x ? selected_item % menu_grid.x : selected_item + menu_grid.x;
+        if (up && !down)
+            selected_item = selected_item < menu_grid.x ? last_item_idx - (last_item_idx % int(menu_grid.x)) + selected_item : selected_item - menu_grid.x;
+
+        // Ensure selected_item is within valid range
+        selected_item = Maths::Clamp(selected_item, 0, last_item_idx);
+        
+        this.set_s32("selected_item", selected_item);
+        this.Sync("selected_item", true);
     }
     else if (cmd == this.getCommandID("sync_menu"))
     {
@@ -210,6 +339,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
         }
         else if (!request && isClient())
         {
+            this.set_s32("selected_item", params.read_s32());
+
             u16[] attached_players;
             
             u8 attached_count = params.read_u8();
@@ -221,7 +352,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
                     attached_players.push_back(netid);
                 }
             }
-            
             this.set("attached_players", attached_players);
         }
     }
@@ -284,6 +414,9 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
                 attached_players.removeAt(index);
         }
 
+        if (attached_players.size() == 0)
+            this.set_s32("selected_item", 0);
+
         Sync(this);
     }
 }
@@ -295,6 +428,7 @@ void Sync(CBlob@ this, u16 pid = 0)
 	CBitStream params;
 	params.write_bool(false);
 	params.write_u16(0);
+    params.write_s32(this.get_s32("selected_item"));
 
     u16[]@ attached_players;
     this.get("attached_players", @attached_players);

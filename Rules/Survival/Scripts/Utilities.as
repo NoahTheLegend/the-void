@@ -20,7 +20,7 @@ u8 wasMouseScroll()
     return 0;
 }
 
-bool areMessagesMuted()
+bool areMessagesMutedWhileHidden()
 {
     bool mute = false;
     ClientVars@ vars = getVars();

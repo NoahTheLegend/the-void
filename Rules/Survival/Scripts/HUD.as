@@ -2,12 +2,12 @@
 
 void onInit(CRules@ this)
 {
-    int id = Render::addScript(Render::layer_last, "HUD.as", "RenderHumanCursor", 99999);
+    int id = Render::addScript(Render::layer_last, "HUD.as", "RenderHumanCursor", 999999);
 	
 	//if (getLocalPlayer() !is null)
 	if (isClient())
 	{
-		MessageContainer setbox(30, Vec2f(getDriver().getScreenWidth()/3, 150), Vec2f(20, 15), 24);
+		MessageContainer setbox(10, Vec2f(getDriver().getScreenWidth()/3, 150), Vec2f(20, 15), 24);
 		this.set("MessageContainer", @setbox);
 	}
 }
@@ -70,7 +70,7 @@ void blobTick(CBlob@ this)
 	if (this.isKeyJustPressed(key_taunts))
 	{
 		/*if (XORRandom(2) == 0) addMessage(makeText("onetwo,THREEFOURFIVE!!!sixseveneight,nine,teneleventwelvethirteen fourteen fifteen"+XORRandom(999), formDefaultTitle(null)));
-		else*/ addMessage(makeText("lol"+(getGameTime()%30), formDefaultTitle(null)));
+		else*/ addMessage(makeText("lol..."+(getGameTime()%30), formDefaultTitle(null)));
 	}
 
 	bool a1 = isAction(this);

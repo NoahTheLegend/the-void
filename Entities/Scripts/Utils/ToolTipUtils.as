@@ -19,11 +19,9 @@ void drawRectangle(Vec2f tl, Vec2f br, SColor color, u8 border_type = 0, f32 bor
             GUI::DrawRectangle(tl + Vec2f(border_width, border_width), br - Vec2f(border_width, border_width), color);
             break;
         }
-        case 2: // thick
+        default:
         {
-            GUI::DrawRectangle(tl, br, border_color);
-            GUI::DrawRectangle(tl + Vec2f(border_width, border_width), br - Vec2f(border_width, border_width), border_color);
-            GUI::DrawRectangle(tl + Vec2f(border_width * 2, border_width * 2), br - Vec2f(border_width * 2, border_width * 2), color);
+            GUI::DrawRectangle(tl, br, color);
             break;
         }
     }

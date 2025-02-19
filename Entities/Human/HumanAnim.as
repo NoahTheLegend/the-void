@@ -77,17 +77,19 @@ void onTick(CSprite@ this)
 		bool right = blob.isKeyPressed(key_right);
 		bool up = blob.isKeyPressed(key_up);
 		bool down = blob.isKeyPressed(key_down);
-		if (isInMenu(blob))
-		{
-			left = right = up = down = false;
-		}
-
-		const bool moving = left || right || up || down;
+		bool moving = left || right || up || down;
+		
 		const bool inair = (!blob.isOnGround() && !blob.isOnLadder());
 		const bool onladder = blob.isOnLadder();
 		Vec2f pos = blob.getPosition();
 		bool has_gravity = false; // todo
 		const bool fl = blob.isFacingLeft();
+
+		if (isInMenu(blob))
+		{
+			left = right = up = down = false;
+			moving = false;
+		}
 
 		RunnerMoveVars@ moveVars;
 		if (!blob.get("moveVars", @moveVars))

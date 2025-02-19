@@ -20,7 +20,7 @@ string formDefaultTitle(CPlayer@ this)
     else return this.getCharacterName()+" said:";
 }  
 
-MessageText makeText(string text = "NULL", string title = formDefaultTitle(null), u8 title_offset = 4, u16 max_length = 255, u8 delay = 1, bool playsound = !areMessagesMuted())
+MessageText makeText(string text = "NULL", string title = formDefaultTitle(null), u8 title_offset = 4, u16 max_length = 255, u8 delay = 1, bool playsound = !areMessagesMutedWhileHidden())
 {
     MessageText messageText(text, title, title_offset, max_length, delay, playsound);
     return messageText;

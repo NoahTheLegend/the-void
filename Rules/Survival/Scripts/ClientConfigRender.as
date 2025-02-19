@@ -73,7 +73,7 @@ void SetupUI(CRules@ this) // add options here
 
         // slider increases every build up from initializing, pls fix 
 
-        Option mute("Mute sound", section_pos+messages.padding+Vec2f(0,40), false, true);
+        Option mute("Mute sound while hidden", section_pos+messages.padding+Vec2f(0,40), false, true);
         mute.setCheck(vars.msg_mute);
         messages.addOption(mute);
 
