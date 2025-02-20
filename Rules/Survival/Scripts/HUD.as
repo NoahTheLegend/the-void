@@ -2,11 +2,11 @@
 
 void onInit(CRules@ this)
 {
-    int id = Render::addScript(Render::layer_last, "HUD.as", "RenderHumanCursor", 999999);
-	
-	//if (getLocalPlayer() !is null)
 	if (isClient())
 	{
+		this.set_s32("cursor_id", 0);
+		//int id = Render::addScript(Render::layer_last, "HUD.as", "RenderHumanCursor", 10000);
+
 		MessageContainer setbox(10, Vec2f(getDriver().getScreenWidth()/3, 150), Vec2f(20, 15), 24);
 		this.set("MessageContainer", @setbox);
 	}
@@ -28,10 +28,25 @@ void onRestart(CRules@ this)
 	}
 }
 
+int hack = 0;
 void onRender(CRules@ this)
 {
 	if (isClient())
 	{
+		CPlayer@ player = getLocalPlayer();
+		if (player !is null)
+		{
+			int id = this.get_s32("cursor_id");
+			hack++;
+			
+			if (hack <= 2)
+			{
+				id = Render::addScript(Render::layer_last, "HUD.as", "RenderHumanCursor", 10000);
+				this.set_s32("cursor_id", id);
+				print("set cursor id: "+id);
+			}
+		}
+
 		MessageContainer@ box;
     	if (this.get("MessageContainer", @box))
     	{
@@ -59,7 +74,7 @@ void onTick(CRules@ this)
 {
     CBlob@ blob = getLocalPlayerBlob();
     if (blob is null) return;
-    
+	
     blobTick(blob);
 }
 

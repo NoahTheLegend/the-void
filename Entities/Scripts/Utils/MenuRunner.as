@@ -64,17 +64,18 @@ void onRender(CSprite@ this)
     CBlob@ blob = this.getBlob();
     if (blob is null) return;
 
-    //if (!blob.get_bool("render")) return;
-
+    bool render = blob.get_bool("render");
+    f32 fold = render ? Maths::Lerp(blob.get_f32("fold"), 1.0f, 0.5f) : 0;
+    blob.set_f32("fold", fold);
+    //if (!render) return;
+    
     CBlob@ local = getLocalPlayerBlob();
     if (local is null) return;
 
     CPlayer@ player = local.getPlayer();
     if (player is null) return;
 
-    f32 fold = blob.get_f32("fold");
     u8 alpha = 255 * fold;
-
     s32 selected_item = blob.get_s32("selected_item");
 
     Vec2f menu_grid = blob.exists("menu_grid") ? blob.get_Vec2f("menu_grid") : base_menu_grid;
@@ -110,7 +111,6 @@ void onRender(CSprite@ this)
     Vec2f screen_center = getDriver().getScreenCenterPos();
     Vec2f menu_pos = screen_center - menu_dim / 2;
 
-    GUI::SetFont("menu");
     if (draw_attached)
     {
         u16[]@ attached_players;
@@ -123,6 +123,11 @@ void onRender(CSprite@ this)
         // draw main list
         drawRectangle(menu_pos, menu_pos + Vec2f(menu_dim.x, menu_dim.y * fold), SColor(alpha,0,0,0), 1, 2, SColor(alpha,75,75,75));
         
+        // tips below bottom left of main list
+        GUI::SetFont("default");
+        GUI::DrawText("WASD - move   E - select   C - exit", menu_pos + Vec2f(0, menu_dim.y * fold + 5), SColor(alpha,255,255,255));
+        
+        GUI::SetFont("menu");
         MenuItemInfo@[]@ menuItems;
         if (blob.get("MenuItems", @menuItems))
         {
@@ -228,9 +233,6 @@ void onTick(CBlob@ this)
     bool found = local_menu_runner == this_netid;
     this.set_bool("render", found);
     this.set_bool("draw_attached_players", found);
-
-    f32 fold = found ? Maths::Lerp(this.get_f32("fold"), 1.0f, 0.5f) : 0;
-    this.set_f32("fold", fold);
 
     if (found)
     {

@@ -16,13 +16,6 @@ void onTick(CBlob@ this)
 {
     if (!this.isMyPlayer()) return;
     if (this.isKeyJustPressed(key_pickup)) this.ClearGridMenus();
-
-    bool holding = this.isKeyPressed(key_eat);
-    if (!holding)
-    {
-        if (this.hasTag("ignore_holding")) this.Untag("ignore_holding");
-        else return;
-    }
     if (isInMenu(this)) return;
 
     CControls@ controls = getControls();
@@ -41,6 +34,13 @@ void onTick(CBlob@ this)
             this.set_u16("update_netid", 0);
             this.set_u32("update_timing", 0);
         }
+    }
+
+    bool holding = this.isKeyPressed(key_eat);
+    if (!holding)
+    {
+        if (this.hasTag("ignore_holding")) this.Untag("ignore_holding");
+        else return;
     }
 
     CHUD@ hud = getHUD();

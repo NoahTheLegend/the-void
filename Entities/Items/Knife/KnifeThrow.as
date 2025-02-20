@@ -115,9 +115,7 @@ void DoHitMap(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, u8 cust
 	norm *= (1.25f * radius);
 	Vec2f lock = worldPoint - norm;
 
-	if (isServer())
-        this.set_Vec2f("hitWorldPoint", worldPoint);
-
+    this.set_Vec2f("hitWorldPoint", worldPoint);
 	this.Sync("rot", true);
 
 	this.setVelocity(Vec2f(0, 0));

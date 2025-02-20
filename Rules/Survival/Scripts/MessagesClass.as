@@ -16,6 +16,9 @@ bool was_press = false;
 u8 hud_transparency = 190;
 const u8 line_height = 12;
 
+const string font_title = "Sakana_12";
+const string font_text = "Sakana_10";
+
 // contains text and properties for default text runner
 class MessageText
 {
@@ -32,10 +35,28 @@ class MessageText
     {
         text = _text;                             // full text
         title = _title;                           // constant title
+        title += getCurrentLocalDayTime();
         title_offset = _title_offset;             // gap between title and text
         max_length = _max_length;                 // max message length
         delay = _delay;                           // amount of ticks to wait for next symbom to write
         force_playsound = _force_playsound;       // play bzzt sound
+    }
+
+    string getCurrentLocalDayTime()
+    {
+        // [hh:mm:ss]
+
+        int time_local = Time_Local();
+        int hours = time_local / 3600;
+        int minutes = (time_local % 3600) / 60;
+        int seconds = time_local % 60;
+
+        int adjusted_hours = hours % 24;
+        string hours_str = (adjusted_hours < 10 ? "0" : "") + adjusted_hours;
+        string minutes_str = (minutes < 10 ? "0" : "") + minutes;
+        string seconds_str = (seconds < 10 ? "0" : "") + seconds;
+
+        return " - [" + hours_str + ":" + minutes_str + ":" + seconds_str + "]";
     }
 };
 
@@ -210,12 +231,12 @@ class MessageContainer
         }
 
         f32 p = 32;
-        Vec2f otl = br - Vec2f(p+6, dim.y + p * (1.0f-(f32(msg_count_slidetime_current)/f32(msg_count_slidetime))));
+        Vec2f otl = Vec2f(scrw - p - 6, p * (f32(msg_count_slidetime_current) / f32(msg_count_slidetime)) - p);
         Vec2f obr = otl + Vec2f(p, p);
 
         GUI::SetFont("menu");
         GUI::DrawSunkenPane(otl, obr);
-        GUI::DrawTextCentered(count_text, otl + Vec2f(p/2-2, p/2), SColor(255, 255, 255, 0));
+        GUI::DrawTextCentered(count_text, otl + Vec2f(p / 2 - 2, p / 2), SColor(255, 255, 255, 0));
     }
 
     void handleHideBar()
@@ -308,7 +329,7 @@ class MessageContainer
             // apply TOTAL height of the message (and offset from previous message)
             msg.height = (text_dim.y*(l_size+1))+message_gap;
 
-            Vec2f msg_pos = br - Vec2f(dim.x, text_dim.y) + Vec2f(padding.x, -padding.y);
+            Vec2f msg_pos = br - Vec2f(dim.x, text_dim.y) + Vec2f(padding.x, -padding.y + 1);
             msg.old_pos = msg_pos+Vec2f(0, text_dim.y);
         
             u16 index = msg.text_to_write.size();
@@ -324,7 +345,7 @@ class MessageContainer
 
                     if (i == l_size) // reserved for title
                     {
-                        GUI::SetFont("menu");
+                        GUI::SetFont(font_title); //title font
                         newtext = title;
                         l_pos.y -= title_offset;
                         copy_color_white.setAlpha(msg.title_alpha);
@@ -339,7 +360,7 @@ class MessageContainer
                 }
 
                 // draw filling line
-                GUI::SetFont("menu");
+                GUI::SetFont(font_text); // filling font
                 GUI::DrawText(l_text, msg_pos, color_white);
             }
 
@@ -449,7 +470,9 @@ class MessageContainer
             
             if (l_pos.y < 0) break;
 
-            GUI::SetFont("menu");
+            if (is_title[i])  GUI::SetFont(font_title); // title font
+            else GUI::SetFont(font_text); // history font
+
             GUI::DrawText(lines[i], l_pos, copy_color_white);
         }
     }
@@ -457,14 +480,14 @@ class MessageContainer
     // start message's text runner
     string writeMessage(Message@ msg)
     {
-        if (msg.messageText.force_playsound || !hidden)
+        if (msg.messageText.force_playsound || this.hidden)
         {
             Sound::Play("text_write.ogg", getDriver().getWorldPosFromScreenPos(getDriver().getScreenCenterPos()), vars.msg_volume_final, vars.msg_pitch_final+XORRandom(11)*0.01f);
         }
 
         if (msg.ended())
         {
-            if (history.size() > max_history_size)
+            if (history.size() >= max_history_size)
             {
                 history.pop_back();
             }

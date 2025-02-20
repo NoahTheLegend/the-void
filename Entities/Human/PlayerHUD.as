@@ -7,8 +7,13 @@
 const string iconsFilename = "HumanIcons.png";
 const int slotsSize = 6;
 
-const u8[] font_sizes = {14,18,11,8,12};
-const string[] font_names = {"RockwellMT", "CascadiaCodePL", "CascadiaCodePL", "CascadiaCodePL", "CascadiaCodePL-Bold"};
+const string[] font_names = {
+	"Sakana_8",
+	"Sakana_10",
+	"Sakana_12",
+	"Sakana_14",
+	"Sakana_18"
+};
 
 void onInit(CSprite@ this)
 {
@@ -24,10 +29,18 @@ void onInit(CSprite@ this)
 
 	for (u8 i = 0; i < font_names.length; i++)
 	{
-		if (!GUI::isFontLoaded(font_names[i]+"_"+font_sizes[i]))
+		string[] parts = font_names[i].split("_");
+		if (parts.length == 2)
 		{
-			string font = CFileMatcher(font_names[i]+".ttf").getFirst();
-			GUI::LoadFont(font_names[i]+"_"+font_sizes[i], font, font_sizes[i], true);
+			string full_font_name = font_names[i];
+			string font_name = parts[0];
+			string font_size = parts[1];
+			
+			if (!GUI::isFontLoaded(font_name))
+			{
+				string font_path = CFileMatcher(full_font_name + ".ttf").getFirst();
+				GUI::LoadFont(full_font_name, font_path, parseInt(font_size), true);
+			}
 		}
 	}
 }
