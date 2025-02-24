@@ -127,7 +127,7 @@ void onRender(CSprite@ this)
         GUI::SetFont("default");
         GUI::DrawText("WASD - move   E - select   C - exit", menu_pos + Vec2f(0, menu_dim.y * fold + 5), SColor(alpha,255,255,255));
         
-        GUI::SetFont("menu");
+        GUI::SetFont("Terminus_14");
         MenuItemInfo@[]@ menuItems;
         if (blob.get("MenuItems", @menuItems))
         {
