@@ -1,13 +1,13 @@
-void onInit(CRules@ this) {
-    onRestart(this);
-}
-
-void onRestart(CRules@ this) {
-    if (!GUI::isFontLoaded("KUI")) {
-         string ImGUI = CFileMatcher("KUI.ttf").getFirst();
-         GUI::LoadFont("KUI", ImGUI, 14, true);
-    }
-}
+//void onInit(CRules@ this) {
+//    onRestart(this);
+//}
+//
+//void onRestart(CRules@ this) {
+//    if (!GUI::isFontLoaded("KUI")) {
+//         string ImGUI = CFileMatcher("KUI.ttf").getFirst();
+//         GUI::LoadFont("KUI", ImGUI, 14, true);
+//    }
+//}
 
 namespace KUI {
 
