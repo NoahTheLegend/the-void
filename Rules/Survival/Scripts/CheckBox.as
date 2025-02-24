@@ -28,6 +28,11 @@ class CheckBox {
         return state;
     }
 
+    void tick()
+    {
+        
+    }
+
     void render(u8 alpha)
     {
         CControls@ controls = getControls();

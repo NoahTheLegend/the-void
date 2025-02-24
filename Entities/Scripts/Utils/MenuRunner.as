@@ -139,6 +139,21 @@ void onRender(CSprite@ this)
 
                 Vec2f item_pos = menu_pos + Vec2f((i % int(menu_grid.x)) * tilesize, (i / int(menu_grid.x)) * tilesize);
                 Vec2f item_dim = Vec2f(tilesize, tilesize);
+                
+                bool update_sidebar = false;
+                if (item.pos != item_pos || item.dim != item_dim)
+                    update_sidebar = true;
+
+                item.pos = item_pos;
+                item.dim = item_dim;
+                item.list_pos = menu_pos;
+                item.list_dim = menu_dim;
+                item.sidebar_dim = sidebar_dim;
+
+                if (update_sidebar)
+                {
+                    item.makeSidebar();
+                }
 
                 if (selected_item == i)
                     drawRectangle(item_pos, item_pos + item_dim, SColor(alpha,0,0,0), 1, 2, SColor(alpha,255,255,255));
@@ -149,20 +164,12 @@ void onRender(CSprite@ this)
             // draw current item on the sidebar to the right from list
             if (selected_item != -1 && selected_item < menuItems.length)
             {
-                Vec2f sidebar_renderpos = menu_pos + Vec2f(menu_dim.x, 0);
-                drawRectangle(sidebar_renderpos, sidebar_renderpos + sidebar_dim, SColor(alpha,0,0,0), 1, 2, SColor(alpha,75,75,75));
-
                 // draw selected item info
 
                 MenuItemInfo@ item = menuItems[selected_item];
                 if (item !is null)
                 {
-                    item.tl = sidebar_renderpos;
-                    item.dim = sidebar_dim;
                     item.render(alpha);
-
-                    GUI::DrawTextCentered(item.text, sidebar_renderpos + Vec2f(sidebar_dim.x / 2, 10), SColor(alpha,255,255,255));
-                    GUI::DrawTextCentered(item.description, sidebar_renderpos + Vec2f(sidebar_dim.x / 2, 30), SColor(alpha,255,255,255));
                 }
             }
         }

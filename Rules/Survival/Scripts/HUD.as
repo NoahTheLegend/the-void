@@ -96,10 +96,14 @@ void blobTick(CBlob@ this)
 
 	has_sharp = this.hasTag("carrying_sharp");
 	has_weapon = this.hasTag("carrying_weapon");
-
-	if (has_weapon)
+	
+	if (has_sharp)
 	{
-		offset = Vec2f(-11.5f, -13.5f);
+		offset = Vec2f(-4, -4);
+	}
+	else if (has_weapon)
+	{
+		offset = Vec2f(-15, -15);
 	}
 }
 
@@ -116,7 +120,7 @@ void ManageCursors(CBlob@ this)
 	if (map is null) return;
 
 	Vec2f mpos = getControls().getInterpMouseScreenPos();
-	Vec2f cursor_offset = Vec2f(-2, 0) + offset;
+	Vec2f cursor_offset = offset;
 
 	f32 v = 255; // visibility
 	
