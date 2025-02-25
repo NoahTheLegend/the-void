@@ -77,54 +77,70 @@ namespace Input {
 ////////////// VARIABLES //////////////
 
 // Indexing //
-int         button_current   = 0;
-int         button_hovered   = 0;
-int         slider_current   = 0;
-int         slider_selected  = 0;
-int         dragger_current  = 0;
-int         dragger_selected = 0;
-int         keybind_current  = 0;
-int         keybind_selected = 0;
+int button_current   = 0;
+int button_hovered   = 0;
+int slider_current   = 0;
+int slider_selected  = 0;
+int dragger_current  = 0;
+int dragger_selected = 0;
+int keybind_current  = 0;
+int keybind_selected = 0;
 
 // Screen space //
-Vec2f       screen_tl = Vec2f_zero;
-Vec2f       screen_br = Vec2f_zero;
+Vec2f screen_tl = Vec2f_zero;
+Vec2f screen_br = Vec2f_zero;
 
 // Window space //
-Vec2f       window_tl = Vec2f_zero;
-Vec2f       window_br = Vec2f_zero;
+Vec2f window_tl = Vec2f_zero;
+Vec2f window_br = Vec2f_zero;
 
 // Canvas space //
-Vec2f       canvas_tl = Vec2f_zero;
-Vec2f       canvas_br = Vec2f_zero;
+Vec2f canvas_tl = Vec2f_zero;
+Vec2f canvas_br = Vec2f_zero;
 
 ////////////// ENUMS //////////////
 
 enum Alignment {
-    TL, // TOP LEFT
-    TC, // TOP CENTER
-    TR, // TOP RIGHT
-    CL, // CENTER LEFT
-    CC, // CENTER CENTER
-    CR, // CENTER RIGHT
-    BL, // BOTTOM LEFT,
-    BC, // BOTTOM CENTER,
-    BR, // BOTTOM RIGHT
+  TL, // TOP LEFT
+  TC, // TOP CENTER
+  TR, // TOP RIGHT
+  CL, // CENTER LEFT
+  CC, // CENTER CENTER
+  CR, // CENTER RIGHT
+  BL, // BOTTOM LEFT,
+  BC, // BOTTOM CENTER,
+  BR, // BOTTOM RIGHT
 }
 
 ////////////// CLASSES //////////////
 
-/*
-class Rectangle() {
-    Vec2f tl;
-    Vec2f br;
-}
-*/
+class AnimationRectangle {
+  Vec2f tl = Vec2f(0, 0);
+  Vec2f br = Vec2f(0, 0);
+  Vec2f tl_start = Vec2f(0, 0);
+  Vec2f br_start = Vec2f(0, 0);
+  Vec2f tl_end = Vec2f(0, 0);
+  Vec2f br_end = Vec2f(0, 0);
+  float frame = 0;
+  float duration = 10;
 
-class WindowConfig {
-    Alignment alignment = CC;
-    Vec2f pos;
-    bool closable = false;
+  void play() {
+     tl.x = Maths::Lerp(tl_start.x, tl_end.x, frame / duration);
+     tl.y = Maths::Lerp(tl_start.y, tl_end.y, frame / duration);
+     br.x = Maths::Lerp(br_start.x, br_end.x, frame / duration);
+     br.y = Maths::Lerp(br_start.y, br_end.y, frame / duration);
+     frame = Maths::Min(frame + 1, duration);
+  }
+}
+
+class AnimationText {
+  string result = "";
+  float frame = 0;
+  float duration = 10;
+
+  void play() {
+      frame = Maths::Min(frame + 1, duration);
+  }
 }
 
 ////////////// FUNCTIONS //////////////
@@ -161,76 +177,66 @@ void End() {
     canvas_tl = Vec2f_zero;
     canvas_br = Vec2f_zero;
 }
-
-bool Window(string title, Vec2f size, const WindowConfig config = KUI::WindowConfig()) {
+ 
+bool Window(string title, Vec2f tl, Vec2f br, Alignment alignment = Alignment::CC) {
     // WINDOW ALIGNMENT
+    window_tl = tl;
+    window_br = br;
 
     Vec2f screen_sz = screen_br - screen_tl;
-    switch (config.alignment) {
+    switch (alignment) {
         case TL:
-            window_tl = Vec2f_zero;
-            window_br = size;
+            window_tl = tl;
+            window_br = br;
             break;
         case TC:
-            window_tl = Vec2f(screen_sz.x / 2 - size.x / 2, 0);
-            window_br = Vec2f(screen_sz.x / 2 + size.x / 2, size.y);
+          //window_tl = Vec2f(screen_sz.x / 2 - size.x / 2, 0);
+          //window_br = Vec2f(screen_sz.x / 2 + size.x / 2, size.y);
             break;
         case TR:
-            window_tl = Vec2f(screen_sz.x - size.x, 0);
-            window_br = Vec2f(screen_sz.x, size.y);
+          //window_tl = Vec2f(screen_sz.x - size.x, 0);
+          //window_br = Vec2f(screen_sz.x, size.y);
             break;
         case CL:
-            window_tl = Vec2f(0, screen_sz.y / 2 - size.y / 2);
-            window_br = Vec2f(size.x, screen_sz.y / 2 + size.y / 2);
+          //window_tl = Vec2f(0, screen_sz.y / 2 - size.y / 2);
+          //window_br = Vec2f(size.x, screen_sz.y / 2 + size.y / 2);
             break;
         case CC:
-            window_tl = screen_sz / 2 - size / 2;
-            window_br = screen_sz / 2 + size / 2;
+            window_tl = screen_sz / 2 + tl;
+            window_br = screen_sz / 2 + br;
             break;
         case CR:
-            window_tl = Vec2f(screen_sz.x - size.x, screen_sz.y / 2 - size.y / 2);
-            window_br = Vec2f(screen_sz.x, screen_sz.y / 2 + size.y / 2);
+          //window_tl = Vec2f(screen_sz.x - size.x, screen_sz.y / 2 - size.y / 2);
+          //window_br = Vec2f(screen_sz.x, screen_sz.y / 2 + size.y / 2);
             break;
         case BL:
-            window_tl = Vec2f(0, screen_sz.y - size.y);
-            window_br = Vec2f(size.x, screen_sz.y);
+          //window_tl = Vec2f(0, screen_sz.y - size.y);
+          //window_br = Vec2f(size.x, screen_sz.y);
             break;
         case BC:
-            window_tl = Vec2f(screen_sz.x / 2 - size.x / 2, screen_sz.y - size.y);
-            window_br = Vec2f(screen_sz.x / 2 + size.x / 2, screen_sz.y);
+          //window_tl = Vec2f(screen_sz.x / 2 - size.x / 2, screen_sz.y - size.y);
+          //window_br = Vec2f(screen_sz.x / 2 + size.x / 2, screen_sz.y);
             break;
         case BR:
-            window_tl = screen_sz - size;
-            window_br = screen_sz;
+          //window_tl = screen_sz - size;
+          //window_br = screen_sz;
             break;
     }
-
-    window_tl += config.pos;
-    window_br += config.pos;
 
     Vec2f cpos = KUI::Input::GetCursorPos();
     bool hover = cpos.x > window_tl.x && cpos.x < window_br.x && cpos.y > window_tl.y && cpos.y < window_br.y;
-
     KUI::Input::controls.setButtonsLock(hover ? true : false);
 
-    // WINDOW TITLE AND PANEL
-    GUI::DrawFramedPane(window_tl, window_br);
-    GUI::DrawPane(window_tl, Vec2f(window_br.x, window_tl.y + window_title_h));
+    GUI::DrawRectangle(window_tl, window_br, Colors::FOREGROUND);
+    GUI::DrawRectangle(window_tl + Vec2f(2, 2), window_br - Vec2f(2, 2), Colors::BACKGROUND);
+    GUI::DrawRectangle(window_tl, Vec2f(window_br.x, window_tl.y + window_title_h), Colors::FOREGROUND);
+    GUI::DrawRectangle(window_tl + Vec2f(2, 2), Vec2f(window_br.x - 2, window_tl.y + window_title_h - 2), Colors::BACKGROUND);
     
-    // WINDOW CLOSE BUTTON
-    if (config.closable) {
-        if(ButtonGeneral(window_tl, Vec2f(window_br.x, window_tl.y + window_title_h), title)) {
-            KUI::Input::controls.setButtonsLock(false);
-            return false;
-        }
-    } else {
-        GUI::DrawText(
-            title,
-            Vec2f(window_tl.x + window_inner_margin.x, window_tl.y + window_title_h / 2 - text_h / 2 - 1),
-            KUI::Colors::FOREGROUND
-        );
-
-    }
+    //    GUI::DrawText(
+    //        title,
+    //        Vec2f(window_tl.x + window_inner_margin.x, window_tl.y + window_title_h / 2 - text_h / 2 - 1),
+    //        KUI::Colors::FOREGROUND
+    //    );
 
     window_tl += Vec2f(0, window_title_h);
     canvas_tl = window_tl + window_inner_margin;
@@ -338,7 +344,8 @@ void DrawButtonPressed(Vec2f tl, Vec2f br, string title = "") {
 }
 
 void DrawButtonSelected(Vec2f tl, Vec2f br, string title = "") {
-    GUI::DrawSunkenPane(tl, br);
+    GUI::DrawRectangle(tl, br, Colors::YELLOW);
+    GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), Colors::BACKGROUND);
     GUI::DrawTextCentered(title, Vec2f(tl.x + (br.x - tl.x) / 2 - 2, tl.y + (br.y - tl.y) / 2 - 2), KUI::Colors::FOREGROUND);
 }
 
