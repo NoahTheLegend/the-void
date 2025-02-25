@@ -146,7 +146,7 @@ class ConfigMenu {
             global_alpha = Maths::Min(255, global_alpha+25);
             for (u8 i = 0; i < sections.size(); i++)
             {
-                sections[i].render(global_alpha);
+                sections[i].render(global_alpha); 
             }
         }
 

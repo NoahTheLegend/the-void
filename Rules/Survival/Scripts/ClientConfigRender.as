@@ -3,6 +3,7 @@
 #include "ClientVars.as";
 #include "ClientConfig.as";
 #include "Utilities.as";
+#include "KUI.as";
 
 const u16 savetime_fadeout = 10;
 const u16 savetime_delay = 60;
@@ -19,7 +20,7 @@ void onInit(CRules@ this)
     {
         LoadConfig(this, vars);
         SetupUI(this);
-
+        
         ConfigMenu@ menu;
         if (this.get("ConfigMenu", @menu))
         {

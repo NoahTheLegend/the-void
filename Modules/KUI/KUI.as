@@ -1,13 +1,4 @@
-//void onInit(CRules@ this) {
-//    onRestart(this);
-//}
-//
-//void onRestart(CRules@ this) {
-//    if (!GUI::isFontLoaded("KUI")) {
-//         string ImGUI = CFileMatcher("KUI.ttf").getFirst();
-//         GUI::LoadFont("KUI", ImGUI, 14, true);
-//    }
-//}
+#define CLIENT_ONLY
 
 namespace KUI {
 
@@ -130,7 +121,7 @@ class WindowConfig {
 ////////////// FUNCTIONS //////////////
 
 void Begin(Vec2f tl = Vec2f_zero, Vec2f br = Vec2f(getScreenWidth(), getScreenHeight())) {
-    GUI::SetFont("KUI");
+    GUI::SetFont("Terminus_14");
     KUI::Input::Update();
 
     button_current  = 0;
