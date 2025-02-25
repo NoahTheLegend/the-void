@@ -125,57 +125,68 @@ class AnimationRectangle {
   float duration = 10;
 
   void play() {
-     tl.x = Maths::Lerp(tl_start.x, tl_end.x, frame / duration);
-     tl.y = Maths::Lerp(tl_start.y, tl_end.y, frame / duration);
-     br.x = Maths::Lerp(br_start.x, br_end.x, frame / duration);
-     br.y = Maths::Lerp(br_start.y, br_end.y, frame / duration);
-     frame = Maths::Min(frame + 1, duration);
+    tl.x = Maths::Lerp(tl_start.x, tl_end.x, frame / duration);
+    tl.y = Maths::Lerp(tl_start.y, tl_end.y, frame / duration);
+    br.x = Maths::Lerp(br_start.x, br_end.x, frame / duration);
+    br.y = Maths::Lerp(br_start.y, br_end.y, frame / duration);
+    frame = Maths::Min(frame + 1, duration);
+  }
+
+  bool isEnd() {
+    return frame == duration;
   }
 }
 
 class AnimationText {
+  string text = "";
   string result = "";
   float frame = 0;
   float duration = 10;
 
   void play() {
-      frame = Maths::Min(frame + 1, duration);
+    text = result;
+    text.resize(Maths::Lerp(0, result.length(), frame / duration));
+    frame = Maths::Min(frame + 1, duration);
+  }
+
+  bool isEnd() {
+    return frame == duration;
   }
 }
 
 ////////////// FUNCTIONS //////////////
 
 void Begin(Vec2f tl = Vec2f_zero, Vec2f br = Vec2f(getScreenWidth(), getScreenHeight())) {
-    GUI::SetFont("Terminus_14");
-    KUI::Input::Update();
+  GUI::SetFont("Terminus_14");
+  KUI::Input::Update();
 
-    button_current  = 0;
-    slider_current  = 0;
-    dragger_current = 0;
-    keybind_current = 0;
+  button_current  = 0;
+  slider_current  = 0;
+  dragger_current = 0;
+  keybind_current = 0;
 
-    screen_tl = tl;
-    screen_br = br;
-    window_tl = screen_tl;
-    window_br = screen_br;
-    canvas_tl = screen_tl;
-    canvas_br = screen_br;
+  screen_tl = tl;
+  screen_br = br;
+  window_tl = screen_tl;
+  window_br = screen_br;
+  canvas_tl = screen_tl;
+  canvas_br = screen_br;
 }
 
 void End() {
-    GUI::SetFont("menu");
+  GUI::SetFont("menu");
 
-    button_current  = 0;
-    slider_current  = 0;
-    dragger_current = 0;
-    keybind_current = 0;
+  button_current  = 0;
+  slider_current  = 0;
+  dragger_current = 0;
+  keybind_current = 0;
 
-    screen_tl = Vec2f_zero;
-    screen_br = Vec2f_zero;
-    window_tl = Vec2f_zero;
-    window_br = Vec2f_zero;
-    canvas_tl = Vec2f_zero;
-    canvas_br = Vec2f_zero;
+  screen_tl = Vec2f_zero;
+  screen_br = Vec2f_zero;
+  window_tl = Vec2f_zero;
+  window_br = Vec2f_zero;
+  canvas_tl = Vec2f_zero;
+  canvas_br = Vec2f_zero;
 }
  
 bool Window(string title, Vec2f tl, Vec2f br, Alignment alignment = Alignment::CC) {
@@ -232,11 +243,11 @@ bool Window(string title, Vec2f tl, Vec2f br, Alignment alignment = Alignment::C
     GUI::DrawRectangle(window_tl, Vec2f(window_br.x, window_tl.y + window_title_h), Colors::FOREGROUND);
     GUI::DrawRectangle(window_tl + Vec2f(2, 2), Vec2f(window_br.x - 2, window_tl.y + window_title_h - 2), Colors::BACKGROUND);
     
-    //    GUI::DrawText(
-    //        title,
-    //        Vec2f(window_tl.x + window_inner_margin.x, window_tl.y + window_title_h / 2 - text_h / 2 - 1),
-    //        KUI::Colors::FOREGROUND
-    //    );
+    GUI::DrawText(
+        title,
+        Vec2f(window_tl.x + window_inner_margin.x, window_tl.y + window_title_h / 2 - text_h / 2 - 1),
+        KUI::Colors::FOREGROUND
+    );
 
     window_tl += Vec2f(0, window_title_h);
     canvas_tl = window_tl + window_inner_margin;
