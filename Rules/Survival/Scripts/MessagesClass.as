@@ -129,6 +129,7 @@ class MessageContainer
     Vec2f br;
 
     bool hidden;
+    u16 lines_outbound;
 
     string[] lines;
     Vec2f[] offsets;
@@ -187,6 +188,11 @@ class MessageContainer
         return 0;
     }
 
+    void tick()
+    {
+        slider.tick();
+    }
+
     void render()
     {
         if (vars is null) return;
@@ -208,7 +214,8 @@ class MessageContainer
         u8 was_scroll = wasMouseScroll(); // 1 - up, 2 - down
         if (was_scroll != 0 && mouseHovered(this, slider))
         {
-            slider.scrollBy(was_scroll == 1 ? Maths::Min(-1, -25+history_size/4) : Maths::Max(1, 25-history_size/4));
+            f32 step = line_height * 2;
+            slider.scrollBy(was_scroll == 1 ? -step : step);
         }
 
         drawOrderCount();
@@ -221,7 +228,7 @@ class MessageContainer
 
         if (order_list_size == 0)
         {
-            count_text = "✓";
+            count_text = "✔";
             if (msg_count_slidetime_current > 0) msg_count_slidetime_current--;
         }
         else
@@ -272,7 +279,7 @@ class MessageContainer
                 hidebar_tl = Vec2f(tl.x, br.y-10);
                 hidebar_br = Vec2f(br.x, br.y+5);
                 slider.pos = tl-Vec2f(15,0);
-                slider.recalculatePos(); 
+                slider.update(); 
             }
 
             drawHideBar(hidebar_tl, hidebar_br, hovering_hidebar);
@@ -411,7 +418,7 @@ class MessageContainer
     u16 handleHistory()
     {
         f32 scroll = slider.scrolled;
-        u16 lines_outbound = 0;
+        lines_outbound = 0;
         f32 total_offset = order_list.size() > 0 && lines_scrolled == 0 ? order_list[0].height : 0;
 
         lines = array<string>();

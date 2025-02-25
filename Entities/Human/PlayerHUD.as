@@ -13,7 +13,11 @@ const string[] font_names = {
 	"Sakana_12",
 	"Sakana_14",
 	"Sakana_18",
-        "Terminus_14"
+	"Terminus_8",
+	"Terminus_10",
+	"Terminus_12",
+    "Terminus_14",
+	"Terminus_18"
 };
 
 void onInit(CSprite@ this)

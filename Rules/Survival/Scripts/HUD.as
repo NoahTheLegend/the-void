@@ -74,6 +74,15 @@ void onTick(CRules@ this)
 {
     CBlob@ blob = getLocalPlayerBlob();
     if (blob is null) return;
+
+	MessageContainer@ box;
+	if (this.get("MessageContainer", @box))
+	{
+		if (box !is null)
+		{
+			box.tick();
+		}
+	}
 	
     blobTick(blob);
 }

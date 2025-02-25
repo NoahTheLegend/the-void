@@ -6,7 +6,7 @@
 void onInit(CBlob@ this)
 {
     this.addCommandID("sync_menu");
-    this.addCommandID("move_at");
+    this.addCommandID("move_to");
     this.addCommandID("attach_player");
     this.addCommandID("detach_player");
     
@@ -67,6 +67,7 @@ void onRender(CSprite@ this)
     bool render = blob.get_bool("render");
     f32 fold = render ? Maths::Lerp(blob.get_f32("fold"), 1.0f, 0.5f) : 0;
     blob.set_f32("fold", fold);
+
     //if (!render) return;
     
     CBlob@ local = getLocalPlayerBlob();
@@ -81,30 +82,30 @@ void onRender(CSprite@ this)
     Vec2f menu_grid = blob.exists("menu_grid") ? blob.get_Vec2f("menu_grid") : base_menu_grid;
     Vec2f menu_dim = menu_grid * tilesize;
 
-    // debug
-    if ((sv_test || player.isMod()) && getControls().isKeyPressed(KEY_KEY_R))
-    {
-        GUI::DrawText("Local id: "+local.get_u16("menu_id"), Vec2f(50, 10), SColor(255,255,255,5));
-        GUI::DrawText("Blob id: "+blob.getNetworkID(), Vec2f(50, 30), SColor(255,255,255,5));
-        GUI::DrawText("Blob name: "+blob.getName(), Vec2f(50, 50), SColor(255,255,255,5));
-        GUI::DrawText("Alpha: "+alpha, Vec2f(50, 70), SColor(255,255,255,5));
-        GUI::DrawText("Selected item: "+selected_item, Vec2f(50, 90), SColor(255,255,255,5));
-
-        u16[]@ attached_players;
-        blob.get("attached_players", @attached_players);
-
-        GUI::DrawText("Attached players: " + attached_players.length, Vec2f(150, 10), SColor(255,255,255,5));
-        for (u8 i = 0; i < attached_players.length; i++)
-        {
-            CPlayer@ p = getPlayerByNetworkId(attached_players[i]);
-            if (p is null) continue;
-
-            CBlob@ b = p.getBlob();
-            if (b is null) continue;
-
-            GUI::DrawText(p.getCharacterName(), Vec2f(150, 30 + i * 20), SColor(255,255,255,5));
-        }
-    }
+            // debug
+            if ((sv_test || player.isMod()) && getControls().isKeyPressed(KEY_KEY_R))
+            {
+                GUI::DrawText("Local id: "+local.get_u16("menu_id"), Vec2f(50, 10), SColor(255,255,255,5));
+                GUI::DrawText("Blob id: "+blob.getNetworkID(), Vec2f(50, 30), SColor(255,255,255,5));
+                GUI::DrawText("Blob name: "+blob.getName(), Vec2f(50, 50), SColor(255,255,255,5));
+                GUI::DrawText("Alpha: "+alpha, Vec2f(50, 70), SColor(255,255,255,5));
+                GUI::DrawText("Selected item: "+selected_item, Vec2f(50, 90), SColor(255,255,255,5));
+        
+                u16[]@ attached_players;
+                blob.get("attached_players", @attached_players);
+        
+                GUI::DrawText("Attached players: " + attached_players.length, Vec2f(150, 10), SColor(255,255,255,5));
+                for (u8 i = 0; i < attached_players.length; i++)
+                {
+                    CPlayer@ p = getPlayerByNetworkId(attached_players[i]);
+                    if (p is null) continue;
+        
+                    CBlob@ b = p.getBlob();
+                    if (b is null) continue;
+        
+                    GUI::DrawText(p.getCharacterName(), Vec2f(150, 30 + i * 20), SColor(255,255,255,5));
+                }
+            }
 
     bool draw_attached = blob.get_bool("draw_attached_players");
 
@@ -161,11 +162,9 @@ void onRender(CSprite@ this)
                 GUI::DrawTextCentered(item.text, item_pos + Vec2f(item_dim.x / 2, item_dim.y / 2), SColor(alpha,255,255,255));
             }
         
-            // draw current item on the sidebar to the right from list
             if (selected_item != -1 && selected_item < menuItems.length)
             {
                 // draw selected item info
-
                 MenuItemInfo@ item = menuItems[selected_item];
                 if (item !is null)
                 {
@@ -227,6 +226,13 @@ void onTick(CBlob@ this)
 
     if (!isClient()) return;
 
+    MenuItemInfo@ item = GetMenuItem(this, this.get_s32("selected_item"));
+    if (item !is null)
+    {
+        if (this.get_bool("render"))
+            item.tick();
+    }
+
     CBlob@ local = getLocalPlayerBlob();
     if (local is null) return;
 
@@ -280,7 +286,7 @@ void onTick(CBlob@ this)
             params.write_bool(right);
             params.write_bool(up);
             params.write_bool(down);
-            this.SendCommand(this.getCommandID("move_at"), params);
+            this.SendCommand(this.getCommandID("move_to"), params);
         }
     }
     
@@ -294,7 +300,7 @@ void onTick(CBlob@ this)
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 {
-    if (cmd == this.getCommandID("move_at"))
+    if (cmd == this.getCommandID("move_to"))
     {
         if (!isServer()) return;
         

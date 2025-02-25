@@ -213,6 +213,12 @@ shared class SurvivalSpawns : RespawnSystem
 	{
 		CBlob@[] spawns;
 		getBlobsByTag("spawn", @spawns);
+		
+		if (spawns.length == 0)
+		{
+			warn("Couldn't find spawns in Vec2f getSpawnLocation(PlayerInfo@ p_info)");
+			return Vec2f(0, 0);
+		}
 
 		CBlob@ b = spawns[XORRandom(spawns.length)];
 		if (b !is null)

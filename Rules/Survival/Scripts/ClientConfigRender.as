@@ -69,19 +69,19 @@ void SetupUI(CRules@ this) // add options here
     if (vars !is null)
     {
         Vec2f section_pos = menu_pos + Vec2f(30, 0);
-        Section messages("Messages", section_pos, Vec2f(menu_dim.x/2, menu_pos.y + 150));
+        Section messages("Messages", section_pos, Vec2f(menu_dim.x/2, menu_pos.y + 150), true);
 
         // slider increases every build up from initializing, pls fix 
 
-        Option mute("Mute sound while hidden", section_pos+messages.padding+Vec2f(0,40), false, true);
+        Option mute("Mute sound while hidden", section_pos+messages.padding+Vec2f(0,40), false, true, true);
         mute.setCheck(vars.msg_mute);
         messages.addOption(mute);
 
-        Option volume("Sound volume modifier", mute.pos+Vec2f(0,30), true, false);
+        Option volume("Sound volume modifier", mute.pos+Vec2f(0,30), true, false, true);
         volume.setSliderPos(vars.msg_volume/max_vol);
         messages.addOption(volume);
 
-        Option pitch("Sound pitch modifier", volume.pos+Vec2f(0,60), true, false);
+        Option pitch("Sound pitch modifier", volume.pos+Vec2f(0,60), true, false, true);
         pitch.setSliderPos(vars.msg_pitch/max_pitch);
         messages.addOption(pitch);
 
@@ -181,6 +181,8 @@ void onTick(CRules@ this)
     ConfigMenu@ menu;
     if (this.get("ConfigMenu", @menu))
     {
+        menu.tick();
+        
         if (need_update)
         {
             ClientVars@ vars;
