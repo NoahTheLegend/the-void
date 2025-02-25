@@ -207,21 +207,20 @@ bool Window(string title, Vec2f size, const WindowConfig config = KUI::WindowCon
     // WINDOW TITLE AND PANEL
     GUI::DrawFramedPane(window_tl, window_br);
     GUI::DrawPane(window_tl, Vec2f(window_br.x, window_tl.y + window_title_h));
-    GUI::DrawText(title,
-                  Vec2f(window_tl.x + window_inner_margin.x, window_tl.y + window_title_h / 2 - text_h / 2 - 1),
-                  KUI::Colors::FG);
-
+    
     // WINDOW CLOSE BUTTON
     if (config.closable) {
-        Vec2f tl = Vec2f(window_br.x - window_title_h,
-                         window_tl.y);
-        Vec2f br = Vec2f(window_br.x,
-                         window_tl.y + window_title_h);
-
-        if(ButtonIconGeneral(tl, br, icons, window_close_icon, window_close_icon_size)) {
-          KUI::Input::controls.setButtonsLock(false);
+        if(ButtonGeneral(window_tl, Vec2f(window_br.x, window_tl.y + window_title_h), title)) {
+            KUI::Input::controls.setButtonsLock(false);
             return false;
         }
+    } else {
+        GUI::DrawText(
+            title,
+            Vec2f(window_tl.x + window_inner_margin.x, window_tl.y + window_title_h / 2 - text_h / 2 - 1),
+            KUI::Colors::FG
+        );
+
     }
 
     window_tl += Vec2f(0, window_title_h);
