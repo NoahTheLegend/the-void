@@ -17,13 +17,13 @@ void onInit(CRules@ rules) {
 }
 
 void onRender(CRules@ this) {
-  CControls@ controls = getControls();
-  KUI::Begin();
-  KUI::Window(window_animation_title.text, window_animation.tl, window_animation.br,
-  KUI::Alignment::CC); KUI::End();
-  if (controls.isKeyPressed(EKEY_CODE::KEY_KEY_G)) {
-    window_animation.play();
-    if(window_animation.isEnd()) window_animation_title.play();
-  }
+  //  CControls@ controls = getControls();
+  //  KUI::Begin();
+  //  KUI::Window(window_animation_title.text, window_animation.tl, window_animation.br,
+  //  KUI::Alignment::CC); KUI::End();
+  //  if (controls.isKeyPressed(EKEY_CODE::KEY_KEY_G)) {
+  //    window_animation.play();
+  //    if(window_animation.isEnd()) window_animation_title.play();
+  //  }
 }
 
