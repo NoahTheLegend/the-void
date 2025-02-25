@@ -27,7 +27,16 @@ const int       spacing = 2;
 
 ////////////// COLORS //////////////
 namespace Colors {
-    const SColor    FG = SColor(0xFFFFFFFF);
+    const SColor FOREGROUND = SColor(0xFFE5E1D8);
+    const SColor BACKGROUND = SColor(0xFF1F1F1F);
+    const SColor BLACK = SColor(0xFF000000);
+    const SColor RED = SColor(0xFFF7786D);
+    const SColor GREEN = SColor(0xFFBDE97C);
+    const SColor YELLOW = SColor(0xFFEFDFAC);
+    const SColor BLUE = SColor(0xFF6EBAf8);
+    const SColor MAGENTA = SColor(0xFFEf88FF);
+    const SColor CYAN = SColor(0xFF90FDF8);
+    const SColor WHITE = SColor(0xFFE5E1D8);
 }
 
 ////////////// INPUT //////////////
@@ -218,7 +227,7 @@ bool Window(string title, Vec2f size, const WindowConfig config = KUI::WindowCon
         GUI::DrawText(
             title,
             Vec2f(window_tl.x + window_inner_margin.x, window_tl.y + window_title_h / 2 - text_h / 2 - 1),
-            KUI::Colors::FG
+            KUI::Colors::FOREGROUND
         );
 
     }
@@ -259,7 +268,7 @@ void Spacing(int spacing) {
 }
 
 void Text(string text) {
-    GUI::DrawText(text, canvas_tl, KUI::Colors::FG);
+  GUI::DrawText(text, canvas_tl, KUI::Colors::FOREGROUND);
     canvas_tl.y += text_h + spacing;
 }
 
@@ -311,23 +320,26 @@ bool ButtonGeneral(Vec2f tl, Vec2f br, string title = "") {
 }
 
 void DrawButtonDefault(Vec2f tl, Vec2f br, string title = "") {
-    GUI::DrawButton(tl, br);
-    GUI::DrawTextCentered(title, Vec2f(tl.x + (br.x - tl.x) / 2 - 2, tl.y + (br.y - tl.y) / 2 - 2), KUI::Colors::FG);
+    GUI::DrawRectangle(tl, br, Colors::FOREGROUND);
+    GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), Colors::BACKGROUND);
+    GUI::DrawTextCentered(title, Vec2f(tl.x + (br.x - tl.x) / 2 - 2, tl.y + (br.y - tl.y) / 2 - 2), KUI::Colors::FOREGROUND);
 }
 
 void DrawButtonHovered(Vec2f tl, Vec2f br, string title = "") {
-    GUI::DrawButtonHover(tl, br);
-    GUI::DrawTextCentered(title, Vec2f(tl.x + (br.x - tl.x) / 2 - 2, tl.y + (br.y - tl.y) / 2 - 2), KUI::Colors::FG);
+    GUI::DrawRectangle(tl, br, Colors::GREEN);
+    GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), Colors::BACKGROUND);
+    GUI::DrawTextCentered(title, Vec2f(tl.x + (br.x - tl.x) / 2 - 2, tl.y + (br.y - tl.y) / 2 - 2), KUI::Colors::FOREGROUND);
 }
 
 void DrawButtonPressed(Vec2f tl, Vec2f br, string title = "") {
-    GUI::DrawButtonPressed(tl, br);
-    GUI::DrawTextCentered(title, Vec2f(tl.x + (br.x - tl.x) / 2 - 2, tl.y + (br.y - tl.y) / 2 - 2), KUI::Colors::FG);
+    GUI::DrawRectangle(tl, br, Colors::BLACK);
+    GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), Colors::BACKGROUND);
+    GUI::DrawTextCentered(title, Vec2f(tl.x + (br.x - tl.x) / 2 - 2, tl.y + (br.y - tl.y) / 2 - 2), KUI::Colors::FOREGROUND);
 }
 
 void DrawButtonSelected(Vec2f tl, Vec2f br, string title = "") {
     GUI::DrawSunkenPane(tl, br);
-    GUI::DrawTextCentered(title, Vec2f(tl.x + (br.x - tl.x) / 2 - 2, tl.y + (br.y - tl.y) / 2 - 2), KUI::Colors::FG);
+    GUI::DrawTextCentered(title, Vec2f(tl.x + (br.x - tl.x) / 2 - 2, tl.y + (br.y - tl.y) / 2 - 2), KUI::Colors::FOREGROUND);
 }
 
 bool ButtonIconGeneral(Vec2f tl, Vec2f br, string icon_name, int icon_index, Vec2f icon_size = Vec2f(8,8)) {
@@ -378,7 +390,7 @@ bool Toggle(bool value, string title = "") {
         if(ButtonIconGeneral(tl, br, icons, toggle_icon_f, toggle_icon_sz)) value = !value;
     }
 
-    GUI::DrawText(title, Vec2f(br.x + 4, tl.y), KUI::Colors::FG);
+    GUI::DrawText(title, Vec2f(br.x + 4, tl.y), KUI::Colors::FOREGROUND);
 
     canvas_tl.y += toggle_h + spacing;
     return value;
@@ -397,8 +409,8 @@ int Stepper(int value, string title = "", int min = 0, int max = 5, int step = 1
     if (ButtonIconGeneral(l_tl, l_br, icons, stepper_icon_l, stepper_icon_sz)) value = Maths::Max(value - step, min);
     if (ButtonIconGeneral(r_tl, r_br, icons, stepper_icon_r, stepper_icon_sz)) value = Maths::Min(value + step, max);
 
-    GUI::DrawTextCentered(""+value, Vec2f(l_br.x + (r_tl.x - l_br.x) / 2 - 2, l_tl.y + (r_br.y - l_tl.y) / 2 - 1), KUI::Colors::FG);
-    GUI::DrawText(title, Vec2f(r_br.x + 4, canvas_tl.y), KUI::Colors::FG);
+    GUI::DrawTextCentered(""+value, Vec2f(l_br.x + (r_tl.x - l_br.x) / 2 - 2, l_tl.y + (r_br.y - l_tl.y) / 2 - 1), KUI::Colors::FOREGROUND);
+    GUI::DrawText(title, Vec2f(r_br.x + 4, canvas_tl.y), KUI::Colors::FOREGROUND);
     canvas_tl.y += stepper_h + spacing;
     return value;
 }
@@ -412,7 +424,7 @@ int Switcher(int index, array<string> titles) {
     if (ButtonIconGeneral(r_tl, r_br, icons, stepper_icon_r, stepper_icon_sz)) index += 1;
     if (index < 0) index = titles.length - 1;
     index %= titles.length;
-    GUI::DrawTextCentered(""+titles[index], Vec2f(l_tl + (r_br - l_tl) / 2), KUI::Colors::FG);
+    GUI::DrawTextCentered(""+titles[index], Vec2f(l_tl + (r_br - l_tl) / 2), KUI::Colors::FOREGROUND);
     canvas_tl.y += stepper_h + spacing;
     return index;
 }
@@ -440,7 +452,7 @@ int SliderInt(int value, string title, int min, int max) {
     Vec2f value_tl = Vec2f(tl.x + (br.x - tl.x - value_w) * (0.0 + value - min) / (max - min), tl.y);
     Vec2f value_br = Vec2f(tl.x + (br.x - tl.x - value_w) * (0.0 + value - min) / (max - min) + value_w, br.y);
     DrawButtonDefault(value_tl, value_br, ""+value);
-    GUI::DrawText(title, Vec2f(br.x + 4, canvas_tl.y + dragger_h / 2 - text_h / 2 - 1), KUI::Colors::FG);
+    GUI::DrawText(title, Vec2f(br.x + 4, canvas_tl.y + dragger_h / 2 - text_h / 2 - 1), KUI::Colors::FOREGROUND);
     canvas_tl.y += slider_h + spacing;
     return value;
 }
@@ -468,7 +480,7 @@ float SliderFloat(float value, string title, float min, float max) {
     Vec2f value_tl = Vec2f(tl.x + (br.x - tl.x - value_w) * (value - min) / (max - min), tl.y);
     Vec2f value_br = Vec2f(tl.x + (br.x - tl.x - value_w) * (value - min) / (max - min) + value_w, br.y);
     DrawButtonDefault(value_tl, value_br, formatFloat(value, "", 0, 2));
-    GUI::DrawText(title, Vec2f(br.x + 4, canvas_tl.y + dragger_h / 2 - text_h / 2 - 1), KUI::Colors::FG);
+    GUI::DrawText(title, Vec2f(br.x + 4, canvas_tl.y + dragger_h / 2 - text_h / 2 - 1), KUI::Colors::FOREGROUND);
     canvas_tl.y += slider_h + spacing;
     return value;
 }
@@ -492,7 +504,7 @@ int DraggerInt(int value, string title, int step = 1) {
         KUI::Input::SetCursorPos(center);
     }
 
-    GUI::DrawText(title, Vec2f(br.x + 4, canvas_tl.y + dragger_h / 2 - text_h / 2 - 1), KUI::Colors::FG);
+    GUI::DrawText(title, Vec2f(br.x + 4, canvas_tl.y + dragger_h / 2 - text_h / 2 - 1), KUI::Colors::FOREGROUND);
     canvas_tl.y += dragger_h + spacing;
     return value;
 }
@@ -515,7 +527,7 @@ float DraggerFloat(float value, string title, float step = 0.01) {
         dragger_selected = dragger_current;
         KUI::Input::SetCursorPos(center);
     }
-    GUI::DrawText(title, Vec2f(br.x + 4, canvas_tl.y + dragger_h / 2 - text_h / 2 - 1), KUI::Colors::FG);
+    GUI::DrawText(title, Vec2f(br.x + 4, canvas_tl.y + dragger_h / 2 - text_h / 2 - 1), KUI::Colors::FOREGROUND);
     canvas_tl.y += dragger_h + spacing;
     return value;
 }
@@ -571,7 +583,7 @@ int Keybind(int key, string title) {
         keybind_selected = keybind_current;
     }
 
-    GUI::DrawText(title, Vec2f(br.x + 4, tl.y + keybind_h / 2 - text_h / 2 - 1), KUI::Colors::FG);
+    GUI::DrawText(title, Vec2f(br.x + 4, tl.y + keybind_h / 2 - text_h / 2 - 1), KUI::Colors::FOREGROUND);
     canvas_tl.y += keybind_h + spacing;
     return key;
 }
