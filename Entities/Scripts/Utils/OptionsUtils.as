@@ -98,16 +98,6 @@ class Option {
         }
     }
 
-    void setPosition(Vec2f _pos)
-    {
-        pos = _pos;
-        slider.setPosition(pos+Vec2f(0,23));
-        check.setPosition(pos+Vec2f(0,1));
-        
-        slider.update();
-        check.update();
-    }
-
     void setSliderPos(f32 scroll)
     {
         slider.setScroll(scroll);
@@ -145,7 +135,6 @@ class Option {
 
     void render(u8 alpha)
     {
-        debug = true;
         if (debug)
         {
             GUI::DrawRectangle(pos, pos+dim, SColor(alpha, 255, 0, 0));
@@ -177,5 +166,15 @@ class Option {
             current_pos.y += dim.y / 3;
             GUI::DrawText(option_text, current_pos, SColor(255,255,235,120));
         }
+    }
+
+    void setPosition(Vec2f _pos)
+    {
+        pos = _pos;
+        slider.setPosition(pos+Vec2f(0,23));
+        check.setPosition(pos+Vec2f(0,1));
+        
+        slider.update();
+        check.update();
     }
 };

@@ -43,6 +43,8 @@ class MenuItemInfo
         sidebar.addSlider("Slider", "Slider tooltip", Vec2f(32, 20), Vec2f(8, 8), 0, 0);
         sidebar.addCheckbox("Checkbox", "Checkbox tooltip", Vec2f(16, 16), false);
         sidebar.addCheckbox("Checkbox 1", "Checkbox tooltip 1", Vec2f(32, 24), false);
+
+        sidebar.update();
     }
 
     void tick()
@@ -77,6 +79,10 @@ class Sidebar
     Vec2f tooltip_padding;
     int[] hovered;
 
+    u8 tooltip_alpha;
+    u8 tooltip_hold_time;
+    u8 current_hold_time;
+
     u8[] order;
     Option[] options;
 
@@ -91,6 +97,10 @@ class Sidebar
 
         mpos = Vec2f(-1,-1);
         tooltip_padding = Vec2f(6,4);
+
+        tooltip_alpha = 0;
+        tooltip_hold_time = 45;
+        current_hold_time = 0;
 
         order = array<u8>();
         options = array<Option>();
@@ -115,6 +125,20 @@ class Sidebar
         else require_tick_update = false;
 
         hovered = getHoveredIndexes(mpos, tl_rects, br_rects);
+        if (hovered.size() > 0)
+        {
+            current_hold_time++;
+            if (current_hold_time >= tooltip_hold_time)
+            {
+                tooltip_alpha = Maths::Lerp(tooltip_alpha, 255, 0.25f);
+                current_hold_time = tooltip_hold_time;
+            }
+        }
+        else
+        {
+            current_hold_time = 0;
+            tooltip_alpha = 0;
+        }
     }
 
     void render(u8 alpha)
@@ -122,7 +146,13 @@ class Sidebar
         CControls@ controls = getControls();
         if (controls is null) return;
 
-        mpos = controls.getInterpMouseScreenPos();
+        Vec2f new_mpos = controls.getInterpMouseScreenPos();
+        if (new_mpos != mpos)
+        {
+            current_hold_time = 0;
+            tooltip_alpha = 0;
+        }
+        mpos = new_mpos;
         drawRectangle(pos, pos + dim, SColor(alpha, 0, 0, 0), 1, 2, SColor(alpha, 75, 75, 75));
 
         // render options in order they added
@@ -132,18 +162,21 @@ class Sidebar
             return;
         }
 
+        bool request_update = false;
         Vec2f current_pos = pos + padding;
         for (uint i = 0; i < order.size(); i++)
         {
+            if (options[i].pos != current_pos)
+                request_update = true;
+
             options[i].setPosition(current_pos);
             options[i].render(alpha);
+
             current_pos += Vec2f(0, options[i].dim.y + padding.y);
         }
 
-        if (hovered.size() > 0)
-        {
-            renderToolTip(alpha, tooltips[hovered[0]]);
-        }
+        if (request_update) update();
+        if (hovered.size() > 0) renderToolTip(Maths::Min(alpha, tooltip_alpha), tooltips[hovered[0]]);
     }
 
     bool addSlider(string _title, string _tooltip, Vec2f _button_dim = Vec2f(16, 16), Vec2f _capture_margin = Vec2f_zero, f32 _start_pos = 0, u8 _snap_points = 0)
@@ -178,6 +211,8 @@ class Sidebar
 
     void renderToolTip(u8 alpha, string tooltip)
     {
+        if (tooltip_alpha == 0) return;
+        
         Vec2f tooltip_dim = getToolTipDim(tooltip);
         Vec2f tooltip_pos = mpos + Vec2f(16, 16);
         tooltip_pos = mpos + Vec2f(24, 24);
