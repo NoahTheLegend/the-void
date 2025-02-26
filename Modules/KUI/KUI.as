@@ -3,75 +3,47 @@
 namespace KUI {
 
 ////////////// CONTSANTS //////////////
-const string    icons = "KUI_Icons.png";
-const int       window_title_h = 24;
-const Vec2f     window_inner_margin = Vec2f(8, 2);
-const int       window_close_icon = 16;
-const Vec2f     window_close_icon_size = Vec2f(8,8);
-const int       tab_h = 24;
-const int       text_h = 16;
-const int       button_h = 24;
-const int       toggle_h = 16;
-const int       toggle_icon_t = 0;
-const int       toggle_icon_f = 4;
-const Vec2f     toggle_icon_sz = Vec2f(8,8);
-const int       stepper_h = 16;
-const int       stepper_icon_l = 8;
-const int       stepper_icon_r = 12;
-const Vec2f     stepper_icon_sz = Vec2f(8,8);
-const int       slider_h = 24;
-const int       dragger_h = 24;
-const int       keybind_h = 24;
-const int       keybind_w = 160;
-const int       spacing = 2;
+const int WINDOW_TITLE_H = 24;
 
 ////////////// COLORS //////////////
 namespace Colors {
-    const SColor FOREGROUND = SColor(0xFFE5E1D8);
-    const SColor BACKGROUND = SColor(0xFF1F1F1F);
-    const SColor BLACK = SColor(0xFF000000);
-    const SColor RED = SColor(0xFFF7786D);
-    const SColor GREEN = SColor(0xFFBDE97C);
-    const SColor YELLOW = SColor(0xFFEFDFAC);
-    const SColor BLUE = SColor(0xFF6EBAf8);
-    const SColor MAGENTA = SColor(0xFFEf88FF);
-    const SColor CYAN = SColor(0xFF90FDF8);
-    const SColor WHITE = SColor(0xFFE5E1D8);
+  const SColor BACKGROUND = SColor(0xFF000000);
+  const SColor FOREGROUND = SColor(0xFFFFFFFF);
+  const SColor ERROR = SColor(0xFFFF0000);
 }
 
 ////////////// INPUT //////////////
 namespace Input {
-    CControls@      controls = getControls();
+  CControls@ controls = getControls();
 
-    bool            _now_press = false;
-    bool            _was_press = false;
+  bool _now_press = false;
+  bool _was_press = false;
 
-    void Update() {
-        if(controls is null) return;
+  void Update() {
+    if(controls is null) return;
+    _was_press = _now_press;
+    _now_press = controls.mousePressed1;
+  }
 
-        _was_press = _now_press;
-        _now_press = controls.mousePressed1;
-    }
+  bool IsPress() {
+    return _now_press;
+  }
 
-    bool IsPress() {
-        return _now_press;
-    }
+  bool IsJustPressed() {
+    return (_now_press and !_was_press) ? true : false;
+  }
 
-    bool IsJustPressed() {
-        return (_now_press and !_was_press) ? true : false;
-    }
+  bool IsJustReleased() {
+    return (!_now_press and _was_press) ? true : false;
+  }
 
-    bool IsJustReleased() {
-        return (!_now_press and _was_press) ? true : false;
-    }
+  Vec2f GetCursorPos() {
+    return controls.getMouseScreenPos();
+  }
 
-    Vec2f GetCursorPos() {
-        return controls.getMouseScreenPos();
-    }
-
-    void  SetCursorPos(Vec2f pos) {
-        controls.setMousePosition(pos);
-    }
+  void  SetCursorPos(Vec2f pos) {
+    controls.setMousePosition(pos);
+  }
 }
 
 ////////////// VARIABLES //////////////
@@ -107,13 +79,31 @@ class AnimationRectangle {
   float duration = 10;
 
   void play() {
-    tl = Vec2f_lerp(tl_start, tl_end, frame / duration);
-    br = Vec2f_lerp(br_start, br_end, frame / duration);
+    float t = frame / duration;
+
+    Vec2f tl_temp0 = Vec2f_lerp(tl_start, tl_end, t);
+    Vec2f tl_temp1 = Vec2f_lerp(tl_start, tl_temp0, t);
+    Vec2f tl_temp2 = Vec2f_lerp(tl_temp0, tl_end, t);
+    tl = Vec2f_lerp(tl_temp1, tl_temp2, 1);
+
+    Vec2f br_temp0 = Vec2f_lerp(br_start, br_end, t);
+    Vec2f br_temp1 = Vec2f_lerp(br_start, br_temp0, t);
+    Vec2f br_temp2 = Vec2f_lerp(br_temp0, br_end, t);
+    br = Vec2f_lerp(br_temp1, br_temp2, 1);
+
     frame = Maths::Min(frame + 1, duration);
   }
-
+  
   bool isEnd() {
     return frame == duration;
+  }
+
+  bool isPlay() {
+    return frame != 0 && frame != duration;
+  }
+
+  bool isPlayOrEnd() {
+    return frame != 0;
   }
 }
 
@@ -134,10 +124,18 @@ class AnimationText {
   bool isEnd() {
     return frame == duration;
   }
+
+  bool isPlay() {
+    return frame != 0 && frame != duration;
+  }
+
+  bool isPlayOrEnd() {
+    return frame != 0;
+  }
 }
 
 ////////////// FUNCTIONS //////////////
-
+ 
 void Begin(Vec2f tl = Vec2f_zero, Vec2f br = Vec2f(getScreenWidth(), getScreenHeight())) {
   GUI::SetFont("Terminus_14");
   KUI::Input::Update();
@@ -154,50 +152,26 @@ void End() {
 }
 
 void DrawPane(Vec2f tl, Vec2f br, Alignment alignment = Alignment::TL) {
-    Vec2f screen_sz = screen_br - screen_tl;
-    switch (alignment) {
-      case TL:
-        break;
-      case TC:
-        //window_tl = Vec2f(screen_sz.x / 2 - size.x / 2, 0);
-        //window_br = Vec2f(screen_sz.x / 2 + size.x / 2, size.y);
-        break;
-      case TR:
-        //window_tl = Vec2f(screen_sz.x - size.x, 0);
-        //window_br = Vec2f(screen_sz.x, size.y);
-        break;
-      case CL:
-        //window_tl = Vec2f(0, screen_sz.y / 2 - size.y / 2);
-        //window_br = Vec2f(size.x, screen_sz.y / 2 + size.y / 2);
-        break;
-      case CC:
-        tl = screen_sz / 2 + tl;
-        br = screen_sz / 2 + br;
-        break;
-      case CR:
-        //window_tl = Vec2f(screen_sz.x - size.x, screen_sz.y / 2 - size.y / 2);
-        //window_br = Vec2f(screen_sz.x, screen_sz.y / 2 + size.y / 2);
-        break;
-      case BL:
-        //window_tl = Vec2f(0, screen_sz.y - size.y);
-        //window_br = Vec2f(size.x, screen_sz.y);
-        break;
-      case BC:
-        //window_tl = Vec2f(screen_sz.x / 2 - size.x / 2, screen_sz.y - size.y);
-        //window_br = Vec2f(screen_sz.x / 2 + size.x / 2, screen_sz.y);
-        break;
-      case BR:
-        //window_tl = screen_sz - size;
-        //window_br = screen_sz;
-        break;
-  }
-
-  
-  GUI::DrawRectangle(tl, br, Colors::GREEN);
-  GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), Colors::BLACK);
+  tl = Align(alignment, tl);
+  br = Align(alignment, br);
+  GUI::DrawRectangle(tl, br, Colors::FOREGROUND);
+  GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), Colors::BACKGROUND);
 }
 
-void DrawTextRectCentered(string text, Vec2f tl, Vec2f br, Alignment alignment = Alignment::TL) {
+void DrawText(string text, Vec2f pos, SColor color = Colors::FOREGROUND, Alignment alignment = Alignment::TL) {
+  pos = Align(alignment, pos);
+  GUI::DrawText(text, pos, color);
+}
+
+void DrawTextRectCentered(string text, Vec2f tl, Vec2f br, SColor color = Colors::FOREGROUND, Alignment alignment = Alignment::TL) {
+  tl = Align(alignment, tl);
+  br = Align(alignment, br);
+  Vec2f dim = Vec2f(0,0);
+  GUI::GetTextDimensions(text, dim);
+  GUI::DrawText(text, tl + Vec2f((br.x - tl.x) / 2 - dim.x / 2 - 2, (br.y - tl.y) / 2 - dim.y / 2 - 2), color);
+}
+
+Vec2f Align(Alignment alignment, Vec2f pos) {
   Vec2f screen_sz = screen_br - screen_tl;
   switch (alignment) {
     case TL:
@@ -209,8 +183,7 @@ void DrawTextRectCentered(string text, Vec2f tl, Vec2f br, Alignment alignment =
     case CL:
       break;
     case CC:
-      tl = screen_sz / 2 + tl;
-      br = screen_sz / 2 + br;
+      pos = screen_sz / 2 + pos;
       break;
     case CR:
       break;
@@ -221,15 +194,8 @@ void DrawTextRectCentered(string text, Vec2f tl, Vec2f br, Alignment alignment =
     case BR:
       break;
   }
-
-  Vec2f dim = Vec2f(0,0);
-  GUI::GetTextDimensions(text, dim);
-
-  GUI::DrawText(
-    text,
-    tl + Vec2f((br.x - tl.x) / 2 - dim.x / 2 - 2, (br.y - tl.y) / 2 - dim.y / 2 - 2),
-    KUI::Colors::GREEN
-  );
+  return pos;
 }
 
 }
+ 
