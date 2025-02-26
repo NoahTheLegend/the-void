@@ -59,10 +59,14 @@ void LoadConfig(CRules@ this, ClientVars@ vars) // load cfg from cache
     }
 }
 
+const f32 height_slider = 64;
+const f32 height_checkbox = 16;
 void SetupUI(CRules@ this) // add options here
 {
     Vec2f menu_pos = Vec2f(15,15);
     Vec2f menu_dim = Vec2f(400, 400);
+    Vec2f menu_grid = Vec2f(2, 1); // 2 cols 1 row
+    const f32 colwidth = menu_dim.x / menu_grid.x;
     ConfigMenu setmenu(menu_pos, menu_dim);
     
     // keep order with saving vars
@@ -74,15 +78,15 @@ void SetupUI(CRules@ this) // add options here
 
         // slider increases every build up from initializing, pls fix 
 
-        Option mute("Mute sound while hidden", section_pos+messages.padding+Vec2f(0,40), false, true, true);
+        Option mute("Mute sound while hidden", section_pos+messages.padding+Vec2f(0,40), Vec2f(colwidth, height_checkbox), false, true, true);
         mute.setCheck(vars.msg_mute);
         messages.addOption(mute);
 
-        Option volume("Sound volume modifier", mute.pos+Vec2f(0,30), true, false, true);
+        Option volume("Sound volume modifier", mute.pos+Vec2f(0,30), Vec2f(colwidth, height_slider), true, false, true);
         volume.setSliderPos(vars.msg_volume/max_vol);
         messages.addOption(volume);
 
-        Option pitch("Sound pitch modifier", volume.pos+Vec2f(0,60), true, false, true);
+        Option pitch("Sound pitch modifier", volume.pos+Vec2f(0,60), Vec2f(colwidth, height_slider), true, false, true);
         pitch.setSliderPos(vars.msg_pitch/max_pitch);
         messages.addOption(pitch);
 

@@ -57,7 +57,6 @@ const f32 attached_rect_width = 100;
 
 const f32 tilesize = 64;
 const Vec2f base_menu_grid = Vec2f(4, 2);
-const Vec2f sidebar_dim = Vec2f(150, 200);
 
 void onRender(CSprite@ this)
 {
@@ -149,7 +148,6 @@ void onRender(CSprite@ this)
                 item.dim = item_dim;
                 item.list_pos = menu_pos;
                 item.list_dim = menu_dim;
-                item.sidebar_dim = sidebar_dim;
 
                 if (update_sidebar)
                 {
@@ -157,7 +155,7 @@ void onRender(CSprite@ this)
                 }
 
                 if (selected_item == i)
-                    drawRectangle(item_pos, item_pos + item_dim, SColor(alpha,0,0,0), 1, 2, SColor(alpha,255,255,255));
+                    drawRectangle(item_pos, item_pos + item_dim, SColor(alpha, 0, 0, 0), 1, 2, SColor(alpha,255,255,255));
 
                 GUI::DrawTextCentered(item.text, item_pos + Vec2f(item_dim.x / 2, item_dim.y / 2), SColor(alpha,255,255,255));
             }

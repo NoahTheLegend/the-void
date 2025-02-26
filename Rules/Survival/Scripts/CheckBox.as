@@ -20,12 +20,6 @@ class CheckBox {
         update();
     }
 
-    void update()
-    {
-        tl = pos;
-        br = pos + dim;
-    }
-
     bool check()
     {
         Sound::Play("select.ogg"); // make sure this plays for local player and they hear it
@@ -69,5 +63,17 @@ class CheckBox {
     {
         return mpos.x >= tl.x && mpos.x <= br.x
             && mpos.y >= tl.y && mpos.y <= br.y;
+    }
+
+    void update()
+    {
+        tl = pos;
+        br = pos + dim;
+    }
+
+    void setPosition(Vec2f _pos)
+    {
+        pos = _pos;
+        update();
     }
 }

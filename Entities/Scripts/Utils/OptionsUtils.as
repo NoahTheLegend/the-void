@@ -62,6 +62,7 @@ class Option {
     string default_text;
     string option_text;
     Vec2f pos;
+    Vec2f dim;
     bool has_slider;
     f32 slider_startpos;
     bool has_check;
@@ -71,12 +72,15 @@ class Option {
 
     Slider slider;
     CheckBox check;
+    
+    bool debug;
 
-    Option(string _text, Vec2f _pos, bool _has_slider = false, bool _has_check = false, bool _setting = false)
+    Option(string _text, Vec2f _pos, Vec2f _dim, bool _has_slider = false, bool _has_check = false, bool _setting = false)
     {
         this.default_text = _text;
         this.option_text = "";
         this.pos = _pos;
+        this.dim = _dim;
         this.has_slider = _has_slider;
         this.has_check = _has_check;
         this.slider_startpos = 0.5f;
@@ -97,7 +101,9 @@ class Option {
     void setPosition(Vec2f _pos)
     {
         pos = _pos;
-
+        slider.setPosition(pos+Vec2f(0,23));
+        check.setPosition(pos+Vec2f(0,1));
+        
         slider.update();
         check.update();
     }
@@ -139,19 +145,37 @@ class Option {
 
     void render(u8 alpha)
     {
-        GUI::SetFont("menu");
-        SColor col_white = SColor(alpha,255,255,255);
-        if (has_slider)
+        debug = true;
+        if (debug)
         {
-            slider.render(alpha);
-            GUI::DrawText(option_text, slider.pos+Vec2f(0, slider.dim.y), SColor(255,255,235,120));
-        }
-        if (has_check)
-        {
-            check.render(alpha);
+            GUI::DrawRectangle(pos, pos+dim, SColor(alpha, 255, 0, 0));
         }
 
-        GUI::SetFont("Terminus_12");
-        GUI::DrawText(default_text, has_check?pos+Vec2f(25,0):pos, col_white);
+        GUI::SetFont("Terminus_14");
+        SColor col_white = SColor(alpha,255,255,255);
+        Vec2f text_dim;
+        GUI::GetTextDimensions(default_text, text_dim);
+
+        Vec2f current_pos = pos;
+        
+        if (has_check)
+        {
+            check.setPosition(current_pos);
+            check.render(alpha);
+            current_pos.x += check.dim.x + 5; 
+            current_pos.y = current_pos.y + dim.y / 2 - 7;
+        }
+
+        GUI::DrawText(default_text, current_pos - Vec2f(0, 2), col_white);
+
+        if (has_slider)
+        {
+            current_pos.y += dim.y / 3;
+            slider.setPosition(current_pos);
+            slider.render(alpha);
+
+            current_pos.y += dim.y / 3;
+            GUI::DrawText(option_text, current_pos, SColor(255,255,235,120));
+        }
     }
 };

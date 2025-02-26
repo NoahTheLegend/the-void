@@ -47,13 +47,6 @@ class Slider
         debug = false;
     }
 
-    void update()
-    {
-        button_pos = pos + (dim-button_dim) * scrolled;
-        tl = pos;
-        br = pos + dim;
-    }
-
     void tick()
     {
         
@@ -103,6 +96,19 @@ class Slider
         GUI::DrawFramedPane(tl, br);
         // button
         GUI::DrawSunkenPane(button_drawpos, button_drawpos+button_dim);
+    }
+
+    void setPosition(Vec2f _pos)
+    {
+        pos = _pos;
+        update();
+    }
+
+    void update()
+    {
+        button_pos = pos + (dim-button_dim) * scrolled;
+        tl = pos;
+        br = pos + dim;
     }
 
     void requestUpdate(Vec2f a, Vec2f b)
