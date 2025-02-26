@@ -22,7 +22,7 @@ void onInit(CRules@ rules) {
   window_anim_title.result = "SETTINGS";
   window_anim_title.duration = 20;
 }
-/*
+
 void onRender(CRules@ this) {
   CControls@ controls = getControls();
   KUI::Begin();
@@ -42,4 +42,4 @@ void onRender(CRules@ this) {
   
   KUI::End();
 }
-*/
+

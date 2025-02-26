@@ -125,7 +125,9 @@ class AnimationText {
 
   void play() {
     text = result;
+    if (isEnd()) return;
     text.resize(Maths::Lerp(0, result.length(), frame / duration));
+    text += "█";
     frame = Maths::Min(frame + 1, duration);
   }
 
@@ -191,8 +193,8 @@ void DrawPane(Vec2f tl, Vec2f br, Alignment alignment = Alignment::TL) {
   }
 
   
-  GUI::DrawRectangle(tl, br, Colors::FOREGROUND);
-  GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), Colors::BACKGROUND);
+  GUI::DrawRectangle(tl, br, Colors::GREEN);
+  GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), Colors::BLACK);
 }
 
 void DrawTextRectCentered(string text, Vec2f tl, Vec2f br, Alignment alignment = Alignment::TL) {
@@ -226,7 +228,7 @@ void DrawTextRectCentered(string text, Vec2f tl, Vec2f br, Alignment alignment =
   GUI::DrawText(
     text,
     tl + Vec2f((br.x - tl.x) / 2 - dim.x / 2 - 2, (br.y - tl.y) / 2 - dim.y / 2 - 2),
-    KUI::Colors::FOREGROUND
+    KUI::Colors::GREEN
   );
 }
 
