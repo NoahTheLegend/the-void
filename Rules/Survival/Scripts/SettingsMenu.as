@@ -1,11 +1,11 @@
 #define CLIENT_ONLY
 
-#include "KUI.as";
+#include "FUI.as";
 
-KUI::AnimationRectangle window_anim_rect_title();
-KUI::AnimationRectangle window_anim_rect();
-KUI::AnimationText window_anim_title();
-KUI::AnimationText window_anim_error();
+FUI::AnimationRectangle window_anim_rect_title();
+FUI::AnimationRectangle window_anim_rect();
+FUI::AnimationText window_anim_title();
+FUI::AnimationText window_anim_error();
 
 bool is_open = false;
 
@@ -22,15 +22,15 @@ void onRender(CRules@ this) {
     }
 
     if (is_open) {
-        KUI::Begin();
+        FUI::Begin();
         if (window_anim_rect.isPlayOrEnd())
-            KUI::DrawPane(window_anim_rect.tl, window_anim_rect.br, KUI::Alignment::CC);
+            FUI::DrawPane(window_anim_rect.tl, window_anim_rect.br, FUI::Alignment::CC);
         if (window_anim_rect_title.isPlayOrEnd())
-            KUI::DrawPane(window_anim_rect_title.tl, window_anim_rect_title.br, KUI::Alignment::CC);
+            FUI::DrawPane(window_anim_rect_title.tl, window_anim_rect_title.br, FUI::Alignment::CC);
         if (window_anim_title.isPlayOrEnd())
-            KUI::DrawTextRectCentered(window_anim_title.text, window_anim_rect_title.tl, window_anim_rect_title.br, KUI::Colors::FOREGROUND, KUI::Alignment::CC);
+            FUI::DrawTextRectCentered(window_anim_title.text, window_anim_rect_title.tl, window_anim_rect_title.br, FUI::Colors::FOREGROUND, FUI::Alignment::CC);
         if (window_anim_error.isPlayOrEnd())
-            KUI::DrawText(window_anim_error.text, window_anim_rect.tl + Vec2f(4, KUI::WINDOW_TITLE_H), KUI::Colors::ERROR, KUI::Alignment::CC);
+            FUI::DrawText(window_anim_error.text, window_anim_rect.tl + Vec2f(4, FUI::WINDOW_TITLE_H), FUI::Colors::ERROR, FUI::Alignment::CC);
         window_anim_rect_title.play();
         if (window_anim_rect_title.isEnd()) {
             window_anim_rect.play();
@@ -39,15 +39,15 @@ void onRender(CRules@ this) {
                 window_anim_error.play();
             }
         }
-        KUI::End();
+        FUI::End();
     }
 }
 
 void ResetAnimation() {
     window_anim_rect_title.tl_start = Vec2f(0, -100);
-    window_anim_rect_title.br_start = Vec2f(0, -100 + KUI::WINDOW_TITLE_H);
+    window_anim_rect_title.br_start = Vec2f(0, -100 + FUI::WINDOW_TITLE_H);
     window_anim_rect_title.tl_end = Vec2f(-150, -100);
-    window_anim_rect_title.br_end = Vec2f(150, -100 + KUI::WINDOW_TITLE_H);
+    window_anim_rect_title.br_end = Vec2f(150, -100 + FUI::WINDOW_TITLE_H);
     window_anim_rect_title.duration = 20;
     window_anim_rect_title.frame = 0;
     window_anim_rect.tl_start = window_anim_rect_title.tl_end;

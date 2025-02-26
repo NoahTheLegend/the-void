@@ -1,18 +1,18 @@
 #define CLIENT_ONLY
 
-namespace KUI {
+// Futuristic
+// User
+// Interface
+namespace FUI {
 
-////////////// CONTSANTS //////////////
 const int WINDOW_TITLE_H = 24;
 
-////////////// COLORS //////////////
 namespace Colors {
   const SColor BACKGROUND = SColor(0xFF000000);
   const SColor FOREGROUND = SColor(0xFFFFFFFF);
   const SColor ERROR = SColor(0xFFFF0000);
 }
 
-////////////// INPUT //////////////
 namespace Input {
   CControls@ controls = getControls();
 
@@ -46,13 +46,8 @@ namespace Input {
   }
 }
 
-////////////// VARIABLES //////////////
-
-// Screen space //
 Vec2f screen_tl = Vec2f_zero;
 Vec2f screen_br = Vec2f_zero;
-
-////////////// ENUMS //////////////
 
 enum Alignment {
   TL, // TOP LEFT
@@ -66,7 +61,31 @@ enum Alignment {
   BR, // BOTTOM RIGHT
 }
 
-////////////// CLASSES //////////////
+Vec2f Align(Alignment alignment, Vec2f pos) {
+  Vec2f screen_sz = screen_br - screen_tl;
+  switch (alignment) {
+    case TL:
+      break;
+    case TC:
+      break;
+    case TR:
+      break;
+    case CL:
+      break;
+    case CC:
+      pos = screen_sz / 2 + pos;
+      break;
+    case CR:
+      break;
+    case BL:
+      break;
+    case BC:
+      break;
+    case BR:
+      break;
+  }
+  return pos;
+}
 
 class AnimationRectangle {
   Vec2f tl = Vec2f(0, 0);
@@ -79,13 +98,13 @@ class AnimationRectangle {
   float duration = 10;
 
   void play() {
+    // time (0.0 - 1.0)
     float t = frame / duration;
-
+    // bezier curve math for beutiful animation
     Vec2f tl_temp0 = Vec2f_lerp(tl_start, tl_end, t);
     Vec2f tl_temp1 = Vec2f_lerp(tl_start, tl_temp0, t);
     Vec2f tl_temp2 = Vec2f_lerp(tl_temp0, tl_end, t);
     tl = Vec2f_lerp(tl_temp1, tl_temp2, 1);
-
     Vec2f br_temp0 = Vec2f_lerp(br_start, br_end, t);
     Vec2f br_temp1 = Vec2f_lerp(br_start, br_temp0, t);
     Vec2f br_temp2 = Vec2f_lerp(br_temp0, br_end, t);
@@ -134,11 +153,9 @@ class AnimationText {
   }
 }
 
-////////////// FUNCTIONS //////////////
- 
 void Begin(Vec2f tl = Vec2f_zero, Vec2f br = Vec2f(getScreenWidth(), getScreenHeight())) {
   GUI::SetFont("Terminus_14");
-  KUI::Input::Update();
+  FUI::Input::Update();
 
   screen_tl = tl;
   screen_br = br;
@@ -171,31 +188,6 @@ void DrawTextRectCentered(string text, Vec2f tl, Vec2f br, SColor color = Colors
   GUI::DrawText(text, tl + Vec2f((br.x - tl.x) / 2 - dim.x / 2 - 2, (br.y - tl.y) / 2 - dim.y / 2 - 2), color);
 }
 
-Vec2f Align(Alignment alignment, Vec2f pos) {
-  Vec2f screen_sz = screen_br - screen_tl;
-  switch (alignment) {
-    case TL:
-      break;
-    case TC:
-      break;
-    case TR:
-      break;
-    case CL:
-      break;
-    case CC:
-      pos = screen_sz / 2 + pos;
-      break;
-    case CR:
-      break;
-    case BL:
-      break;
-    case BC:
-      break;
-    case BR:
-      break;
-  }
-  return pos;
-}
 
 }
  
