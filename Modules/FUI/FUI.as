@@ -1,53 +1,22 @@
 #define CLIENT_ONLY
 
-// Futuristic
-// User
-// Interface
-namespace FUI {
+/*
 
-const int WINDOW_TITLE_H = 24;
+  FUI (Futurism UI)
+
+  Developed by kussakaa
+
+  26.02.2025
+
+ */
+
+namespace FUI {
 
 namespace Colors {
   const SColor BACKGROUND = SColor(0xFF000000);
   const SColor FOREGROUND = SColor(0xFFFFFFFF);
   const SColor ERROR = SColor(0xFFFF0000);
 }
-
-namespace Input {
-  CControls@ controls = getControls();
-
-  bool _now_press = false;
-  bool _was_press = false;
-
-  void Update() {
-    if(controls is null) return;
-    _was_press = _now_press;
-    _now_press = controls.mousePressed1;
-  }
-
-  bool IsPress() {
-    return _now_press;
-  }
-
-  bool IsJustPressed() {
-    return (_now_press and !_was_press) ? true : false;
-  }
-
-  bool IsJustReleased() {
-    return (!_now_press and _was_press) ? true : false;
-  }
-
-  Vec2f GetCursorPos() {
-    return controls.getMouseScreenPos();
-  }
-
-  void  SetCursorPos(Vec2f pos) {
-    controls.setMousePosition(pos);
-  }
-}
-
-Vec2f screen_tl = Vec2f_zero;
-Vec2f screen_br = Vec2f_zero;
 
 enum Alignment {
   TL, // TOP LEFT
@@ -61,33 +30,100 @@ enum Alignment {
   BR, // BOTTOM RIGHT
 }
 
-Vec2f Align(Alignment alignment, Vec2f pos) {
-  Vec2f screen_sz = screen_br - screen_tl;
-  switch (alignment) {
-    case TL:
-      break;
-    case TC:
-      break;
-    case TR:
-      break;
-    case CL:
-      break;
-    case CC:
-      pos = screen_sz / 2 + pos;
-      break;
-    case CR:
-      break;
-    case BL:
-      break;
-    case BC:
-      break;
-    case BR:
-      break;
+class Canvas {
+  Vec2f canvas_tl = Vec2f_zero;
+  Vec2f canvas_br = Vec2f_zero;
+  int button_current = 0;
+  int button_hovered = 0;
+
+  void begin(Vec2f tl, Vec2f br, Alignment alignment) {
+    GUI::SetFont("Terminus_14");
+
+    Vec2f screen_size = Vec2f(getScreenWidth(), getScreenHeight());
+    switch (alignment) {
+      case TL:
+        canvas_tl = tl;
+        canvas_br = br;
+        break;
+      case TC:
+        break;
+      case TR:
+        break;
+      case CL:
+        break;
+      case CC:
+        canvas_tl = screen_size / 2 + tl;
+        canvas_br = screen_size / 2 + br;
+        break;
+      case CR:
+        break;
+      case BL:
+        break;
+      case BC:
+        break;
+      case BR:
+        break;
+    }
+    
+    button_current = 0;
+    button_hovered = 0;
   }
-  return pos;
+
+  void end() {
+    GUI::SetFont("menu");
+  }
+
+  Vec2f getSize() {
+    return canvas_br - canvas_tl;
+  }
+
+  void drawPane(Vec2f tl, Vec2f br) {
+    GUI::DrawRectangle(canvas_tl + tl, canvas_tl + br, Colors::FOREGROUND);
+    GUI::DrawRectangle(canvas_tl + tl + Vec2f(2, 2), canvas_tl + br - Vec2f(2, 2), Colors::BACKGROUND);
+  }
+
+  void drawText(string text, Vec2f pos, SColor color = Colors::FOREGROUND) {
+    GUI::DrawText(text, canvas_tl + pos, color);
+  }
+
+  void drawTextCentered(string text, Vec2f tl, Vec2f br, SColor color = Colors::FOREGROUND) {
+    Vec2f dim = Vec2f(0,0);
+    GUI::GetTextDimensions(text, dim);
+    GUI::DrawText(text, canvas_tl + tl + Vec2f((br.x - tl.x) / 2 - dim.x / 2 - 2, (br.y - tl.y) / 2 - dim.y / 2 - 2), color);
+  }
+
+  
+  //  bool Button(Vec2f tl, Vec2f br) {
+  //    button_current += 1;
+  //
+  //    tl += canvas_tl;
+  //    br += canvas_br;
+  //    
+  //    Vec2f cpos = FUI::Input::GetCursorPos();
+  //    if (cpos.x > tl.x && cpos.x < br.x && cpos.y > tl.y && cpos.y < br.y) {
+  //      if (button_hovered != button_current) {
+  //        button_hovered = button_current;
+  //        Sound::Play("FUI_Hovered");
+  //      }
+  //      if (FUI::Input::IsPress()) {
+  //        DrawPane(tl, br, alignment);
+  //        if (FUI::Input::IsJustPressed()) {
+  //          Sound::Play("FUI_Pressed");
+  //          return true;
+  //        }
+  //      } else {
+  //        DrawPane(tl, br, alignment);
+  //      }
+  //    } else {
+  //      DrawPane(tl, br, alignment);
+  //      if (button_hovered == button_current) button_hovered = 0;
+  //    }
+  //    return false;
+  //  }
 }
 
-class AnimationRectangle {
+
+class AnimationRect {
   Vec2f tl = Vec2f(0, 0);
   Vec2f br = Vec2f(0, 0);
   Vec2f tl_start = Vec2f(0, 0);
@@ -152,42 +188,6 @@ class AnimationText {
     return frame != 0;
   }
 }
-
-void Begin(Vec2f tl = Vec2f_zero, Vec2f br = Vec2f(getScreenWidth(), getScreenHeight())) {
-  GUI::SetFont("Terminus_14");
-  FUI::Input::Update();
-
-  screen_tl = tl;
-  screen_br = br;
-}
-
-void End() {
-  GUI::SetFont("menu");
-
-  screen_tl = Vec2f_zero;
-  screen_br = Vec2f_zero;
-}
-
-void DrawPane(Vec2f tl, Vec2f br, Alignment alignment = Alignment::TL) {
-  tl = Align(alignment, tl);
-  br = Align(alignment, br);
-  GUI::DrawRectangle(tl, br, Colors::FOREGROUND);
-  GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), Colors::BACKGROUND);
-}
-
-void DrawText(string text, Vec2f pos, SColor color = Colors::FOREGROUND, Alignment alignment = Alignment::TL) {
-  pos = Align(alignment, pos);
-  GUI::DrawText(text, pos, color);
-}
-
-void DrawTextRectCentered(string text, Vec2f tl, Vec2f br, SColor color = Colors::FOREGROUND, Alignment alignment = Alignment::TL) {
-  tl = Align(alignment, tl);
-  br = Align(alignment, br);
-  Vec2f dim = Vec2f(0,0);
-  GUI::GetTextDimensions(text, dim);
-  GUI::DrawText(text, tl + Vec2f((br.x - tl.x) / 2 - dim.x / 2 - 2, (br.y - tl.y) / 2 - dim.y / 2 - 2), color);
-}
-
 
 }
  
