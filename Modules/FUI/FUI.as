@@ -13,9 +13,10 @@
 namespace FUI {
 
 namespace Colors {
-  const SColor BACKGROUND = SColor(0xFF000000);
-  const SColor FOREGROUND = SColor(0xFFFFFFFF);
-  const SColor ERROR = SColor(0xFFFF0000);
+  const SColor BG = SColor(0xFF0A0E14);
+  const SColor FG = SColor(0xFFB3B1AD);
+  const SColor FRAME = SColor(0xFF686868);
+  const SColor ERROR = SColor(0xFFEA6C73);
 }
 
 enum Alignment {
@@ -39,8 +40,8 @@ class Canvas {
   CControls@ _controls = getControls();
   bool _now_press = false;
   bool _was_press = false;
-  
-  void begin(Vec2f tl, Vec2f br, Alignment alignment) {
+
+  void begin(Vec2f tl = Vec2f_zero, Vec2f br = Vec2f(getScreenWidth(), getScreenHeight()), Alignment alignment = Alignment::TL) {
     GUI::SetFont("Terminus_14");
 
     Vec2f screen_size = Vec2f(getScreenWidth(), getScreenHeight());
@@ -86,15 +87,16 @@ class Canvas {
   }
 
   void drawPane(Vec2f tl, Vec2f br) {
-    GUI::DrawRectangle(canvas_tl + tl, canvas_tl + br, Colors::FOREGROUND);
-    GUI::DrawRectangle(canvas_tl + tl + Vec2f(2, 2), canvas_tl + br - Vec2f(2, 2), Colors::BACKGROUND);
+    GUI::DrawRectangle(canvas_tl + tl, canvas_tl + br, Colors::FRAME);
+    GUI::DrawRectangle(canvas_tl + tl + Vec2f(2, 2), canvas_tl + br - Vec2f(2, 2), Colors::FG);
+    GUI::DrawRectangle(canvas_tl + tl + Vec2f(4, 4), canvas_tl + br - Vec2f(4, 4), Colors::BG);
   }
 
-  void drawText(string text, Vec2f pos, SColor color = Colors::FOREGROUND) {
+  void drawText(string text, Vec2f pos, SColor color = Colors::FG) {
     GUI::DrawText(text, canvas_tl + pos, color);
   }
 
-  void drawTextCentered(string text, Vec2f tl, Vec2f br, SColor color = Colors::FOREGROUND) {
+  void drawTextCentered(string text, Vec2f tl, Vec2f br, SColor color = Colors::FG) {
     Vec2f dim = Vec2f(0,0);
     GUI::GetTextDimensions(text, dim);
     GUI::DrawText(text, canvas_tl + tl + Vec2f((br.x - tl.x) / 2 - dim.x / 2 - 2, (br.y - tl.y) / 2 - dim.y / 2 - 2), color);
@@ -111,22 +113,28 @@ class Canvas {
         _button_hovered = _button_current;
         Sound::Play("FUI_Hovered");
       }
-      if (_isPress()) {
-        GUI::DrawRectangle(tl, br, Colors::ERROR);
-        GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), Colors::BACKGROUND);
+      if (_isPress()) { // Pressed
+        GUI::DrawRectangle(canvas_tl + tl, canvas_tl + br, Colors::FRAME);
+        GUI::DrawRectangle(canvas_tl + tl + Vec2f(2, 2), canvas_tl + br - Vec2f(2, 2), Colors::FRAME);
+        GUI::DrawRectangle(canvas_tl + tl + Vec2f(4, 4), canvas_tl + br - Vec2f(4, 4), Colors::BG);
         if (_isJustPressed()) {
           Sound::Play("FUI_Pressed");
           return true;
         }
-      } else {
-        GUI::DrawRectangle(tl, br, Colors::FOREGROUND);
-        GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), Colors::BACKGROUND);
+      } else { // Hovered
+        GUI::DrawRectangle(canvas_tl + tl, canvas_tl + br, Colors::FG);
+        GUI::DrawRectangle(canvas_tl + tl + Vec2f(4, 4), canvas_tl + br - Vec2f(4, 4), Colors::BG);
       }
-    } else {
-      GUI::DrawRectangle(tl, br, Colors::FOREGROUND);
-      GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), Colors::BACKGROUND);
+    } else { // Normal
+      GUI::DrawRectangle(canvas_tl + tl, canvas_tl + br, Colors::FRAME);
+      GUI::DrawRectangle(canvas_tl + tl + Vec2f(2, 2), canvas_tl + br - Vec2f(2, 2), Colors::FG);
+      GUI::DrawRectangle(canvas_tl + tl + Vec2f(4, 4), canvas_tl + br - Vec2f(4, 4), Colors::BG);
       if (_button_hovered == _button_current) _button_hovered = 0;
     }
+    return false;
+  }
+
+  bool toggle() {
     return false;
   }
 
@@ -145,12 +153,12 @@ class Canvas {
 
 
 class AnimationRect {
-  Vec2f tl = Vec2f(0, 0);
-  Vec2f br = Vec2f(0, 0);
-  Vec2f tl_start = Vec2f(0, 0);
-  Vec2f br_start = Vec2f(0, 0);
-  Vec2f tl_end = Vec2f(0, 0);
-  Vec2f br_end = Vec2f(0, 0);
+  Vec2f tl = Vec2f_zero;
+  Vec2f br = Vec2f_zero;
+  Vec2f tl_start = Vec2f_zero;
+  Vec2f br_start = Vec2f_zero;
+  Vec2f tl_end = Vec2f_zero;
+  Vec2f br_end = Vec2f_zero;
   float frame = 0;
   float duration = 10;
 
