@@ -1,8 +1,11 @@
 #include "Slider.as"
 #include "CheckBox.as"
+#include "RadioButton.as"
 #include "ToolTipUtils.as"
 #include "HoverUtils.as"
 #include "OptionsUtils.as"
+
+const u8 TOOLTIP_HOLD_TIME = 40;
 
 class MenuItemInfo
 {
@@ -43,6 +46,10 @@ class MenuItemInfo
         sidebar.addSlider("Slider", "Slider tooltip", Vec2f(32, 20), Vec2f(8, 8), 0, 0);
         sidebar.addCheckbox("Checkbox", "Checkbox tooltip", Vec2f(16, 16), false);
         sidebar.addCheckbox("Checkbox 1", "Checkbox tooltip 1", Vec2f(32, 24), false);
+        
+        sidebar.addRadioList("Radio List", "Radio List tooltip", Vec2f(4, 1), Vec2f(32,32));
+        sidebar.addRadioListButton("Radio List", "Radio 1", "Radio 1 description", "InteractionIcons.png", Vec2f(32,32), 0, 0.5f);
+        sidebar.addRadioListButton("Radio List", "Radio 2", "Radio 2 description", "InteractionIcons.png", Vec2f(32,32), 1, 0.5f);
 
         sidebar.update();
     }
@@ -60,6 +67,7 @@ class MenuItemInfo
 
 const f32 height_slider = 64;
 const f32 height_checkbox = 16;
+const f32 height_radio_button_list = 24;
 
 class Sidebar
 {
@@ -99,7 +107,7 @@ class Sidebar
         tooltip_padding = Vec2f(6,4);
 
         tooltip_alpha = 0;
-        tooltip_hold_time = 45;
+        tooltip_hold_time = TOOLTIP_HOLD_TIME;
         current_hold_time = 0;
 
         order = array<u8>();
@@ -115,8 +123,7 @@ class Sidebar
             options[i].tick();
         }
 
-        bool item_hover = mpos.x >= pos.x && mpos.x <= pos.x + dim.x
-            && mpos.y >= pos.y && mpos.y <= pos.y + dim.y;
+        bool item_hover = isMouseInScreenBox(mpos, pos, pos + dim);
 
         bool do_tick = require_tick_update || item_hover;
         if (!do_tick) return;
@@ -182,7 +189,7 @@ class Sidebar
     bool addSlider(string _title, string _tooltip, Vec2f _button_dim = Vec2f(16, 16), Vec2f _capture_margin = Vec2f_zero, f32 _start_pos = 0, u8 _snap_points = 0)
     {
         dim.y += height_slider + padding.y;
-        Option option = Option(_title, pos, Vec2f(dim.x - padding.x * 2, height_slider), true, false);
+        Option option = Option(_title, pos, Vec2f(dim.x - padding.x * 2, height_slider), true);
         option.parent_dim = dim;
         option.hover_tooltip = _tooltip;
         option.slider = Slider(_title, pos + Vec2f(padding.x, 0), Vec2f(dim.x - padding.x * 2, _button_dim.y), _button_dim, _capture_margin, _start_pos, _snap_points);
@@ -200,13 +207,44 @@ class Sidebar
         Option option = Option(_title, pos, Vec2f(dim.x - padding.x * 2, _dim.y), false, true);
         option.parent_dim = dim;
         option.hover_tooltip = _tooltip;
-        option.check = CheckBox(_state, pos + Vec2f(0, 0), _dim);
+        option.check = CheckBox(_state, pos, _dim);
         options.push_back(option);
 
         order.push_back(1);
         if (_tooltip != "") addTooltip(_tooltip, pos, pos + Vec2f(dim.x, height_checkbox));
 
         return true;
+    }
+
+    bool addRadioList(string _title, string _tooltip, Vec2f _grid = Vec2f(1, 1), Vec2f _item_dim = Vec2f(16, 16))
+    {
+        f32 height = _item_dim.y * _grid.y + height_radio_button_list;
+        dim.y += height + padding.y;
+        
+        Vec2f radio_dim = Vec2f(dim.x - padding.x * 2, height);
+        Option option = Option(_title, pos, radio_dim, false, false, true);
+        option.parent_dim = dim;
+        option.hover_tooltip = _tooltip;
+        option.radio_button_list = RadioButtonList(_title, pos + height_radio_button_list, radio_dim, _grid, _item_dim);
+        options.push_back(option);
+
+        order.push_back(2);
+        if (_tooltip != "") addTooltip(_tooltip, pos, pos + Vec2f(dim.x, height_radio_button_list));
+
+        return true;
+    }
+    
+    bool addRadioListButton(string radio_list_title, string _title, string _description, string _icon, Vec2f _icon_dim, u8 _index = 0, f32 _scale = 1)
+    {
+        for (uint i = 0; i < options.size(); i++)
+        {
+            if (options[i].default_text == radio_list_title)
+            {
+                options[i].radio_button_list.addRadioButton(makeRadioButton(_title, _description, _icon, _icon_dim, _index, _scale));
+                return true;
+            }
+        }
+        return false;
     }
 
     void renderToolTip(u8 alpha, string tooltip)
@@ -263,18 +301,21 @@ class Sidebar
             {
                 addTooltip(option.hover_tooltip, option.pos, option.pos + option.dim);
             }
+            if (option.has_radio_button_list)
+            {
+                addTooltip(option.hover_tooltip, option.pos, option.pos + option.dim);
+            }
         }
     }
 };
 
-int[] getHoveredIndexes(Vec2f aimpos, Vec2f[] &in tl_rects, Vec2f[] &in br_rects)
+int[] getHoveredIndexes(Vec2f mpos, Vec2f[] &in tl_rects, Vec2f[] &in br_rects)
 {
     int[] hovered;
 
     for (uint i = 0; i < tl_rects.length; i++)
     {
-        if (aimpos.x >= tl_rects[i].x && aimpos.x <= br_rects[i].x
-            && aimpos.y >= tl_rects[i].y && aimpos.y <= br_rects[i].y)
+        if (isMouseInScreenBox(mpos, tl_rects[i], br_rects[i]))
         {
             hovered.push_back(i);
         }

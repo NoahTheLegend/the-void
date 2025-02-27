@@ -61,8 +61,7 @@ class CheckBox {
 
     bool hover(Vec2f mpos)
     {
-        return mpos.x >= tl.x && mpos.x <= br.x
-            && mpos.y >= tl.y && mpos.y <= br.y;
+        return isMouseInScreenBox(mpos, tl, br);
     }
 
     void update()

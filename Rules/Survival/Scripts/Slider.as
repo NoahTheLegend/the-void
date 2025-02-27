@@ -1,3 +1,5 @@
+#include "HoverUtils.as"
+
 class Slider
 {
     string name;
@@ -160,8 +162,7 @@ class Slider
     {
         Vec2f edge_tl = button_pos - capture_margin;
         Vec2f edge_br = button_pos + button_dim + capture_margin;
-        return mpos.x >= edge_tl.x && mpos.x <= edge_br.x
-            && mpos.y >= edge_tl.y && mpos.y <= edge_br.y;
+        return isMouseInScreenBox(mpos, edge_tl, edge_br);
     }
 
     void setScroll(f32 dist)

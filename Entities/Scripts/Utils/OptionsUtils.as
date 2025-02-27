@@ -1,5 +1,6 @@
 #include "Slider.as";
 #include "CheckBox.as";
+#include "RadioButton.as";
 
 class Section {
     string title;
@@ -58,7 +59,8 @@ class Section {
     }
 };
 
-class Option {
+class Option
+{
     string default_text;
     string option_text;
     Vec2f pos;
@@ -66,16 +68,18 @@ class Option {
     bool has_slider;
     f32 slider_startpos;
     bool has_check;
+    bool has_radio_button_list;
     Vec2f parent_dim;
     string hover_tooltip;
     bool setting;
 
     Slider slider;
     CheckBox check;
+    RadioButtonList radio_button_list;
     
     bool debug;
 
-    Option(string _text, Vec2f _pos, Vec2f _dim, bool _has_slider = false, bool _has_check = false, bool _setting = false)
+    Option(string _text, Vec2f _pos, Vec2f _dim, bool _has_slider = false, bool _has_check = false, bool _has_radio_button_list = false, bool _setting = false)
     {
         this.default_text = _text;
         this.option_text = "";
@@ -83,6 +87,7 @@ class Option {
         this.dim = _dim;
         this.has_slider = _has_slider;
         this.has_check = _has_check;
+        this.has_radio_button_list = _has_radio_button_list;
         this.slider_startpos = 0.5f;
         this.parent_dim = Vec2f(150, 150);
         this.hover_tooltip = "";
@@ -95,6 +100,10 @@ class Option {
         if (has_check)
         {
             check = CheckBox(false, pos+Vec2f(0,1), Vec2f(18,18), this.setting);
+        }
+        if (has_radio_button_list)
+        {
+            radio_button_list = RadioButtonList("option_radio_list", pos + Vec2f(0, 50), Vec2f(100, 100));
         }
     }
 
@@ -123,6 +132,10 @@ class Option {
         {
             check.tick();
         }
+        if (has_radio_button_list)
+        {
+            radio_button_list.tick();
+        }
 
         option_text = Maths::Round(slider.scrolled*100)+"%";
         if (slider.mode == 1)
@@ -135,6 +148,10 @@ class Option {
 
     void render(u8 alpha)
     {
+        if (has_radio_button_list)
+        {
+            debug = true;
+        }
         if (debug)
         {
             GUI::DrawRectangle(pos, pos+dim, SColor(alpha, 255, 0, 0));
@@ -166,6 +183,11 @@ class Option {
             current_pos.y += dim.y / 3;
             GUI::DrawText(option_text, current_pos, SColor(255,255,235,120));
         }
+
+        if (has_radio_button_list)
+        {
+            radio_button_list.render();
+        }
     }
 
     void setPosition(Vec2f _pos)
@@ -173,8 +195,10 @@ class Option {
         pos = _pos;
         slider.setPosition(pos+Vec2f(0,23));
         check.setPosition(pos+Vec2f(0,1));
+        radio_button_list.setPosition(pos + Vec2f(0, 23));
         
         slider.update();
         check.update();
+        radio_button_list.tick();
     }
 };

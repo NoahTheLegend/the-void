@@ -80,7 +80,7 @@ bool isMouseInBox(CBlob@ blob, Vec2f tl, Vec2f br)
     return mousePos.x >= tl.x && mousePos.x <= br.x && mousePos.y >= tl.y && mousePos.y <= br.y;
 }
 
-bool isMouseInScreenBox(CBlob@ blob, Vec2f tl, Vec2f br)
+bool isBlobMouseInScreenBox(CBlob@ blob, Vec2f tl, Vec2f br)
 {
     if (blob is null) return false;
     if (!blob.isMyPlayer()) return false;
@@ -89,7 +89,11 @@ bool isMouseInScreenBox(CBlob@ blob, Vec2f tl, Vec2f br)
     if (controls is null) return false;
 
     Vec2f mousePos = controls.getInterpMouseScreenPos();
+    return isMouseInScreenBox(mousePos, tl, br);
+}
 
+bool isMouseInScreenBox(Vec2f mousePos, Vec2f tl, Vec2f br)
+{
     return mousePos.x >= tl.x && mousePos.x <= br.x && mousePos.y >= tl.y && mousePos.y <= br.y;
 }
 
