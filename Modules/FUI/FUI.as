@@ -33,9 +33,13 @@ enum Alignment {
 class Canvas {
   Vec2f canvas_tl = Vec2f_zero;
   Vec2f canvas_br = Vec2f_zero;
-  int button_current = 0;
-  int button_hovered = 0;
+  int _button_current = 0;
+  int _button_hovered = 0;
 
+  CControls@ _controls = getControls();
+  bool _now_press = false;
+  bool _was_press = false;
+  
   void begin(Vec2f tl, Vec2f br, Alignment alignment) {
     GUI::SetFont("Terminus_14");
 
@@ -64,9 +68,13 @@ class Canvas {
       case BR:
         break;
     }
+
+    _button_current = 0;
     
-    button_current = 0;
-    button_hovered = 0;
+    if(_controls !is null) {
+      _was_press = _now_press;
+      _now_press = _controls.mousePressed1;
+    }
   }
 
   void end() {
@@ -91,35 +99,48 @@ class Canvas {
     GUI::GetTextDimensions(text, dim);
     GUI::DrawText(text, canvas_tl + tl + Vec2f((br.x - tl.x) / 2 - dim.x / 2 - 2, (br.y - tl.y) / 2 - dim.y / 2 - 2), color);
   }
-
   
-  //  bool Button(Vec2f tl, Vec2f br) {
-  //    button_current += 1;
-  //
-  //    tl += canvas_tl;
-  //    br += canvas_br;
-  //    
-  //    Vec2f cpos = FUI::Input::GetCursorPos();
-  //    if (cpos.x > tl.x && cpos.x < br.x && cpos.y > tl.y && cpos.y < br.y) {
-  //      if (button_hovered != button_current) {
-  //        button_hovered = button_current;
-  //        Sound::Play("FUI_Hovered");
-  //      }
-  //      if (FUI::Input::IsPress()) {
-  //        DrawPane(tl, br, alignment);
-  //        if (FUI::Input::IsJustPressed()) {
-  //          Sound::Play("FUI_Pressed");
-  //          return true;
-  //        }
-  //      } else {
-  //        DrawPane(tl, br, alignment);
-  //      }
-  //    } else {
-  //      DrawPane(tl, br, alignment);
-  //      if (button_hovered == button_current) button_hovered = 0;
-  //    }
-  //    return false;
-  //  }
+  bool button(Vec2f tl, Vec2f br) {
+    _button_current += 1;
+    tl += canvas_tl;
+    br += canvas_tl;
+    
+    Vec2f cpos = _controls.getMouseScreenPos();
+    if (cpos.x > tl.x && cpos.x < br.x && cpos.y > tl.y && cpos.y < br.y) {
+      if (_button_hovered != _button_current) {
+        _button_hovered = _button_current;
+        Sound::Play("FUI_Hovered");
+      }
+      if (_isPress()) {
+        GUI::DrawRectangle(tl, br, Colors::ERROR);
+        GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), Colors::BACKGROUND);
+        if (_isJustPressed()) {
+          Sound::Play("FUI_Pressed");
+          return true;
+        }
+      } else {
+        GUI::DrawRectangle(tl, br, Colors::FOREGROUND);
+        GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), Colors::BACKGROUND);
+      }
+    } else {
+      GUI::DrawRectangle(tl, br, Colors::FOREGROUND);
+      GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), Colors::BACKGROUND);
+      if (_button_hovered == _button_current) _button_hovered = 0;
+    }
+    return false;
+  }
+
+  bool _isPress() {
+    return _now_press;
+  }
+  
+  bool _isJustPressed() {
+    return (_now_press and !_was_press) ? true : false;
+  }
+  
+  bool _isJustReleased() {
+    return (!_now_press and _was_press) ? true : false;
+  }
 }
 
 
