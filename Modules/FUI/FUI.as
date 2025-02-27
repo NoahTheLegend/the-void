@@ -12,6 +12,15 @@
 
 namespace FUI {
 
+const string ICONS_FILENAME = "FUI_Icons.png";
+
+enum Icons {
+  GEAR,
+}
+
+const Vec2f _ICON_GEAR_FRAME_POS = Vec2f(0, 0);
+const Vec2f _ICON_GEAR_FRAME_DIMENSIONS = Vec2f(16, 16);
+
 namespace Colors {
   const SColor BG = SColor(0xFF0A0E14);
   const SColor FG = SColor(0xFFB3B1AD);
@@ -34,8 +43,8 @@ enum Alignment {
 class Canvas {
   Vec2f canvas_tl = Vec2f_zero;
   Vec2f canvas_br = Vec2f_zero;
-  int _button_current = 0;
-  int _button_hovered = 0;
+  u32 _button_current = 0;
+  u32 _button_hovered = 0;
 
   CControls@ _controls = getControls();
   bool _now_press = false;
@@ -101,12 +110,19 @@ class Canvas {
     GUI::GetTextDimensions(text, dim);
     GUI::DrawText(text, canvas_tl + tl + Vec2f((br.x - tl.x) / 2 - dim.x / 2 - 2, (br.y - tl.y) / 2 - dim.y / 2 - 2), color);
   }
+
+  void drawIcon(FUI::Icons icon, Vec2f pos) {
+    switch (icon) {
+      case GEAR:
+        GUI::DrawIconDirect(ICONS_FILENAME, pos, _ICON_GEAR_FRAME_POS, _ICON_GEAR_FRAME_DIMENSIONS);
+        break;
+    }
+  }
   
-  bool button(Vec2f tl, Vec2f br) {
+  bool drawButton(Vec2f tl, Vec2f br) {
     _button_current += 1;
     tl += canvas_tl;
     br += canvas_tl;
-    
     Vec2f cpos = _controls.getMouseScreenPos();
     if (cpos.x > tl.x && cpos.x < br.x && cpos.y > tl.y && cpos.y < br.y) {
       if (_button_hovered != _button_current) {
@@ -114,28 +130,34 @@ class Canvas {
         Sound::Play("FUI_Hovered");
       }
       if (_isPress()) { // Pressed
-        GUI::DrawRectangle(canvas_tl + tl, canvas_tl + br, Colors::FRAME);
-        GUI::DrawRectangle(canvas_tl + tl + Vec2f(2, 2), canvas_tl + br - Vec2f(2, 2), Colors::FRAME);
-        GUI::DrawRectangle(canvas_tl + tl + Vec2f(4, 4), canvas_tl + br - Vec2f(4, 4), Colors::BG);
+        GUI::DrawRectangle(tl, br, Colors::FRAME);
+        GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), Colors::FRAME);
+        GUI::DrawRectangle(tl + Vec2f(4, 4), br - Vec2f(4, 4), Colors::BG);
         if (_isJustPressed()) {
           Sound::Play("FUI_Pressed");
           return true;
         }
       } else { // Hovered
-        GUI::DrawRectangle(canvas_tl + tl, canvas_tl + br, Colors::FG);
-        GUI::DrawRectangle(canvas_tl + tl + Vec2f(4, 4), canvas_tl + br - Vec2f(4, 4), Colors::BG);
+        GUI::DrawRectangle(tl, br, Colors::FG);
+        GUI::DrawRectangle(tl + Vec2f(4, 4), br - Vec2f(4, 4), Colors::BG);
       }
     } else { // Normal
-      GUI::DrawRectangle(canvas_tl + tl, canvas_tl + br, Colors::FRAME);
-      GUI::DrawRectangle(canvas_tl + tl + Vec2f(2, 2), canvas_tl + br - Vec2f(2, 2), Colors::FG);
-      GUI::DrawRectangle(canvas_tl + tl + Vec2f(4, 4), canvas_tl + br - Vec2f(4, 4), Colors::BG);
+      GUI::DrawRectangle(tl, br, Colors::FRAME);
+      GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), Colors::FG);
+      GUI::DrawRectangle(tl + Vec2f(4, 4), br - Vec2f(4, 4), Colors::BG);
       if (_button_hovered == _button_current) _button_hovered = 0;
     }
     return false;
   }
 
-  bool toggle() {
-    return false;
+  bool drawToggle(bool value, Vec2f pos) {
+    if (value) {
+      if(drawButton(pos, pos + Vec2f(16, 16))) value = !value;
+      GUI::DrawRectangle(canvas_tl + pos + Vec2f(6,6), canvas_tl + pos + Vec2f(10,10), Colors::FG);
+    } else {
+      if(drawButton(pos, pos + Vec2f(16, 16))) value = !value;
+    }
+    return value;
   }
 
   bool _isPress() {
@@ -159,12 +181,12 @@ class AnimationRect {
   Vec2f br_start = Vec2f_zero;
   Vec2f tl_end = Vec2f_zero;
   Vec2f br_end = Vec2f_zero;
-  float frame = 0;
-  float duration = 10;
+  f32 frame = 0;
+  f32 duration = 10;
 
   void play() {
     // time (0.0 - 1.0)
-    float t = frame / duration;
+    f32 t = frame / duration;
     // bezier curve math for beutiful animation
     Vec2f tl_temp0 = Vec2f_lerp(tl_start, tl_end, t);
     Vec2f tl_temp1 = Vec2f_lerp(tl_start, tl_temp0, t);
@@ -194,8 +216,8 @@ class AnimationRect {
 class AnimationText {
   string text = "";
   string result = "";
-  float frame = 0;
-  float duration = 10;
+  f32 frame = 0;
+  f32 duration = 10;
 
   void play() {
     text = result;
