@@ -43,8 +43,11 @@ enum Alignment {
 class Canvas {
   Vec2f canvas_tl = Vec2f_zero;
   Vec2f canvas_br = Vec2f_zero;
+
   u32 _button_current = 0;
   u32 _button_hovered = 0;
+  u32 _slider_current = 0;
+  u32 _slider_hovered = 0;
 
   CControls@ _controls = getControls();
   bool _now_press = false;
@@ -159,6 +162,31 @@ class Canvas {
     }
     return value;
   }
+
+  
+//  float _drawSliderFloat(float value, string title, float min, float max) {
+//    _slider_current += 1;
+//    Vec2f tl = canvas_tl;
+//    Vec2f br = Vec2f(canvas_br.x - (canvas_br.x - canvas_tl.x) / 2, canvas_tl.y + slider_h);
+//    Vec2f value_dim;
+//    //    GUI::GetTextDimensions(formatFloat(max, "", 0, 2), value_dim);
+//    int value_w = value_dim.x + 16;
+//    if (_slider_selected == _slider_current) {
+//        DrawButtonSelected(tl, br);
+//        value = (Maths::Clamp(KUI::Input::GetCursorPos().x, tl.x + value_w / 2, br.x - value_w / 2) - tl.x - value_w / 2) / (br.x - tl.x - value_w) * (max - min) + min;
+//        if (KUI::Input::IsJustReleased()) {
+//            _slider_selected = 0;
+//        }
+//    } else if (ButtonGeneral(tl, br)) {
+//        _slider_selected = _slider_current;
+//    }
+//    Vec2f value_tl = Vec2f(tl.x + (br.x - tl.x - value_w) * (value - min) / (max - min), tl.y);
+//    Vec2f value_br = Vec2f(tl.x + (br.x - tl.x - value_w) * (value - min) / (max - min) + value_w, br.y);
+//    //    DrawButtonDefault(value_tl, value_br, formatFloat(value, "", 0, 2));
+//    //    GUI::DrawText(title, Vec2f(br.x + 4, canvas_tl.y + dragger_h / 2 - text_h / 2 - 1), KUI::Colors::FG);
+//    canvas_tl.y += slider_h + spacing;
+//    return value;
+//  }
 
   bool _isPress() {
     return _now_press;

@@ -28,11 +28,11 @@ void onRestart(CRules@ rules) {
 void onRender(CRules@ this) {
   canvas_buttons.begin();
   // Button Open/Close Settings
-  if (canvas_buttons.drawButton(Vec2f(16, 16), Vec2f(42, 42))) {
+  if (canvas_buttons.drawButton(Vec2f(16, 16), Vec2f(52, 52))) {
     is_open_settings = !is_open_settings;
     SettingsAnimationResetStart();
   }
-  canvas_buttons.drawIcon(FUI::Icons::GEAR, Vec2f(20, 20));
+  canvas_buttons.drawIcon(FUI::Icons::GEAR, Vec2f(18, 18));
   canvas_buttons.end();
 
   canvas_settings.begin(Vec2f(-200, -200), Vec2f(200, 200), FUI::Alignment::CC);
@@ -49,8 +49,6 @@ void onRender(CRules@ this) {
       canvas_settings.drawText(settings_anim_text_mute_messages.text, Vec2f(28, WINDOW_TITLE_H + 3));
     }
 
-
-    
     settings_anim_rect_title.play();
     if (settings_anim_rect_title.isEnd()) {
       settings_anim_rect_canvas.play();
