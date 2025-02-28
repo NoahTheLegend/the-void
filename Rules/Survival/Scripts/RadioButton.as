@@ -186,7 +186,6 @@ class RadioButton
 
     void render()
     {
-        icon_scale = 1;
         if (selected)
         {
             drawRectangle(pos, pos + dim, SColor(255, 255, 255, 255));
@@ -198,7 +197,8 @@ class RadioButton
             drawRectangle(pos + Vec2f(1, 1), pos + dim - Vec2f(1, 1), SColor(255, 0, 0, 0));
         }
 
-        Vec2f icon_pos = pos + Vec2f((dim.x - icon_dim.x * icon_scale) / 2, (dim.y - icon_dim.y * icon_scale) / 2)
+        Vec2f scale_offset = (dim * (1.0f - icon_scale));
+        Vec2f icon_pos = pos - dim/2 + scale_offset;
         GUI::DrawIcon(icon, icon_index, icon_dim, icon_pos, icon_scale);
     }
 }

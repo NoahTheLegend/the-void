@@ -48,8 +48,8 @@ class MenuItemInfo
         sidebar.addCheckbox("Checkbox 1", "Checkbox tooltip 1", Vec2f(32, 24), false);
         
         sidebar.addRadioList("Radio List", "Radio List tooltip", Vec2f(4, 1), Vec2f(32,32));
-        sidebar.addRadioListButton("Radio List", "Radio 1", "Radio 1 description", "InteractionIcons.png", Vec2f(32,32), 0, 0.5f);
-        sidebar.addRadioListButton("Radio List", "Radio 2", "Radio 2 description", "InteractionIcons.png", Vec2f(32,32), 1, 0.5f);
+        sidebar.addRadioListButton("Radio List", "Radio 1", "Radio 1 description", "InteractionIcons.png", Vec2f(32,32), 0, 1);
+        sidebar.addRadioListButton("Radio List", "Radio 2", "Radio 2 description", "InteractionIcons.png", Vec2f(32,32), 1, 1);
 
         sidebar.update();
     }
@@ -183,7 +183,7 @@ class Sidebar
         }
 
         if (request_update) update();
-        if (hovered.size() > 0) renderToolTip(Maths::Min(alpha, tooltip_alpha), tooltips[hovered[0]]);
+        if (hovered.size() > 0) renderToolTip(Maths::Min(alpha, tooltip_alpha), tooltips[hovered[hovered.size() - 1]]);
     }
 
     bool addSlider(string _title, string _tooltip, Vec2f _button_dim = Vec2f(16, 16), Vec2f _capture_margin = Vec2f_zero, f32 _start_pos = 0, u8 _snap_points = 0)
@@ -241,6 +241,7 @@ class Sidebar
             if (options[i].default_text == radio_list_title)
             {
                 options[i].radio_button_list.addRadioButton(makeRadioButton(_title, _description, _icon, _icon_dim, _index, _scale));
+                if (_description != "") addTooltip(_description, pos, pos + Vec2f(dim.x, height_radio_button_list));
                 return true;
             }
         }
@@ -304,6 +305,13 @@ class Sidebar
             if (option.has_radio_button_list)
             {
                 addTooltip(option.hover_tooltip, option.pos, option.pos + option.dim);
+
+                for (uint j = 0; j < option.radio_button_list.buttons.length; j++)
+                {
+                    RadioButton radio_button = option.radio_button_list.buttons[j];
+                    if (radio_button.description != "")
+                        addTooltip(radio_button.description, radio_button.pos, radio_button.pos + radio_button.dim);
+                }
             }
         }
     }
