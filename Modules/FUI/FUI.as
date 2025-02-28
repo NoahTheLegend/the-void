@@ -210,7 +210,7 @@ class AnimationRect {
   Vec2f tl_end = Vec2f_zero;
   Vec2f br_end = Vec2f_zero;
   f32 frame = 0;
-  f32 duration = 10;
+  f32 duration = 0;
 
   void play() {
     // time (0.0 - 1.0)
@@ -219,13 +219,31 @@ class AnimationRect {
     Vec2f tl_temp0 = Vec2f_lerp(tl_start, tl_end, t);
     Vec2f tl_temp1 = Vec2f_lerp(tl_start, tl_temp0, t);
     Vec2f tl_temp2 = Vec2f_lerp(tl_temp0, tl_end, t);
-    tl = Vec2f_lerp(tl_temp1, tl_temp2, 1);
+    tl = Vec2f_lerp(tl_temp1, tl_temp2, t);
     Vec2f br_temp0 = Vec2f_lerp(br_start, br_end, t);
     Vec2f br_temp1 = Vec2f_lerp(br_start, br_temp0, t);
     Vec2f br_temp2 = Vec2f_lerp(br_temp0, br_end, t);
-    br = Vec2f_lerp(br_temp1, br_temp2, 1);
-
+    br = Vec2f_lerp(br_temp1, br_temp2, t);
     frame = Maths::Min(frame + 1, duration);
+  }
+
+  void playReverse() {
+    // time (0.0 - 1.0)
+    f32 t = frame / duration;
+    // bezier curve math for beutiful animation
+    Vec2f tl_temp0 = Vec2f_lerp(tl_start, tl_end, t);
+    Vec2f tl_temp1 = Vec2f_lerp(tl_start, tl_temp0, t);
+    Vec2f tl_temp2 = Vec2f_lerp(tl_temp0, tl_end, t);
+    tl = Vec2f_lerp(tl_temp1, tl_temp2, t);
+    Vec2f br_temp0 = Vec2f_lerp(br_start, br_end, t);
+    Vec2f br_temp1 = Vec2f_lerp(br_start, br_temp0, t);
+    Vec2f br_temp2 = Vec2f_lerp(br_temp0, br_end, t);
+    br = Vec2f_lerp(br_temp1, br_temp2, t);
+    frame = Maths::Max(frame - 1, 0);
+  }
+
+  bool isStart() {
+    return frame == 0;
   }
   
   bool isEnd() {
@@ -255,6 +273,18 @@ class AnimationText {
     frame = Maths::Min(frame + 1, duration);
   }
 
+  void playReverse() {
+    text = "";
+    if (isStart()) return;
+    text = result;
+    text.resize(Maths::Lerp(0, result.length(), frame / duration));
+    frame = Maths::Max(frame - 1, 0);
+  }
+  
+  bool isStart() {
+    return frame == 0;
+  }
+  
   bool isEnd() {
     return frame == duration;
   }
