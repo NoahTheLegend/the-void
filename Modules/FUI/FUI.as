@@ -47,7 +47,7 @@ class Canvas {
   u32 _button_current = 0;
   u32 _button_hovered = 0;
   u32 _slider_current = 0;
-  u32 _slider_hovered = 0;
+  u32 _slider_selected = 0;
 
   CControls@ _controls = getControls();
   bool _now_press = false;
@@ -83,6 +83,7 @@ class Canvas {
     }
 
     _button_current = 0;
+    _slider_current = 0;
     
     if(_controls !is null) {
       _was_press = _now_press;
@@ -164,29 +165,32 @@ class Canvas {
   }
 
   
-//  float _drawSliderFloat(float value, string title, float min, float max) {
-//    _slider_current += 1;
-//    Vec2f tl = canvas_tl;
-//    Vec2f br = Vec2f(canvas_br.x - (canvas_br.x - canvas_tl.x) / 2, canvas_tl.y + slider_h);
-//    Vec2f value_dim;
-//    //    GUI::GetTextDimensions(formatFloat(max, "", 0, 2), value_dim);
-//    int value_w = value_dim.x + 16;
-//    if (_slider_selected == _slider_current) {
-//        DrawButtonSelected(tl, br);
-//        value = (Maths::Clamp(KUI::Input::GetCursorPos().x, tl.x + value_w / 2, br.x - value_w / 2) - tl.x - value_w / 2) / (br.x - tl.x - value_w) * (max - min) + min;
-//        if (KUI::Input::IsJustReleased()) {
-//            _slider_selected = 0;
-//        }
-//    } else if (ButtonGeneral(tl, br)) {
-//        _slider_selected = _slider_current;
-//    }
-//    Vec2f value_tl = Vec2f(tl.x + (br.x - tl.x - value_w) * (value - min) / (max - min), tl.y);
-//    Vec2f value_br = Vec2f(tl.x + (br.x - tl.x - value_w) * (value - min) / (max - min) + value_w, br.y);
-//    //    DrawButtonDefault(value_tl, value_br, formatFloat(value, "", 0, 2));
-//    //    GUI::DrawText(title, Vec2f(br.x + 4, canvas_tl.y + dragger_h / 2 - text_h / 2 - 1), KUI::Colors::FG);
-//    canvas_tl.y += slider_h + spacing;
-//    return value;
-//  }
+  float drawSliderFloat(float value, Vec2f tl, Vec2f br, float min = 0, float max = 1) {
+    _slider_current += 1;
+
+    tl += canvas_tl;
+    br += canvas_tl;
+
+    Vec2f value_dim;
+    GUI::GetTextDimensions(formatFloat(max, "", 0, 2), value_dim);
+    int value_w = value_dim.x + 16;
+    if (_slider_selected == _slider_current) {
+        GUI::DrawRectangle(tl, br, Colors::FRAME);
+        GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), Colors::FRAME);
+        GUI::DrawRectangle(tl + Vec2f(4, 4), br - Vec2f(4, 4), Colors::BG);
+        value = (Maths::Clamp(_controls.getMouseScreenPos().x, tl.x + value_w / 2, br.x - value_w / 2) - tl.x - value_w / 2) / (br.x - tl.x - value_w) * (max - min) + min;
+        if (_isJustReleased()) {
+            _slider_selected = 0;
+        }
+    } else if (drawButton(tl - canvas_tl, br - canvas_tl)) {
+        _slider_selected = _slider_current;
+    }
+    Vec2f value_tl = Vec2f(tl.x + (br.x - tl.x - value_w) * (value - min) / (max - min), tl.y);
+    Vec2f value_br = Vec2f(tl.x + (br.x - tl.x - value_w) * (value - min) / (max - min) + value_w, br.y);
+    drawPane(value_tl - canvas_tl, value_br - canvas_tl);
+    drawTextCentered(formatFloat(value, "", 0, 2), value_tl - canvas_tl, value_br - canvas_tl);
+    return value;
+  }
 
   bool _isPress() {
     return _now_press;
