@@ -41,8 +41,8 @@ enum Alignment {
 }
 
 class Canvas {
-  Vec2f canvas_tl = Vec2f_zero;
-  Vec2f canvas_br = Vec2f_zero;
+  Vec2f canvas_tl = Vec2f(0, 0);
+  Vec2f canvas_br = Vec2f(0, 0);
 
   u32 _button_current = 0;
   u32 _button_hovered = 0;
@@ -53,7 +53,7 @@ class Canvas {
   bool _now_press = false;
   bool _was_press = false;
 
-  void begin(Vec2f tl = Vec2f_zero, Vec2f br = Vec2f(getScreenWidth(), getScreenHeight()), Alignment alignment = Alignment::TL) {
+  void begin(Vec2f tl = Vec2f(0, 0), Vec2f br = Vec2f(getScreenWidth(), getScreenHeight()), FUI::Alignment alignment = FUI::Alignment::TL) {
     GUI::SetFont("Terminus_14");
 
     Vec2f screen_size = Vec2f(getScreenWidth(), getScreenHeight());
@@ -100,16 +100,16 @@ class Canvas {
   }
 
   void drawPane(Vec2f tl, Vec2f br) {
-    GUI::DrawRectangle(canvas_tl + tl, canvas_tl + br, Colors::FRAME);
-    GUI::DrawRectangle(canvas_tl + tl + Vec2f(2, 2), canvas_tl + br - Vec2f(2, 2), Colors::FG);
-    GUI::DrawRectangle(canvas_tl + tl + Vec2f(4, 4), canvas_tl + br - Vec2f(4, 4), Colors::BG);
+    GUI::DrawRectangle(canvas_tl + tl, canvas_tl + br, FUI::Colors::FRAME);
+    GUI::DrawRectangle(canvas_tl + tl + Vec2f(2, 2), canvas_tl + br - Vec2f(2, 2), FUI::Colors::FG);
+    GUI::DrawRectangle(canvas_tl + tl + Vec2f(4, 4), canvas_tl + br - Vec2f(4, 4), FUI::Colors::BG);
   }
 
-  void drawText(string text, Vec2f pos, SColor color = Colors::FG) {
+  void drawText(string text, Vec2f pos, SColor color = FUI::Colors::FG) {
     GUI::DrawText(text, canvas_tl + pos, color);
   }
 
-  void drawTextCentered(string text, Vec2f tl, Vec2f br, SColor color = Colors::FG) {
+  void drawTextCentered(string text, Vec2f tl, Vec2f br, SColor color = FUI::Colors::FG) {
     Vec2f dim = Vec2f(0,0);
     GUI::GetTextDimensions(text, dim);
     GUI::DrawText(text, canvas_tl + tl + Vec2f((br.x - tl.x) / 2 - dim.x / 2 - 2, (br.y - tl.y) / 2 - dim.y / 2 - 2), color);
@@ -134,21 +134,21 @@ class Canvas {
         Sound::Play("FUI_Hovered");
       }
       if (_isPress()) { // Pressed
-        GUI::DrawRectangle(tl, br, Colors::FRAME);
-        GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), Colors::FRAME);
-        GUI::DrawRectangle(tl + Vec2f(4, 4), br - Vec2f(4, 4), Colors::BG);
+        GUI::DrawRectangle(tl, br, FUI::Colors::FRAME);
+        GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), FUI::Colors::FRAME);
+        GUI::DrawRectangle(tl + Vec2f(4, 4), br - Vec2f(4, 4), FUI::Colors::BG);
         if (_isJustPressed()) {
           Sound::Play("FUI_Pressed");
           return true;
         }
       } else { // Hovered
-        GUI::DrawRectangle(tl, br, Colors::FG);
-        GUI::DrawRectangle(tl + Vec2f(4, 4), br - Vec2f(4, 4), Colors::BG);
+        GUI::DrawRectangle(tl, br, FUI::Colors::FG);
+        GUI::DrawRectangle(tl + Vec2f(4, 4), br - Vec2f(4, 4), FUI::Colors::BG);
       }
     } else { // Normal
-      GUI::DrawRectangle(tl, br, Colors::FRAME);
-      GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), Colors::FG);
-      GUI::DrawRectangle(tl + Vec2f(4, 4), br - Vec2f(4, 4), Colors::BG);
+      GUI::DrawRectangle(tl, br, FUI::Colors::FRAME);
+      GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), FUI::Colors::FG);
+      GUI::DrawRectangle(tl + Vec2f(4, 4), br - Vec2f(4, 4), FUI::Colors::BG);
       if (_button_hovered == _button_current) _button_hovered = 0;
     }
     return false;
@@ -157,7 +157,7 @@ class Canvas {
   bool drawToggle(bool value, Vec2f pos) {
     if (value) {
       if(drawButton(pos, pos + Vec2f(16, 16))) value = !value;
-      GUI::DrawRectangle(canvas_tl + pos + Vec2f(6,6), canvas_tl + pos + Vec2f(10,10), Colors::FG);
+      GUI::DrawRectangle(canvas_tl + pos + Vec2f(6,6), canvas_tl + pos + Vec2f(10,10), FUI::Colors::FG);
     } else {
       if(drawButton(pos, pos + Vec2f(16, 16))) value = !value;
     }
@@ -175,9 +175,9 @@ class Canvas {
     GUI::GetTextDimensions(formatFloat(max, "", 0, 2), value_dim);
     int value_w = value_dim.x + 16;
     if (_slider_selected == _slider_current) {
-        GUI::DrawRectangle(tl, br, Colors::FRAME);
-        GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), Colors::FRAME);
-        GUI::DrawRectangle(tl + Vec2f(4, 4), br - Vec2f(4, 4), Colors::BG);
+      GUI::DrawRectangle(tl, br, FUI::Colors::FRAME);
+      GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), FUI::Colors::FRAME);
+      GUI::DrawRectangle(tl + Vec2f(4, 4), br - Vec2f(4, 4), FUI::Colors::BG);
         value = (Maths::Clamp(_controls.getMouseScreenPos().x, tl.x + value_w / 2, br.x - value_w / 2) - tl.x - value_w / 2) / (br.x - tl.x - value_w) * (max - min) + min;
         if (_isJustReleased()) {
             _slider_selected = 0;
@@ -207,12 +207,12 @@ class Canvas {
 
 
 class AnimationRect {
-  Vec2f tl = Vec2f_zero;
-  Vec2f br = Vec2f_zero;
-  Vec2f tl_start = Vec2f_zero;
-  Vec2f br_start = Vec2f_zero;
-  Vec2f tl_end = Vec2f_zero;
-  Vec2f br_end = Vec2f_zero;
+  Vec2f tl = Vec2f(0, 0);
+  Vec2f br = Vec2f(0, 0);
+  Vec2f tl_start = Vec2f(0, 0);
+  Vec2f br_start = Vec2f(0, 0);
+  Vec2f tl_end = Vec2f(0, 0);
+  Vec2f br_end = Vec2f(0, 0);
   f32 frame = 0;
   f32 duration = 0;
 
