@@ -42,7 +42,6 @@ void LoadConfig(CRules@ this, ClientVars@ vars) // load cfg from cache
     if (!cfg.loadFile("../Cache/FB/clientconfig.cfg"))
     {
         error("Client config or vars could not load");
-
         cfg.add_bool("mute_messages", false);
         cfg.add_f32("messages_volume", 0.25f);
         cfg.add_f32("messages_pitch", 1.0f);
@@ -53,7 +52,6 @@ void LoadConfig(CRules@ this, ClientVars@ vars) // load cfg from cache
         vars.msg_mute = cfg.read_bool("mute_messages");
         vars.msg_volume = cfg.read_f32("messages_volume");
         vars.msg_pitch = cfg.read_f32("messages_pitch");
-
         vars.msg_volume_final = min_vol + vars.msg_volume * (max_vol-min_vol);
         vars.msg_pitch_final = min_pitch + vars.msg_pitch * (max_pitch-min_pitch);
     }

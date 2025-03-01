@@ -131,7 +131,7 @@ class Canvas {
     if (cpos.x > tl.x && cpos.x < br.x && cpos.y > tl.y && cpos.y < br.y) {
       if (_button_hovered != _button_current) {
         _button_hovered = _button_current;
-        Sound::Play("FUI_Hovered");
+        //        Sound::Play("FUI_Hovered");
       }
       if (_isPress()) { // Pressed
         GUI::DrawRectangle(tl, br, FUI::Colors::FRAME);
@@ -275,6 +275,7 @@ class AnimationText {
     text.resize(Maths::Lerp(0, result.length(), frame / duration));
     text += "█";
     frame = Maths::Min(frame + 1, duration);
+    Sound::Play("FUI_Write.ogg");
   }
 
   void playReverse() {
@@ -282,7 +283,9 @@ class AnimationText {
     if (isStart()) return;
     text = result;
     text.resize(Maths::Lerp(0, result.length(), frame / duration));
+    text += "█";
     frame = Maths::Max(frame - 1, 0);
+    Sound::Play("FUI_Delete.ogg");
   }
   
   bool isStart() {
