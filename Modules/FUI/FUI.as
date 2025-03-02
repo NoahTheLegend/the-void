@@ -6,7 +6,7 @@
 
   Developed by kussakaa
 
-  26.02.2025
+  Februar 2025
 
  */
 
@@ -46,6 +46,7 @@ class Canvas {
 
   u32 _button_current = 0;
   u32 _button_hovered = 0;
+  u32 _button_hovered_frame = 0;
   u32 _slider_current = 0;
   u32 _slider_selected = 0;
 
@@ -123,22 +124,36 @@ class Canvas {
     }
   }
   
-  bool drawButton(Vec2f tl, Vec2f br) {
+  bool drawButton(Vec2f tl, Vec2f br, string tooltip = "") {
     _button_current += 1;
     tl += canvas_tl;
     br += canvas_tl;
     Vec2f cpos = _controls.getMouseScreenPos();
     if (cpos.x > tl.x && cpos.x < br.x && cpos.y > tl.y && cpos.y < br.y) {
-      if (_button_hovered != _button_current) {
+      if (_button_hovered == _button_current) {
+        _button_hovered_frame += 1;
+        if (_button_hovered_frame > 60 and tooltip != "") {
+          AnimationText tooltip_text_anim();
+          tooltip_text_anim.text = "";
+          tooltip_text_anim.result = tooltip;
+          tooltip_text_anim.duration = 20;
+          tooltip_text_anim.frame = Maths::Min(_button_hovered_frame - 60, 20);
+          tooltip_text_anim.play();
+          if (tooltip_text_anim.isPlayOrEnd())
+            GUI::DrawText(tooltip_text_anim.text, _controls.getMouseScreenPos() + Vec2f(32, 0), FUI::Colors::FG);
+        }
+      } else {
         _button_hovered = _button_current;
-        //        Sound::Play("FUI_Hovered");
+        _button_hovered_frame = 0;
+        //Sound::Play("FUI_Hovered.ogg");
       }
+
       if (_isPress()) { // Pressed
         GUI::DrawRectangle(tl, br, FUI::Colors::FRAME);
         GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), FUI::Colors::FRAME);
         GUI::DrawRectangle(tl + Vec2f(4, 4), br - Vec2f(4, 4), FUI::Colors::BG);
         if (_isJustPressed()) {
-          Sound::Play("FUI_Pressed");
+          Sound::Play("FUI_Pressed.ogg");
           return true;
         }
       } else { // Hovered
@@ -165,7 +180,7 @@ class Canvas {
   }
 
   
-  float drawSliderFloat(float value, Vec2f tl, Vec2f br, float min = 0, float max = 1) {
+  float drawSlider(float value, Vec2f tl, Vec2f br, float min = 0, float max = 1, float step = 0.05) {
     _slider_current += 1;
 
     tl += canvas_tl;
@@ -179,6 +194,8 @@ class Canvas {
       GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), FUI::Colors::FRAME);
       GUI::DrawRectangle(tl + Vec2f(4, 4), br - Vec2f(4, 4), FUI::Colors::BG);
         value = (Maths::Clamp(_controls.getMouseScreenPos().x, tl.x + value_w / 2, br.x - value_w / 2) - tl.x - value_w / 2) / (br.x - tl.x - value_w) * (max - min) + min;
+        if ((value % step) > (step / 2)) value += (step - value % step);
+        else value -= value % step;
         if (_isJustReleased()) {
             _slider_selected = 0;
         }
@@ -205,16 +222,34 @@ class Canvas {
   }
 }
 
+class Animation {
+  f32 frame = 0;
+  f32 duration = 0;
+  
+  bool isStart() {
+    return frame <= 0;
+  }
+  
+  bool isEnd() {
+    return frame >= duration;
+  }
 
-class AnimationRect {
+  bool isPlay() {
+    return frame > 0 and frame < duration;
+  }
+
+  bool isPlayOrEnd() {
+    return frame > 0;
+  }
+}
+
+class AnimationRect : Animation {
   Vec2f tl = Vec2f(0, 0);
   Vec2f br = Vec2f(0, 0);
   Vec2f tl_start = Vec2f(0, 0);
   Vec2f br_start = Vec2f(0, 0);
   Vec2f tl_end = Vec2f(0, 0);
   Vec2f br_end = Vec2f(0, 0);
-  f32 frame = 0;
-  f32 duration = 0;
 
   void play() {
     // time (0.0 - 1.0)
@@ -245,29 +280,11 @@ class AnimationRect {
     br = Vec2f_lerp(br_temp1, br_temp2, t);
     frame = Maths::Max(frame - 1, 0);
   }
-
-  bool isStart() {
-    return frame == 0;
-  }
-  
-  bool isEnd() {
-    return frame == duration;
-  }
-
-  bool isPlay() {
-    return frame != 0 && frame != duration;
-  }
-
-  bool isPlayOrEnd() {
-    return frame != 0;
-  }
 }
 
-class AnimationText {
+class AnimationText : Animation {
   string text = "";
   string result = "";
-  f32 frame = 0;
-  f32 duration = 10;
 
   void play() {
     text = result;
@@ -286,22 +303,6 @@ class AnimationText {
     text += "█";
     frame = Maths::Max(frame - 1, 0);
     Sound::Play("FUI_Delete.ogg");
-  }
-  
-  bool isStart() {
-    return frame == 0;
-  }
-  
-  bool isEnd() {
-    return frame == duration;
-  }
-
-  bool isPlay() {
-    return frame != 0 && frame != duration;
-  }
-
-  bool isPlayOrEnd() {
-    return frame != 0;
   }
 }
 
