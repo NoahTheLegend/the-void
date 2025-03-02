@@ -40,6 +40,13 @@ enum Alignment {
   BR, // BOTTOM RIGHT
 }
 
+
+void _drawPaneGeneral(Vec2f tl, Vec2f br) {
+  GUI::DrawRectangle(tl, br, FUI::Colors::FRAME);
+  GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), FUI::Colors::FG);
+  GUI::DrawRectangle(tl + Vec2f(4, 4), br - Vec2f(4, 4), FUI::Colors::BG);
+}
+
 class Canvas {
   Vec2f canvas_tl = Vec2f(0, 0);
   Vec2f canvas_br = Vec2f(0, 0);
@@ -101,9 +108,7 @@ class Canvas {
   }
 
   void drawPane(Vec2f tl, Vec2f br) {
-    GUI::DrawRectangle(canvas_tl + tl, canvas_tl + br, FUI::Colors::FRAME);
-    GUI::DrawRectangle(canvas_tl + tl + Vec2f(2, 2), canvas_tl + br - Vec2f(2, 2), FUI::Colors::FG);
-    GUI::DrawRectangle(canvas_tl + tl + Vec2f(4, 4), canvas_tl + br - Vec2f(4, 4), FUI::Colors::BG);
+    _drawPaneGeneral(canvas_tl + tl, canvas_tl + br);
   }
 
   void drawText(string text, Vec2f pos, SColor color = FUI::Colors::FG) {
@@ -130,24 +135,6 @@ class Canvas {
     br += canvas_tl;
     Vec2f cpos = _controls.getMouseScreenPos();
     if (cpos.x > tl.x && cpos.x < br.x && cpos.y > tl.y && cpos.y < br.y) {
-      if (_button_hovered == _button_current) {
-        _button_hovered_frame += 1;
-        if (_button_hovered_frame > 60 and tooltip != "") {
-          AnimationText tooltip_text_anim();
-          tooltip_text_anim.text = "";
-          tooltip_text_anim.result = tooltip;
-          tooltip_text_anim.duration = 20;
-          tooltip_text_anim.frame = Maths::Min(_button_hovered_frame - 60, 20);
-          tooltip_text_anim.play();
-          if (tooltip_text_anim.isPlayOrEnd())
-            GUI::DrawText(tooltip_text_anim.text, _controls.getMouseScreenPos() + Vec2f(32, 0), FUI::Colors::FG);
-        }
-      } else {
-        _button_hovered = _button_current;
-        _button_hovered_frame = 0;
-        //Sound::Play("FUI_Hovered.ogg");
-      }
-
       if (_isPress()) { // Pressed
         GUI::DrawRectangle(tl, br, FUI::Colors::FRAME);
         GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), FUI::Colors::FRAME);
@@ -159,6 +146,36 @@ class Canvas {
       } else { // Hovered
         GUI::DrawRectangle(tl, br, FUI::Colors::FG);
         GUI::DrawRectangle(tl + Vec2f(4, 4), br - Vec2f(4, 4), FUI::Colors::BG);
+      }
+      
+      if (_button_hovered == _button_current) {
+        _button_hovered_frame += 1;
+        if (_button_hovered_frame > 120 and tooltip != "") {
+          Vec2f tooltip_dim;
+          GUI::GetTextDimensions(tooltip, tooltip_dim);
+          AnimationRect tooltip_rect_anim();
+          tooltip_rect_anim.tl_start = Vec2f(cpos + Vec2f(32, 0));
+          tooltip_rect_anim.br_start = Vec2f(cpos + Vec2f(32, 28));
+          tooltip_rect_anim.tl_end = Vec2f(cpos + Vec2f(32, 0));
+          tooltip_rect_anim.br_end = Vec2f(cpos + Vec2f(32 + tooltip_dim.x + 12, 28));
+          tooltip_rect_anim.duration = 10;
+          tooltip_rect_anim.frame = Maths::Min(_button_hovered_frame - 120, 20);
+          tooltip_rect_anim.play();
+          AnimationText tooltip_text_anim();
+          tooltip_text_anim.text = "";
+          tooltip_text_anim.result = tooltip;
+          tooltip_text_anim.duration = 20;
+          tooltip_text_anim.frame = Maths::Min(_button_hovered_frame - 120, 20);
+          tooltip_text_anim.play();
+          if (tooltip_text_anim.isPlayOrEnd()) {
+            _drawPaneGeneral(tooltip_rect_anim.tl, tooltip_rect_anim.br);
+            GUI::DrawText(tooltip_text_anim.text, cpos + Vec2f(32 + 4, 4), FUI::Colors::FG);
+          }
+        }
+      } else {
+        _button_hovered = _button_current;
+        _button_hovered_frame = 0;
+        //Sound::Play("FUI_Hovered.ogg");
       }
     } else { // Normal
       GUI::DrawRectangle(tl, br, FUI::Colors::FRAME);
@@ -252,6 +269,9 @@ class AnimationRect : Animation {
   Vec2f br_end = Vec2f(0, 0);
 
   void play() {
+    tl = tl_end;
+    br = br_end;
+    if (isEnd()) return;
     // time (0.0 - 1.0)
     f32 t = frame / duration;
     // bezier curve math for beutiful animation
@@ -267,6 +287,9 @@ class AnimationRect : Animation {
   }
 
   void playReverse() {
+    tl = tl_start;
+    br = br_start;
+    if (isStart()) return;
     // time (0.0 - 1.0)
     f32 t = frame / duration;
     // bezier curve math for beutiful animation
