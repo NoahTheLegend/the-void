@@ -150,7 +150,7 @@ class Canvas {
       
       if (_button_hovered == _button_current) {
         _button_hovered_frame += 1;
-        if (_button_hovered_frame > 120 and tooltip != "") {
+        if (_button_hovered_frame > 80 and tooltip != "") {
           Vec2f tooltip_dim;
           GUI::GetTextDimensions(tooltip, tooltip_dim);
           AnimationRect tooltip_rect_anim();
@@ -159,13 +159,13 @@ class Canvas {
           tooltip_rect_anim.tl_end = Vec2f(cpos + Vec2f(32, 0));
           tooltip_rect_anim.br_end = Vec2f(cpos + Vec2f(32 + tooltip_dim.x + 12, 28));
           tooltip_rect_anim.duration = 10;
-          tooltip_rect_anim.frame = Maths::Min(_button_hovered_frame - 120, 20);
+          tooltip_rect_anim.frame = Maths::Min(_button_hovered_frame - 80, 20);
           tooltip_rect_anim.play();
           AnimationText tooltip_text_anim();
           tooltip_text_anim.text = "";
           tooltip_text_anim.result = tooltip;
           tooltip_text_anim.duration = 20;
-          tooltip_text_anim.frame = Maths::Min(_button_hovered_frame - 120, 20);
+          tooltip_text_anim.frame = Maths::Min(_button_hovered_frame - 80, 20);
           tooltip_text_anim.play();
           if (tooltip_text_anim.isPlayOrEnd()) {
             _drawPaneGeneral(tooltip_rect_anim.tl, tooltip_rect_anim.br);
