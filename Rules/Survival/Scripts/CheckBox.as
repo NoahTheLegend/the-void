@@ -52,9 +52,14 @@ class CheckBox {
             }
             else capture = false;
         }
+        else capture = false;
 
         GUI::SetFont("menu");
-        GUI::DrawPane(tl, br, SColor(alpha,255,255,255));
+
+        if (capture)  GUI::DrawButtonPressed(tl, br);
+        else if (hover(mpos)) GUI::DrawButtonHover(tl, br);
+        else GUI::DrawButton(tl, br);
+
         if (state)
             GUI::DrawTextCentered("✔", tl+dim/2-Vec2f(1.5f,0), color_white);
     }
