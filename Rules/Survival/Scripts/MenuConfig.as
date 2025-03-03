@@ -8,7 +8,7 @@ const string SETTINGS_FILE = "VOIDMOD_settings";
 const s32 SPACING_W = 8;
 const s32 SPACING_H = 4;
 const s32 TEXT_H = 20;
-const s32 LABEL_H = 28;
+const s32 LABEL_H = 26;
 
 FUI::Canvas canvas_buttons();
 FUI::Canvas canvas_settings();
@@ -81,13 +81,13 @@ void onRender(CRules@ this) {
   if (settings_anim_rect_title.isPlayOrEnd())
     canvas_settings.drawPane(settings_anim_rect_title.tl, settings_anim_rect_title.br);
   if (settings_anim_text_messages_mute.isPlayOrEnd())
-    messages_mute = canvas_settings.drawToggle(messages_mute, Vec2f(8, LABEL_H + 6));
+    messages_mute = canvas_settings.drawToggle(messages_mute, Vec2f(8, LABEL_H + 6), "on/off all messages");
   if (settings_anim_text_title.isPlayOrEnd())
     canvas_settings.drawTextCentered(settings_anim_text_title.text, settings_anim_rect_title.tl, settings_anim_rect_title.br);
   if (settings_anim_text_messages_mute.isPlayOrEnd())
     canvas_settings.drawText(settings_anim_text_messages_mute.text, Vec2f(6 + 16 + 4, LABEL_H + 6));
   if (settings_anim_rect_messages_volume.isPlayOrEnd())
-    messages_volume = canvas_settings.drawSlider(messages_volume, settings_anim_rect_messages_volume.tl, settings_anim_rect_messages_volume.br);
+    messages_volume = canvas_settings.drawSlider(messages_volume, settings_anim_rect_messages_volume.tl, settings_anim_rect_messages_volume.br, "messages volume");
 
   canvas_settings.end();
 }

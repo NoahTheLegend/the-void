@@ -40,7 +40,6 @@ enum Alignment {
   BR, // BOTTOM RIGHT
 }
 
-
 void _drawPaneGeneral(Vec2f tl, Vec2f br) {
   GUI::DrawRectangle(tl, br, FUI::Colors::FRAME);
   GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), FUI::Colors::FG);
@@ -60,6 +59,10 @@ class Canvas {
   CControls@ _controls = getControls();
   bool _now_press = false;
   bool _was_press = false;
+
+  string _tooltip = "";
+  AnimationRect _tooltip_rect_anim();
+  AnimationText _tooltip_text_anim();
 
   void begin(Vec2f tl = Vec2f(0, 0), Vec2f br = Vec2f(getScreenWidth(), getScreenHeight()), FUI::Alignment alignment = FUI::Alignment::TL) {
     GUI::SetFont("Terminus_14");
@@ -97,9 +100,32 @@ class Canvas {
       _was_press = _now_press;
       _now_press = _controls.mousePressed1;
     }
+
+    _tooltip = "";
   }
 
   void end() {
+    if (_tooltip != "") {
+      Vec2f cpos = _controls.getMouseScreenPos();
+      Vec2f tooltip_dim;
+      GUI::GetTextDimensions(_tooltip, tooltip_dim);
+      _tooltip_rect_anim.tl_start = Vec2f(cpos + Vec2f(32, 0));
+      _tooltip_rect_anim.br_start = Vec2f(cpos + Vec2f(32, 28));
+      _tooltip_rect_anim.tl_end = Vec2f(cpos + Vec2f(32, 0));
+      _tooltip_rect_anim.br_end = Vec2f(cpos + Vec2f(32 + tooltip_dim.x + 12, 28));
+      _tooltip_rect_anim.duration = 10;
+      _tooltip_rect_anim.play();
+      _tooltip_text_anim.text = "";
+      _tooltip_text_anim.result = "";
+      _tooltip_text_anim.duration = 20;
+      _tooltip_text_anim.play();
+      _tooltip_text_anim.result = _tooltip;
+      _tooltip_text_anim.play();
+      if (_tooltip_text_anim.isPlayOrEnd()) {
+        _drawPaneGeneral(_tooltip_rect_anim.tl, _tooltip_rect_anim.br);
+        GUI::DrawText(_tooltip_text_anim.text, cpos + Vec2f(32 + 4, 4), FUI::Colors::FG);
+      }
+    }
     GUI::SetFont("menu");
   }
 
@@ -136,6 +162,7 @@ class Canvas {
     Vec2f cpos = _controls.getMouseScreenPos();
     if (cpos.x > tl.x && cpos.x < br.x && cpos.y > tl.y && cpos.y < br.y) {
       if (_isPress()) { // Pressed
+        _button_hovered_frame = 0;
         GUI::DrawRectangle(tl, br, FUI::Colors::FRAME);
         GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), FUI::Colors::FRAME);
         GUI::DrawRectangle(tl + Vec2f(4, 4), br - Vec2f(4, 4), FUI::Colors::BG);
@@ -150,31 +177,14 @@ class Canvas {
 
       if (_button_hovered == _button_current) {
         _button_hovered_frame += 1;
-        if (_button_hovered_frame > 80 and tooltip != "") {
-          Vec2f tooltip_dim;
-          GUI::GetTextDimensions(tooltip, tooltip_dim);
-          AnimationRect tooltip_rect_anim();
-          tooltip_rect_anim.tl_start = Vec2f(cpos + Vec2f(32, 0));
-          tooltip_rect_anim.br_start = Vec2f(cpos + Vec2f(32, 28));
-          tooltip_rect_anim.tl_end = Vec2f(cpos + Vec2f(32, 0));
-          tooltip_rect_anim.br_end = Vec2f(cpos + Vec2f(32 + tooltip_dim.x + 12, 28));
-          tooltip_rect_anim.duration = 10;
-          tooltip_rect_anim.frame = Maths::Min(_button_hovered_frame - 80, 20);
-          tooltip_rect_anim.play();
-          AnimationText tooltip_text_anim();
-          tooltip_text_anim.text = "";
-          tooltip_text_anim.result = tooltip;
-          tooltip_text_anim.duration = 20;
-          tooltip_text_anim.frame = Maths::Min(_button_hovered_frame - 80, 20);
-          tooltip_text_anim.play();
-          if (tooltip_text_anim.isPlayOrEnd()) {
-            _drawPaneGeneral(tooltip_rect_anim.tl, tooltip_rect_anim.br);
-            GUI::DrawText(tooltip_text_anim.text, cpos + Vec2f(32 + 4, 4), FUI::Colors::FG);
-          }
+        if (_button_hovered_frame > 40 and tooltip != "" and !_isPress()) {
+          _tooltip = tooltip;
+          _tooltip_rect_anim.frame = _button_hovered_frame - 40;
+          _tooltip_text_anim.frame = _button_hovered_frame - 40;
         }
       } else {
-        _button_hovered = _button_current;
         _button_hovered_frame = 0;
+        _button_hovered = _button_current;
         //Sound::Play("FUI_Hovered.ogg");
       }
     } else { // Normal
@@ -186,17 +196,17 @@ class Canvas {
     return false;
   }
 
-  bool drawToggle(bool value, Vec2f pos) {
+  bool drawToggle(bool value, Vec2f pos, string tooltip) {
     if (value) {
-      if(drawButton(pos, pos + Vec2f(16, 16))) value = !value;
+      if(drawButton(pos, pos + Vec2f(16, 16), tooltip)) value = !value;
       GUI::DrawRectangle(canvas_tl + pos + Vec2f(6,6), canvas_tl + pos + Vec2f(10,10), FUI::Colors::FG);
     } else {
-      if(drawButton(pos, pos + Vec2f(16, 16))) value = !value;
+      if(drawButton(pos, pos + Vec2f(16, 16), tooltip)) value = !value;
     }
     return value;
   }
 
-  float drawSlider(float value, Vec2f tl, Vec2f br, float min = 0, float max = 1, float step = 0.05) {
+  float drawSlider(float value, Vec2f tl, Vec2f br, float min = 0, float max = 1, float step = 0.01, string tooltip = "") {
     _slider_current += 1;
 
     tl += canvas_tl;
@@ -215,7 +225,7 @@ class Canvas {
         if (_isJustReleased()) {
             _slider_selected = 0;
         }
-    } else if (drawButton(tl - canvas_tl, br - canvas_tl)) {
+    } else if (drawButton(tl - canvas_tl, br - canvas_tl, tooltip)) {
         _slider_selected = _slider_current;
     }
     Vec2f value_tl = Vec2f(tl.x + (br.x - tl.x - value_w) * (value - min) / (max - min), tl.y);
@@ -225,6 +235,14 @@ class Canvas {
     return value;
   }
 
+  float drawSlider(float value, Vec2f tl, Vec2f br, float min = 0, float max = 1, string tooltip = "") {
+    return drawSlider(value, tl, br, min, max, 0.01, tooltip);
+  }
+
+  float drawSlider(float value, Vec2f tl, Vec2f br, string tooltip = "") {
+    return drawSlider(value, tl, br, 0, 1, 0.01, tooltip);
+  }
+  
   bool _isPress() {
     return _now_press;
   }
