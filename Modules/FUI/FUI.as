@@ -92,7 +92,7 @@ class Canvas {
 
     _button_current = 0;
     _slider_current = 0;
-    
+
     if(_controls !is null) {
       _was_press = _now_press;
       _now_press = _controls.mousePressed1;
@@ -128,7 +128,7 @@ class Canvas {
         break;
     }
   }
-  
+
   bool drawButton(Vec2f tl, Vec2f br, string tooltip = "") {
     _button_current += 1;
     tl += canvas_tl;
@@ -147,7 +147,7 @@ class Canvas {
         GUI::DrawRectangle(tl, br, FUI::Colors::FG);
         GUI::DrawRectangle(tl + Vec2f(4, 4), br - Vec2f(4, 4), FUI::Colors::BG);
       }
-      
+
       if (_button_hovered == _button_current) {
         _button_hovered_frame += 1;
         if (_button_hovered_frame > 80 and tooltip != "") {
@@ -196,7 +196,6 @@ class Canvas {
     return value;
   }
 
-  
   float drawSlider(float value, Vec2f tl, Vec2f br, float min = 0, float max = 1, float step = 0.05) {
     _slider_current += 1;
 
@@ -229,11 +228,11 @@ class Canvas {
   bool _isPress() {
     return _now_press;
   }
-  
+
   bool _isJustPressed() {
     return (_now_press and !_was_press) ? true : false;
   }
-  
+
   bool _isJustReleased() {
     return (!_now_press and _was_press) ? true : false;
   }
@@ -242,11 +241,11 @@ class Canvas {
 class Animation {
   f32 frame = 0;
   f32 duration = 0;
-  
+
   bool isStart() {
     return frame <= 0;
   }
-  
+
   bool isEnd() {
     return frame >= duration;
   }
@@ -330,4 +329,3 @@ class AnimationText : Animation {
 }
 
 }
- 
