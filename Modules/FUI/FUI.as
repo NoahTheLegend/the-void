@@ -200,7 +200,7 @@ class Canvas {
     return false;
   }
 
-  bool drawToggle(bool value, Vec2f pos, string tooltip) {
+  bool drawToggle(bool value, Vec2f pos, string tooltip = "") {
     if (value) {
       if(drawButton(pos, pos + Vec2f(16, 16), tooltip)) value = !value;
       GUI::DrawRectangle(canvas_tl + pos + Vec2f(6,6), canvas_tl + pos + Vec2f(10,10), FUI::Colors::FG);
@@ -239,14 +239,6 @@ class Canvas {
     return value;
   }
 
-  float drawSlider(float value, Vec2f tl, Vec2f br, float min = 0, float max = 1, string tooltip = "") {
-    return drawSlider(value, tl, br, min, max, 0.01, tooltip);
-  }
-
-  float drawSlider(float value, Vec2f tl, Vec2f br, string tooltip = "") {
-    return drawSlider(value, tl, br, 0, 1, 0.01, tooltip);
-  }
-  
   bool _isPress() {
     return _now_press;
   }
