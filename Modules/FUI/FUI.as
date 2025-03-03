@@ -40,10 +40,16 @@ enum Alignment {
   BR, // BOTTOM RIGHT
 }
 
-void _drawPaneGeneral(Vec2f tl, Vec2f br) {
+void _drawPane(Vec2f tl, Vec2f br) {
   GUI::DrawRectangle(tl, br, FUI::Colors::FRAME);
   GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), FUI::Colors::FG);
   GUI::DrawRectangle(tl + Vec2f(4, 4), br - Vec2f(4, 4), FUI::Colors::BG);
+}
+
+void _drawTextCentered(string text, Vec2f tl, Vec2f br) {
+  Vec2f dim = Vec2f(0,0);
+  GUI::GetTextDimensions(text, dim);
+  GUI::DrawText(text, tl + Vec2f(Maths::Floor(br.x - tl.x - dim.x) / 2 - 0.49, (br.y - tl.y - dim.y) / 2 - 1.49), FUI::Colors::FG);
 }
 
 class Canvas {
@@ -122,7 +128,7 @@ class Canvas {
       _tooltip_text_anim.result = _tooltip;
       _tooltip_text_anim.play();
       if (_tooltip_text_anim.isPlayOrEnd()) {
-        _drawPaneGeneral(_tooltip_rect_anim.tl, _tooltip_rect_anim.br);
+        _drawPane(_tooltip_rect_anim.tl, _tooltip_rect_anim.br);
         GUI::DrawText(_tooltip_text_anim.text, cpos + Vec2f(32 + 4, 4), FUI::Colors::FG);
       }
     }
@@ -134,17 +140,15 @@ class Canvas {
   }
 
   void drawPane(Vec2f tl, Vec2f br) {
-    _drawPaneGeneral(canvas_tl + tl, canvas_tl + br);
+    _drawPane(canvas_tl + tl, canvas_tl + br);
   }
 
-  void drawText(string text, Vec2f pos, SColor color = FUI::Colors::FG) {
-    GUI::DrawText(text, canvas_tl + pos, color);
+  void drawText(string text, Vec2f pos) {
+    GUI::DrawText(text, canvas_tl + pos, FUI::Colors::FG);
   }
 
-  void drawTextCentered(string text, Vec2f tl, Vec2f br, SColor color = FUI::Colors::FG) {
-    Vec2f dim = Vec2f(0,0);
-    GUI::GetTextDimensions(text, dim);
-    GUI::DrawText(text, canvas_tl + tl + Vec2f((br.x - tl.x) / 2 - dim.x / 2 - 2, (br.y - tl.y) / 2 - dim.y / 2 - 2), color);
+  void drawTextCentered(string text, Vec2f tl, Vec2f br) {
+    _drawTextCentered(text, canvas_tl + tl, canvas_tl + br);
   }
 
   void drawIcon(FUI::Icons icon, Vec2f pos) {
