@@ -1,6 +1,7 @@
 #define CLIENT_ONLY
 
 #include "FUI.as";
+#include "UtilityChecks.as";
 
 const string CACHE_DIR = "../Cache/";
 const string SETTINGS_FILE = "VOIDMOD_settings";
@@ -39,7 +40,9 @@ void onReload(CRules @rules) {
 
 void onRender(CRules@ this) {
   canvas_buttons.begin();
-  if (canvas_buttons.drawButton(Vec2f(16, 16), Vec2f(52, 52), "Open mod settings")) {
+  CBlob@ local_blob = getLocalPlayerBlob();
+
+  if (canvas_buttons.drawButton(Vec2f(16, 16), Vec2f(52, 52), "Open mod settings") && (local_blob is null || !isInMenu(local_blob))) {
     settings_is_open = !settings_is_open;
     if (settings_is_open) {
       SettingsLoad();
