@@ -65,6 +65,8 @@ class Canvas {
   CControls@ _controls = getControls();
   bool _now_press = false;
   bool _was_press = false;
+  Vec2f _mouse_pos = Vec2f(0, 0);
+  Vec2f _mouse_pos_old = Vec2f(0, 0);
 
   string _tooltip = "";
   AnimationRect _tooltip_rect_anim();
@@ -105,6 +107,8 @@ class Canvas {
     if(_controls !is null) {
       _was_press = _now_press;
       _now_press = _controls.mousePressed1;
+      _mouse_pos_old = _mouse_pos;
+      _mouse_pos = _controls.getMouseScreenPos();
     }
 
     _tooltip = "";
@@ -112,13 +116,12 @@ class Canvas {
 
   void end() {
     if (_tooltip != "") {
-      Vec2f cpos = _controls.getMouseScreenPos();
       Vec2f tooltip_dim;
       GUI::GetTextDimensions(_tooltip, tooltip_dim);
-      _tooltip_rect_anim.tl_start = Vec2f(cpos + Vec2f(32, 0));
-      _tooltip_rect_anim.br_start = Vec2f(cpos + Vec2f(32, 28));
-      _tooltip_rect_anim.tl_end = Vec2f(cpos + Vec2f(32, 0));
-      _tooltip_rect_anim.br_end = Vec2f(cpos + Vec2f(32 + tooltip_dim.x + 12, 28));
+      _tooltip_rect_anim.tl_start = Vec2f(_mouse_pos + Vec2f(32, 0));
+      _tooltip_rect_anim.br_start = Vec2f(_mouse_pos + Vec2f(32, 28));
+      _tooltip_rect_anim.tl_end = Vec2f(_mouse_pos + Vec2f(32, 0));
+      _tooltip_rect_anim.br_end = Vec2f(_mouse_pos + Vec2f(32 + tooltip_dim.x + 12, 28));
       _tooltip_rect_anim.duration = 10;
       _tooltip_rect_anim.play();
       _tooltip_text_anim.text = "";
@@ -129,7 +132,7 @@ class Canvas {
       _tooltip_text_anim.play();
       if (_tooltip_text_anim.isPlayOrEnd()) {
         _drawPane(_tooltip_rect_anim.tl, _tooltip_rect_anim.br);
-        GUI::DrawText(_tooltip_text_anim.text, cpos + Vec2f(32 + 4, 4), FUI::Colors::FG);
+        GUI::DrawText(_tooltip_text_anim.text, _mouse_pos + Vec2f(32 + 4, 4), FUI::Colors::FG);
       }
     }
     GUI::SetFont("menu");
@@ -163,8 +166,7 @@ class Canvas {
     _button_current += 1;
     tl += canvas_tl;
     br += canvas_tl;
-    Vec2f cpos = _controls.getMouseScreenPos();
-    if (cpos.x > tl.x && cpos.x < br.x && cpos.y > tl.y && cpos.y < br.y) {
+    if (_mouse_pos.x > tl.x && _mouse_pos.x < br.x && _mouse_pos.y > tl.y && _mouse_pos.y < br.y) {
       if (_isPress()) { // Pressed
         _button_hovered_frame = 0;
         GUI::DrawRectangle(tl, br, FUI::Colors::FRAME);
@@ -180,11 +182,12 @@ class Canvas {
       }
 
       if (_button_hovered == _button_current) {
-        _button_hovered_frame += 1;
-        if (_button_hovered_frame > 40 and tooltip != "" and !_isPress()) {
+        if (_mouse_pos != _mouse_pos_old) _button_hovered_frame = 0;
+        _button_hovered_frame += 60 * getRenderDeltaTime();
+        if (_button_hovered_frame > 80 and tooltip != "" and !_isPress()) {
           _tooltip = tooltip;
-          _tooltip_rect_anim.frame = _button_hovered_frame - 40;
-          _tooltip_text_anim.frame = _button_hovered_frame - 40;
+          _tooltip_rect_anim.frame = _button_hovered_frame - 80;
+          _tooltip_text_anim.frame = _button_hovered_frame - 80;
         }
       } else {
         _button_hovered_frame = 0;
@@ -223,7 +226,7 @@ class Canvas {
       GUI::DrawRectangle(tl, br, FUI::Colors::FRAME);
       GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), FUI::Colors::FRAME);
       GUI::DrawRectangle(tl + Vec2f(4, 4), br - Vec2f(4, 4), FUI::Colors::BG);
-        value = (Maths::Clamp(_controls.getMouseScreenPos().x, tl.x + value_w / 2, br.x - value_w / 2) - tl.x - value_w / 2) / (br.x - tl.x - value_w) * (max - min) + min;
+        value = (Maths::Clamp(_mouse_pos.x, tl.x + value_w / 2, br.x - value_w / 2) - tl.x - value_w / 2) / (br.x - tl.x - value_w) * (max - min) + min;
         if ((value % step) > (step / 2)) value += (step - value % step);
         else value -= value % step;
         if (_isJustReleased()) {
@@ -296,7 +299,7 @@ class AnimationRect : Animation {
     Vec2f br_temp1 = Vec2f_lerp(br_start, br_temp0, t);
     Vec2f br_temp2 = Vec2f_lerp(br_temp0, br_end, t);
     br = Vec2f_lerp(br_temp1, br_temp2, t);
-    frame = Maths::Min(frame + 30 * getRenderDeltaTime(), duration);
+    frame = Maths::Min(frame + 60 * getRenderDeltaTime(), duration);
   }
 
   void playReverse() {
@@ -314,7 +317,7 @@ class AnimationRect : Animation {
     Vec2f br_temp1 = Vec2f_lerp(br_start, br_temp0, t);
     Vec2f br_temp2 = Vec2f_lerp(br_temp0, br_end, t);
     br = Vec2f_lerp(br_temp1, br_temp2, t);
-    frame = Maths::Max(frame - 30 * getRenderDeltaTime(), 0);
+    frame = Maths::Max(frame - 60 * getRenderDeltaTime(), 0);
   }
 }
 
@@ -327,7 +330,7 @@ class AnimationText : Animation {
     if (isEnd()) return;
     text.resize(Maths::Lerp(0, result.length(), frame / duration));
     text += "█";
-    frame = Maths::Min(frame + 30 * getRenderDeltaTime(), duration);
+    frame = Maths::Min(frame + 60 * getRenderDeltaTime(), duration);
     Sound::Play("FUI_Write.ogg");
   }
 
@@ -337,7 +340,7 @@ class AnimationText : Animation {
     text = result;
     text.resize(Maths::Lerp(0, result.length(), frame / duration));
     text += "█";
-    frame = Maths::Max(frame - 30 * getRenderDeltaTime(), 0);
+    frame = Maths::Max(frame - 60 * getRenderDeltaTime(), 0);
     Sound::Play("FUI_Delete.ogg");
   }
 }

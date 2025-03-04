@@ -16,7 +16,7 @@ Tile getSurfaceTile(CBlob@ this)
 void getSurfaceTiles(CBlob@ this, TileType &out t1, TileType &out t2)
 {
     if (this is null) return;
-    
+
     CMap@ map = getMap();
     if (map is null) return;
 
@@ -29,7 +29,7 @@ void getSurfaceTiles(CBlob@ this, TileType &out t1, TileType &out t2)
 bool inProximity(CBlob@ blob, CBlob@ blob1)
 {
     if (blob is null || blob1 is null) return false;
-    
+
     Vec2f pos1 = blob.getPosition();
     Vec2f pos2 = blob1.getPosition();
     return
@@ -71,7 +71,7 @@ bool playSoundInProximity(CBlob@ blob, string filename, f32 volume = 1.0f, f32 p
 
     CPlayer@ player = getLocalPlayer();
     if (player is null) return true; // we can hear everything while dead
-    
+
     Vec2f pos = blob.getPosition();
     CBlob@ local = getLocalPlayerBlob();
 
@@ -99,7 +99,7 @@ bool playSoundInProximity(CBlob@ blob, string filename, f32 volume = 1.0f, f32 p
     {
         Vec2f playerpos = local.getPosition();
         f32 dist = (pos - playerpos).Length();
-        
+
         if (dist < max_distance / 10)
         {
             f32 volume = 1.0f - Maths::Min(dist / (max_distance / 10), 1.0f);
@@ -125,7 +125,7 @@ bool playSoundInProximityAtPos(Vec2f pos, string filename, f32 volume = 1.0f, f3
 
     CPlayer@ player = getLocalPlayer();
     if (player is null) return true; // we can hear everything while dead
-    
+
     CBlob@ local = getLocalPlayerBlob();
 
     if (local !is null && posInProximity(pos)) // we see the source
@@ -152,7 +152,7 @@ bool playSoundInProximityAtPos(Vec2f pos, string filename, f32 volume = 1.0f, f3
     {
         Vec2f playerpos = local.getPosition();
         f32 dist = (pos - playerpos).Length();
-        
+
         if (dist < max_distance / 10)
         {
             f32 volume = 1.0f - Maths::Min(dist / (max_distance / 10), 1.0f);
@@ -189,7 +189,7 @@ f32 getSoundFallOff(CBlob@ blob, f32 falloff_start, f32 max_distance = 512.0f)
 bool isInMenu(CBlob@ blob)
 {
     if (blob is null) return false;
-    
+
     u16 menu_id = blob.get_u16("menu_id");
     CBlob@ menu_runner = menu_id == 0 ? null : getBlobByNetworkID(menu_id);
 
@@ -204,7 +204,7 @@ bool isInMenu(CBlob@ blob)
 void attachMenu(CBlob@ blob, CBlob@ menu_runner)
 {
     if (menu_runner is null) return;
-        
+
     blob.set_bool("menu_open", true);
     blob.set_u16("menu_id", menu_runner.getNetworkID());
 }
