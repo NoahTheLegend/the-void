@@ -56,8 +56,8 @@ class CheckBox {
 
         GUI::SetFont("menu");
 
-        if (capture)  GUI::DrawButtonPressed(tl, br);
-        else if (hover(mpos)) GUI::DrawButtonHover(tl, br);
+        if (capture) GUI::DrawProgressBar(tl, br, 0);
+        else if (hover(mpos)) GUI::DrawButtonPressed(tl, br);
         else GUI::DrawButton(tl, br);
 
         if (state)

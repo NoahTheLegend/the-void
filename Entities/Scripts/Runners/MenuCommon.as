@@ -42,7 +42,7 @@ class MenuItemInfo
         sidebar_pos = list_pos + Vec2f(list_dim.x, 0);
         sidebar = Sidebar(sidebar_pos);
 
-        sidebar.addSlider("Slider", "Slider tooltip", Vec2f(20,64), Vec2f(8, 8), 0, 5);
+        sidebar.addSlider("Slider", "Slider tooltip", Vec2f(32,20), Vec2f(8, 8), 0, 5);
         sidebar.options[0].setSliderTextMode(1);
 
         sidebar.addCheckbox("Checkbox", "Checkbox tooltip", Vec2f(16, 16), false);
