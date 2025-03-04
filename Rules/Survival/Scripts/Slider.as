@@ -99,9 +99,9 @@ class Slider
         GUI::DrawProgressBar(tl, br, 0);
         // button
         if (hover() || captured)
-            GUI::DrawPane(button_drawpos, button_drawpos+button_dim);
-        else
             GUI::DrawSunkenPane(button_drawpos, button_drawpos+button_dim);
+        else
+            GUI::DrawPane(button_drawpos, button_drawpos+button_dim);            
     }
 
     void setPosition(Vec2f _pos)

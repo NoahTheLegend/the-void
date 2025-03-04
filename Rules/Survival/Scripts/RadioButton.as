@@ -169,6 +169,7 @@ class RadioButton
     Vec2f pos;
     Vec2f dim;
     Vec2f list_dim;
+    Vec2f extra;
 
     RadioButton(string _name, string _description, string _icon, Vec2f _icon_dim, int _index = 0, f32 _scale = 1)
     {
@@ -184,19 +185,22 @@ class RadioButton
         pos = Vec2f_zero;
         dim = Vec2f_zero;
         list_dim = Vec2f_zero;
+        extra = Vec2f(1, 1);
     }
 
     void render()
     {
         if (selected)
         {
-            drawRectangle(pos, pos + dim, SColor(255, 255, 255, 255));
-            drawRectangle(pos + Vec2f(1, 1), pos + dim - Vec2f(1, 1), SColor(255, 0, 0, 0));
+            GUI::DrawProgressBar(pos - extra, pos + dim + extra, 0);
         }
         else if (hovered)
         {
-            drawRectangle(pos, pos + dim, SColor(255, 255, 255, 255));
-            drawRectangle(pos + Vec2f(1, 1), pos + dim - Vec2f(1, 1), SColor(255, 0, 0, 0));
+            GUI::DrawButtonPressed(pos - extra, pos + dim + extra);
+        }
+        else
+        {
+            GUI::DrawButton(pos - extra, pos + dim + extra);
         }
 
         Vec2f scale_offset = (dim * (1.0f - icon_scale));

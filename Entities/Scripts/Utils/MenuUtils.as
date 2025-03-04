@@ -2,6 +2,8 @@
 
 bool AddMenuItem(CBlob@ this, string text, string description)
 {
+    if (this is null) return false;
+    
     MenuItemInfo@[]@ menuItems;
     if (!this.get("MenuItems", @menuItems))
     {
@@ -17,7 +19,7 @@ bool AddMenuItem(CBlob@ this, string text, string description)
         }
     }
     
-    menuItems.push_back(MenuItemInfo(text, description));
+    menuItems.push_back(MenuItemInfo(this.getNetworkID(), text, description));
     return true;
 }
 

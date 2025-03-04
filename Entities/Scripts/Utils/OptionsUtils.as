@@ -108,6 +108,11 @@ class Option
         }
     }
 
+    void addSliderDescriptions(string[] descriptions)
+    {
+        slider.descriptions = descriptions;
+    }
+
     void setSliderPos(f32 scroll)
     {
         slider.setScroll(scroll);
@@ -141,7 +146,7 @@ class Option
         option_text = Maths::Round(slider.scrolled*100)+"%";
         if (slider.mode == 1)
             option_text = ""+(Maths::Abs(Maths::Clamp(slider.step.x+1,1,slider.snap_points+1)) * slider.description_step_mod - slider.description_step_mod);
-        else if (slider.mode == 2)
+        else if (slider.mode == 2 && slider.descriptions.length > 0)
             option_text = slider.descriptions[slider.getSnapPoint()];
         else if (slider.mode == 3)
             option_text = default_text;
@@ -149,10 +154,6 @@ class Option
 
     void render(u8 alpha)
     {
-        //if (has_radio_button_list) // test
-        {
-            debug = true;
-        }
         if (debug)
         {
             GUI::DrawRectangle(pos, pos+dim, SColor(alpha, 255, 0, 0));
@@ -183,7 +184,7 @@ class Option
             slider.render(alpha);
             
             GUI::SetFont("Terminus_12");
-            GUI::DrawText(default_text, pos + Vec2f(0, height_text + slider.dim.y + 2), SColor(255,255,235,120));
+            GUI::DrawText(option_text, pos + Vec2f(0, height_text + slider.dim.y + 2), SColor(255,255,235,120));
         }
 
         if (has_radio_button_list)
@@ -201,5 +202,95 @@ class Option
         
         slider.update();
         check.update();
+    }
+};
+
+class Button
+{
+    u16 blob_id;
+    bool pressed;
+    bool hovered;
+
+    string text;
+    Vec2f pos;
+    Vec2f dim;
+
+    string hover_tooltip;
+    string cmd;
+
+    Vec2f tl;
+    Vec2f br;
+    Vec2f mpos;
+
+    bool input;
+    bool send_command;
+
+    Button(u16 _blob_id, string _text, Vec2f _pos, Vec2f _dim, string _cmd)
+    {
+        blob_id = _blob_id;
+        pressed = false;
+        hovered = false;
+
+        text = _text;
+        pos = _pos;
+        dim = _dim;
+        cmd = _cmd;
+
+        hover_tooltip = "";
+        tl = pos;
+        br = pos+dim;
+        mpos = Vec2f(-1,-1);
+
+        input = false;
+        send_command = false;
+    }
+
+    void tick()
+    {
+        CControls@ controls = getControls();
+        if (controls is null) return;
+
+        mpos = controls.getInterpMouseScreenPos();
+        hovered = hover();
+
+        bool current_input = controls.mousePressed1 || controls.mousePressed2;
+        if (hovered && input)
+        {
+            pressed = true;
+        }
+        else pressed = false;
+
+        if (hovered && (input && !current_input))
+        {
+            send_command = true;
+        }
+        else send_command = false;
+
+        input = current_input;
+    }
+
+    void render(u8 alpha)
+    {
+        if (pressed)
+            GUI::DrawProgressBar(tl, br, 0);
+        else if (hovered)
+            GUI::DrawButtonPressed(tl, br);
+        else
+            GUI::DrawButton(tl, br);
+
+        GUI::SetFont("Terminus_14");
+        GUI::DrawTextCentered(text, pos + dim/2 - Vec2f(1, 1), SColor(255, 255, 255, 255));
+    }
+
+    void setPosition(Vec2f _pos)
+    {
+        pos = _pos;
+        tl = pos;
+        br = pos+dim;
+    }
+
+    bool hover()
+    {
+        return isMouseInScreenBox(mpos, tl, br);
     }
 };

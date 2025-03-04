@@ -25,11 +25,11 @@ void onInit(CBlob@ this)
 void initMenu(CBlob@ this)
 {
     AddMenuItem(this, "Test 0", "test descritpion amogus 0");
-    //AddMenuItem(this, "Test 1", "test descritpion amogus 1");
-    //AddMenuItem(this, "Test 2", "test descritpion amogus 2");
-    //AddMenuItem(this, "Test 3", "test descritpion amogus 3");
-    //AddMenuItem(this, "Test 4", "test descritpion amogus 4");
-    //AddMenuItem(this, "Test 5", "test descritpion amogus 5");
+    AddMenuItem(this, "Test 1", "test descritpion amogus 1");
+    AddMenuItem(this, "Test 2", "test descritpion amogus 2");
+    AddMenuItem(this, "Test 3", "test descritpion amogus 3");
+    AddMenuItem(this, "Test 4", "test descritpion amogus 4");
+    AddMenuItem(this, "Test 5", "test descritpion amogus 5");
 }
 
 void GetButtonsFor(CBlob@ this, CBlob@ caller)

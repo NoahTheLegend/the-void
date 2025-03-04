@@ -8,6 +8,7 @@
 
 class MenuItemInfo
 {
+    u16 blob_id;
     string text;
     string description;
 
@@ -21,9 +22,10 @@ class MenuItemInfo
     Sidebar sidebar;
     Vec2f mpos;
 
-    MenuItemInfo(string _text, string _description, Vec2f _pos = Vec2f_zero,
+    MenuItemInfo(u16 _blob_id, string _text, string _description, Vec2f _pos = Vec2f_zero,
         Vec2f _dim = Vec2f_zero, Vec2f _list_pos = Vec2f_zero, Vec2f _list_dim = Vec2f_zero)
     {
+        blob_id = _blob_id;
         text = _text;
         description = _description;
 
@@ -43,7 +45,9 @@ class MenuItemInfo
         sidebar = Sidebar(sidebar_pos);
 
         sidebar.addSlider("Slider", "Slider tooltip", Vec2f(32,20), Vec2f(8, 8), 0, 5);
-        sidebar.options[0].setSliderTextMode(1);
+        sidebar.options[0].setSliderTextMode(2);
+        string[] slider_descs = {"yep1", "yep2", "yep3", "yep4", "yep5", "yep6"};
+        sidebar.options[0].addSliderDescriptions(slider_descs);
 
         sidebar.addCheckbox("Checkbox", "Checkbox tooltip", Vec2f(16, 16), false);
         sidebar.addCheckbox("Checkbox 1", "Checkbox tooltip 1", Vec2f(32, 24), false);
@@ -51,6 +55,11 @@ class MenuItemInfo
         sidebar.addRadioList("Radio List", "Radio List tooltip", Vec2f(4, 1), Vec2f(32,32));
         sidebar.addRadioListButton("Radio List", "Radio 1", "Radio 1 description", "InteractionIcons.png", Vec2f(32,32), 0, 1);
         sidebar.addRadioListButton("Radio List", "Radio 2", "Radio 2 description", "InteractionIcons.png", Vec2f(32,32), 1, 1);
+        sidebar.addRadioListButton("Radio List", "Radio 3", "Radio 3 description", "InteractionIcons.png", Vec2f(32,32), 2, 1);
+        sidebar.addRadioListButton("Radio List", "Radio 4", "Radio 4 description", "InteractionIcons.png", Vec2f(32,32), 3, 1);
+        
+        u8 send_time = 30;
+        sidebar.addSubmit(blob_id, "Submit", "Send tooltip", Vec2f(64, 32), "test_cmd");
 
         sidebar.update();
     }
@@ -90,6 +99,7 @@ class Sidebar
 
     u8[] order;
     Option[] options;
+    Button submit;
 
     bool require_tick_update;
 
@@ -143,6 +153,28 @@ class Sidebar
             current_hold_time = 0;
             tooltip_alpha = 0;
         }
+
+        submit.tick();
+
+        if (submit.send_command)
+        {
+            submit.send_command = false;
+            SendCommand();
+        }
+    }
+
+    bool SendCommand()
+    {
+        CBlob@ blob = getBlobByNetworkID(submit.blob_id);
+        if (blob is null) return false;
+
+        CBitStream params;
+
+        // serialize
+        s16 seed_order = 0;
+        
+        blob.SendCommand(blob.getCommandID(submit.cmd), params);
+        return true;
     }
 
     void render(u8 alpha)
@@ -158,6 +190,12 @@ class Sidebar
         }
         mpos = new_mpos;
         drawRectangle(pos, pos + dim, SColor(alpha, 0, 0, 0), 1, 2, SColor(alpha, 75, 75, 75));
+
+        // debug
+        //for (u8 i = 0; i < tl_rects.length; i++)
+        //{
+        //    drawRectangle(tl_rects[i], br_rects[i], SColor(alpha, 0, 0, 0), 1, 2, SColor(alpha, 75, 255, 75));
+        //}
 
         // render options in order they added
         if (options.size() != order.size())
@@ -179,8 +217,17 @@ class Sidebar
             current_pos += Vec2f(0, options[i].dim.y + padding.y);
         }
 
+        if (submit.pos != current_pos)
+            request_update = true;
+
+        submit.setPosition(current_pos);
+        submit.render(alpha);
+
         if (request_update) update();
-        if (hovered.size() > 0) renderToolTip(Maths::Min(alpha, tooltip_alpha), tooltips[hovered[hovered.size() - 1]]);
+        if (hovered.size() > 0)
+        {
+            renderToolTip(Maths::Min(alpha, tooltip_alpha), tooltips[hovered[hovered.size() - 1]]);
+        }
     }
 
     bool addSlider(string _title, string _tooltip, Vec2f _button_dim = Vec2f(16, 16), Vec2f _capture_margin = Vec2f_zero, f32 _start_pos = 0, u8 _snap_points = 0)
@@ -245,6 +292,17 @@ class Sidebar
         return false;
     }
 
+    bool addSubmit(u16 _blob_id, string _title, string _tooltip, Vec2f _dim, string _cmd)
+    {
+        dim.y += _dim.y + padding.y;
+        submit = Button(_blob_id, _title, pos, _dim, _cmd);
+        submit.hover_tooltip = _tooltip;
+
+        if (_tooltip != "") addTooltip(_tooltip, pos, pos + Vec2f(dim.x, _dim.y));
+
+        return true;
+    }
+
     void renderToolTip(u8 alpha, string tooltip)
     {
         if (tooltip_alpha == 0) return;
@@ -266,7 +324,6 @@ class Sidebar
 
     void addTooltip(string tooltip, Vec2f _tl, Vec2f _br, bool const_rect = false)
     {
-        //print(_tl+" "+_br+" "+tooltip);
         tooltips.push_back(tooltip);
         
         if (const_rect)
@@ -311,6 +368,9 @@ class Sidebar
                 }
             }
         }
+
+        // submit
+        addTooltip(submit.hover_tooltip, submit.pos, submit.pos + submit.dim);
     }
 };
 
