@@ -26,7 +26,8 @@ class Slider
 
     bool debug;
 
-    Slider(string _name, Vec2f _pos, Vec2f _dim, Vec2f _button_dim, Vec2f _capture_margin = Vec2f_zero, f32 _start_pos = 0, u8 _snap_points = 0, bool _setting = false)
+    Slider(string _name, Vec2f _pos, Vec2f _dim, Vec2f _button_dim, Vec2f _capture_margin = Vec2f_zero,
+        f32 _start_pos = 0, u8 _snap_points = 0, bool _setting = false)
     {
         name = _name;
         pos = _pos;
@@ -95,9 +96,12 @@ class Slider
         }
         
         // track
-        GUI::DrawFramedPane(tl, br);
+        GUI::DrawProgressBar(tl, br, 0);
         // button
-        GUI::DrawSunkenPane(button_drawpos, button_drawpos+button_dim);
+        if (hover() || captured)
+            GUI::DrawPane(button_drawpos, button_drawpos+button_dim);
+        else
+            GUI::DrawSunkenPane(button_drawpos, button_drawpos+button_dim);
     }
 
     void setPosition(Vec2f _pos)

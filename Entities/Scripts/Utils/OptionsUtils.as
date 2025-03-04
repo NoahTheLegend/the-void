@@ -1,6 +1,7 @@
 #include "Slider.as";
 #include "CheckBox.as";
 #include "RadioButton.as";
+#include "MenuConsts.as";
 
 class Section {
     string title;
@@ -148,7 +149,7 @@ class Option
 
     void render(u8 alpha)
     {
-        if (has_radio_button_list)
+        //if (has_radio_button_list) // test
         {
             debug = true;
         }
@@ -168,6 +169,7 @@ class Option
         {
             check.setPosition(current_pos);
             check.render(alpha);
+
             current_pos.x += check.dim.x + 5; 
             current_pos.y = current_pos.y + dim.y / 2 - 7;
         }
@@ -176,12 +178,12 @@ class Option
 
         if (has_slider)
         {
-            current_pos.y += dim.y / 3;
-            slider.setPosition(current_pos);
+            // title > slider > text
+            slider.setPosition(pos+Vec2f(0, height_text));
             slider.render(alpha);
-
-            current_pos.y += dim.y / 3;
-            GUI::DrawText(option_text, current_pos, SColor(255,255,235,120));
+            
+            GUI::SetFont("Terminus_12");
+            GUI::DrawText(default_text, pos + Vec2f(0, height_text + slider.dim.y + 2), SColor(255,255,235,120));
         }
 
         if (has_radio_button_list)
@@ -199,6 +201,5 @@ class Option
         
         slider.update();
         check.update();
-        radio_button_list.tick();
     }
 };

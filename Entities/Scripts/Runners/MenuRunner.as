@@ -228,7 +228,9 @@ void onTick(CBlob@ this)
     if (item !is null)
     {
         if (this.get_bool("render"))
+        {
             item.tick();
+        }
     }
 
     CBlob@ local = getLocalPlayerBlob();

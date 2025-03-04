@@ -47,12 +47,18 @@ class RadioButtonList
         mpos = controls.getInterpMouseScreenPos();
         hovered_index = getHoverIndex();
 
-        //if (getGameTime()%30==0) print("Hovered index: " + hovered_index +" Selected index: " + selected +" Buttons size: " + buttons.size());
-
+        if (hovered_index == -1)
+            return;
+            
         if (controls.isKeyJustPressed(KEY_LBUTTON) || controls.isKeyJustPressed(KEY_RBUTTON))
         {
-            if (hovered_index != -1)
-                select(hovered_index);
+            if (hovered_index == selected)
+            {
+                select(-1);
+                return;
+            }
+
+            select(hovered_index);
         }
     }
 
@@ -103,12 +109,8 @@ class RadioButtonList
 
     void select(int index)
     {
-        if (index == selected)
-        {
-            selected = -1;
-            onSelect(index);
-            return;
-        }
+        selected = index;
+        onSelect(index);
     }
 
     void onSelect(int index)

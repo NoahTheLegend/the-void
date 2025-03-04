@@ -4,8 +4,7 @@
 #include "ToolTipUtils.as"
 #include "HoverUtils.as"
 #include "OptionsUtils.as"
-
-const u8 TOOLTIP_HOLD_TIME = 40;
+#include "MenuConsts.as"
 
 class MenuItemInfo
 {
@@ -43,7 +42,9 @@ class MenuItemInfo
         sidebar_pos = list_pos + Vec2f(list_dim.x, 0);
         sidebar = Sidebar(sidebar_pos);
 
-        sidebar.addSlider("Slider", "Slider tooltip", Vec2f(32, 20), Vec2f(8, 8), 0, 0);
+        sidebar.addSlider("Slider", "Slider tooltip", Vec2f(20,64), Vec2f(8, 8), 0, 5);
+        sidebar.options[0].setSliderTextMode(1);
+
         sidebar.addCheckbox("Checkbox", "Checkbox tooltip", Vec2f(16, 16), false);
         sidebar.addCheckbox("Checkbox 1", "Checkbox tooltip 1", Vec2f(32, 24), false);
         
@@ -64,10 +65,6 @@ class MenuItemInfo
         sidebar.render(alpha);
     }
 };
-
-const f32 height_slider = 64;
-const f32 height_checkbox = 16;
-const f32 height_radio_button_list = 24;
 
 class Sidebar
 {
@@ -188,15 +185,15 @@ class Sidebar
 
     bool addSlider(string _title, string _tooltip, Vec2f _button_dim = Vec2f(16, 16), Vec2f _capture_margin = Vec2f_zero, f32 _start_pos = 0, u8 _snap_points = 0)
     {
-        dim.y += height_slider + padding.y;
-        Option option = Option(_title, pos, Vec2f(dim.x - padding.x * 2, height_slider), true);
+        dim.y += _button_dim.y + padding.y + height_text * 2;
+        Option option = Option(_title, pos, Vec2f(dim.x - padding.x * 2, height_text * 2 + _button_dim.y), true);
         option.parent_dim = dim;
         option.hover_tooltip = _tooltip;
         option.slider = Slider(_title, pos + Vec2f(padding.x, 0), Vec2f(dim.x - padding.x * 2, _button_dim.y), _button_dim, _capture_margin, _start_pos, _snap_points);
         options.push_back(option);
 
         order.push_back(0);
-        if (_tooltip != "") addTooltip(_tooltip, pos, pos + Vec2f(dim.x, height_slider));
+        if (_tooltip != "") addTooltip(_tooltip, pos, pos + Vec2f(dim.x, _button_dim.y));
 
         return true;
     }
