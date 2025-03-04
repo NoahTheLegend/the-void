@@ -296,7 +296,7 @@ class AnimationRect : Animation {
     Vec2f br_temp1 = Vec2f_lerp(br_start, br_temp0, t);
     Vec2f br_temp2 = Vec2f_lerp(br_temp0, br_end, t);
     br = Vec2f_lerp(br_temp1, br_temp2, t);
-    frame = Maths::Min(frame + 1, duration);
+    frame = Maths::Min(frame + 30 * getRenderDeltaTime(), duration);
   }
 
   void playReverse() {
@@ -314,7 +314,7 @@ class AnimationRect : Animation {
     Vec2f br_temp1 = Vec2f_lerp(br_start, br_temp0, t);
     Vec2f br_temp2 = Vec2f_lerp(br_temp0, br_end, t);
     br = Vec2f_lerp(br_temp1, br_temp2, t);
-    frame = Maths::Max(frame - 1, 0);
+    frame = Maths::Max(frame - 30 * getRenderDeltaTime(), 0);
   }
 }
 
@@ -327,7 +327,7 @@ class AnimationText : Animation {
     if (isEnd()) return;
     text.resize(Maths::Lerp(0, result.length(), frame / duration));
     text += "█";
-    frame = Maths::Min(frame + 1, duration);
+    frame = Maths::Min(frame + 30 * getRenderDeltaTime(), duration);
     Sound::Play("FUI_Write.ogg");
   }
 
@@ -337,7 +337,7 @@ class AnimationText : Animation {
     text = result;
     text.resize(Maths::Lerp(0, result.length(), frame / duration));
     text += "█";
-    frame = Maths::Max(frame - 1, 0);
+    frame = Maths::Max(frame - 30 * getRenderDeltaTime(), 0);
     Sound::Play("FUI_Delete.ogg");
   }
 }
