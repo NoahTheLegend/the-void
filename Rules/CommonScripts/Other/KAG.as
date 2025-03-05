@@ -113,7 +113,7 @@ void onBlobCreated(CRules@ this, CBlob@ blob)
 	blob.AddScript("TeleportAtEdges.as");
 }
 
-string debug_shader_name = "Lens";
+string debug_shader_name = "lens";
 bool load_debug_shader = false;
 
 void onRender(CRules@ this)
@@ -124,7 +124,7 @@ void onRender(CRules@ this)
 	{
 		Driver@ driver = getDriver();
 
-		driver.AddShader(debug_shader_name, 1.0f);
+		driver.AddShader(debug_shader_name, 2.0f);
 		driver.SetShader(debug_shader_name, true);
 
 		load_debug_shader = true;
