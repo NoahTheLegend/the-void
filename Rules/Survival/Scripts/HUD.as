@@ -5,7 +5,6 @@ void onInit(CRules@ this)
 	if (isClient())
 	{
 		this.set_s32("cursor_id", 0);
-		//int id = Render::addScript(Render::layer_last, "HUD.as", "RenderHumanCursor", 10000);
 
 		MessageContainer setbox(10, Vec2f(getDriver().getScreenWidth()/3, 150), Vec2f(20, 15), 24);
 		this.set("MessageContainer", @setbox);
@@ -39,9 +38,10 @@ void onRender(CRules@ this)
 			int id = this.get_s32("cursor_id");
 			hack++;
 			
-			if (hack <= 2)
+			if (hack <= 1)
 			{
-				id = Render::addScript(Render::layer_last, "HUD.as", "RenderHumanCursor", 10000);
+				id = Render::addScript(Render::layer_posthud, "HUD.as", "RenderHumanCursor", 10000);
+				
 				this.set_s32("cursor_id", id);
 				print("set cursor id: "+id);
 			}

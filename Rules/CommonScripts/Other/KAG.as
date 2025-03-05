@@ -63,6 +63,7 @@ void onRestart(CRules@ this)
 	}
 }
 
+
 void onTick(CRules@ this)
 {
 	sv_gravity = 0; // 9.81f
@@ -111,3 +112,33 @@ void onBlobCreated(CRules@ this, CBlob@ blob)
 	blob.SetMapEdgeFlags(CBlob::map_collide_none | CBlob::map_collide_nodeath);
 	blob.AddScript("TeleportAtEdges.as");
 }
+
+/*
+string debug_shader_name = "Lens";
+bool load_debug_shader = false;
+
+void onRender(CRules@ this)
+{
+	if (!isClient()) return;
+
+	if (!load_debug_shader && getLocalPlayer() !is null)
+	{
+		Driver@ driver = getDriver();
+
+		driver.AddShader(debug_shader_name, 1.0f);
+		driver.SetShader(debug_shader_name, true);
+
+		load_debug_shader = true;
+		return;
+	}
+	
+	if (load_debug_shader)
+	{
+		Driver@ driver = getDriver();
+		if (!driver.ShaderState())
+		{
+			driver.ForceStartShaders();
+		}
+	}
+}
+*/

@@ -826,8 +826,6 @@ void Render(int id)
     Vec2f eye_pos_screen = getDriver().getScreenPosFromWorldPos(eye_pos_world);
     eye_pos_world *= cam_zoom;
 
-    Render::ClearZ();
-
     float[] model;
     Matrix::MakeIdentity(model);
 
@@ -873,6 +871,7 @@ void Render(int id)
         }
     }
 
+    Render::ClearZ();
 /*
     // render overlay
     Render::SetTransformScreenspace();
