@@ -28,6 +28,7 @@ f32 messages_volume = 0.5;
 void onInit(CRules@ rules) {
   SettingsLoad();
   SettingsAnimationReset();
+  FUI::debug_mode = true;
 }
 
 void onRestart(CRules@ rules) {

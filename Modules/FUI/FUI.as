@@ -14,6 +14,8 @@ namespace FUI {
 
 const string ICONS_FILENAME = "FUI_Icons.png";
 
+bool debug_mode = false;
+
 enum Icons {
   GEAR,
 }
@@ -40,9 +42,43 @@ enum Alignment {
   BR, // BOTTOM RIGHT
 }
 
+bool _isPointInRect(Vec2f pos, Vec2f tl, Vec2f br) {
+  return pos.x > tl.x && pos.x < br.x && pos.y > tl.y && pos.y < br.y;
+}
+
+void _drawDebugRect(string info, Vec2f tl, Vec2f br, SColor color) {
+  GUI::SetFont("Terminus_12");
+  GUI::DrawRectangle(tl - Vec2f(1, 1), br + Vec2f(1, 1), color);
+  Vec2f dim;
+  GUI::GetTextDimensions(info, dim);
+  GUI::DrawRectangle(Vec2f(tl.x - 1, br.y), Vec2f(tl.x - 1, br.y) + dim + Vec2f(4, 4), color);
+  GUI::DrawText(info, Vec2f(tl.x, br.y), SColor(0xFF000000));
+  GUI::SetFont("Terminus_14");
+}
+
 void _drawPane(Vec2f tl, Vec2f br) {
+  if(debug_mode && getControls().mousePressed2 && _isPointInRect(getControls().getMouseScreenPos(), tl, br)) {
+    _drawDebugRect("tl("+tl.x+":"+tl.y+") br("+br.x+":"+br.y+") pane", tl, br, SColor(0xFFFF0000));
+  }
   GUI::DrawRectangle(tl, br, FUI::Colors::FRAME);
   GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), FUI::Colors::FG);
+  GUI::DrawRectangle(tl + Vec2f(4, 4), br - Vec2f(4, 4), FUI::Colors::BG);
+}
+
+void _drawPaneHovered(Vec2f tl, Vec2f br) {
+  if (debug_mode && getControls().mousePressed2 && _isPointInRect(getControls().getMouseScreenPos(), tl, br)) {
+    _drawDebugRect("tl("+tl.x+":"+tl.y+") br("+br.x+":"+br.y+") pane hovered", tl, br, SColor(0xFF00FF00));
+  }
+  GUI::DrawRectangle(tl, br, FUI::Colors::FG);
+  GUI::DrawRectangle(tl + Vec2f(4, 4), br - Vec2f(4, 4), FUI::Colors::BG);
+}
+
+void _drawPanePressed(Vec2f tl, Vec2f br) {
+  if (debug_mode && getControls().mousePressed2 && _isPointInRect(getControls().getMouseScreenPos(), tl, br)) {
+    _drawDebugRect("tl("+tl.x+":"+tl.y+") br("+br.x+":"+br.y+") pane pressed", tl, br, SColor(0xFF0000FF));
+  }
+  GUI::DrawRectangle(tl, br, FUI::Colors::FRAME);
+  GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), FUI::Colors::FRAME);
   GUI::DrawRectangle(tl + Vec2f(4, 4), br - Vec2f(4, 4), FUI::Colors::BG);
 }
 
@@ -51,6 +87,12 @@ void _drawTextCentered(string text, Vec2f tl, Vec2f br) {
   GUI::GetTextDimensions(text, dim);
   GUI::DrawText(text, tl + Vec2f(Maths::Floor(br.x - tl.x - dim.x) / 2 - 0.49, (br.y - tl.y - dim.y) / 2 - 1.49), FUI::Colors::FG);
 }
+
+/*
+void GUI::DrawText(const string&in text, Vec2f upperleft, Vec2f lowerright, SColor color, bool HorCenter, bool VerCenter, bool drawBackgroundPane)
+void GUI::DrawText(const string&in text, Vec2f upperleft, Vec2f lowerright, SColor color, bool HorCenter, bool VerCenter)
+void GUI::DrawText(const string&in text, Vec2f pos, SColor color)
+*/
 
 class Canvas {
   Vec2f canvas_tl = Vec2f(0, 0);
@@ -166,19 +208,16 @@ class Canvas {
     _button_current += 1;
     tl += canvas_tl;
     br += canvas_tl;
-    if (_mouse_pos.x > tl.x && _mouse_pos.x < br.x && _mouse_pos.y > tl.y && _mouse_pos.y < br.y) {
-      if (_isPress()) { // Pressed
+    if (_isPointInRect(_mouse_pos, tl, br)) { // hovered
+      if (_isPress()) { // pressed
         _button_hovered_frame = 0;
-        GUI::DrawRectangle(tl, br, FUI::Colors::FRAME);
-        GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), FUI::Colors::FRAME);
-        GUI::DrawRectangle(tl + Vec2f(4, 4), br - Vec2f(4, 4), FUI::Colors::BG);
+        _drawPanePressed(tl, br);
         if (_isJustPressed()) {
           Sound::Play("FUI_Pressed.ogg");
           return true;
         }
       } else { // Hovered
-        GUI::DrawRectangle(tl, br, FUI::Colors::FG);
-        GUI::DrawRectangle(tl + Vec2f(4, 4), br - Vec2f(4, 4), FUI::Colors::BG);
+        _drawPaneHovered(tl, br);
       }
 
       if (_button_hovered == _button_current) {
@@ -195,9 +234,7 @@ class Canvas {
         //Sound::Play("FUI_Hovered.ogg");
       }
     } else { // Normal
-      GUI::DrawRectangle(tl, br, FUI::Colors::FRAME);
-      GUI::DrawRectangle(tl + Vec2f(2, 2), br - Vec2f(2, 2), FUI::Colors::FG);
-      GUI::DrawRectangle(tl + Vec2f(4, 4), br - Vec2f(4, 4), FUI::Colors::BG);
+      _drawPane(tl, br);
       if (_button_hovered == _button_current) _button_hovered = 0;
     }
     return false;
@@ -213,7 +250,7 @@ class Canvas {
     return value;
   }
 
-  float drawSlider(float value, Vec2f tl, Vec2f br, float min = 0, float max = 1, float step = 0.01, string tooltip = "") {
+  float drawSlider(float value, Vec2f tl, Vec2f br, float min = 0, float max = 1, float step = 0.001, string tooltip = "") {
     _slider_current += 1;
 
     tl += canvas_tl;

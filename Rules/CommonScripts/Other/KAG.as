@@ -113,7 +113,6 @@ void onBlobCreated(CRules@ this, CBlob@ blob)
 	blob.AddScript("TeleportAtEdges.as");
 }
 
-/*
 string debug_shader_name = "Lens";
 bool load_debug_shader = false;
 
@@ -141,4 +140,3 @@ void onRender(CRules@ this)
 		}
 	}
 }
-*/
