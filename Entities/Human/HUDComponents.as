@@ -62,42 +62,36 @@ void DrawHUD(CSprite@ this, CBlob@ blob, CRules@ rules, CControls@ controls, Vec
     GUI::DrawIcon("HUDWidget.png", icon, Vec2f(112, 48), drawpos, 1.0f);
 }
 
-void DrawPulse(CSprite@ this, CBlob@ blob, CRules@ rules, CControls@ controls, Vec2f mpos, Vec2f drawpos)
+void UpdatePulse(CBlob@ this)
 {
     u32 gt = getGameTime();
-   
-    if (frame_order.size() > 0)
+    if (frame_order.size() > 0 && next <= gt)
     {
-        if (next <= gt)
-        {
-            f32 hp = blob.getHealth();
-            f32 inithp = blob.getInitialHealth();
+        f32 hp_factor = this.getHealth() / this.getInitialHealth();
+        pulse_icon = hp_factor < 0.25f ? 3 : hp_factor < 0.5f ? 2 : hp_factor < 0.75f ? 1 : 0;
 
-            f32 hp_factor = hp/inithp;
-            pulse_icon = hp_factor < 0.25f ? 3 : hp_factor < 0.5f ? 2 : hp_factor < 0.75f ? 1 : 0; // todo: make blue line as well
+        u8 latest = frame_order[frame_order.size() - 1];
+        frame_order.removeAt(0);
+        frame_order.push_back(latest == pulse_width - 1 ? 0 : latest + 1);
 
-            //if (!sliding)
-            {
-                u8 latest = frame_order[frame_order.size()-1];
-                frame_order.removeAt(0);
-                frame_order.push_back(latest == pulse_width-1 ? 0 : latest+1);
+        frame_order_icon.removeAt(0);
+        frame_order_icon.push_back(pulse_icon);
 
-                frame_order_icon.removeAt(0);
-                frame_order_icon.push_back(pulse_icon);
-
-                next = gt+pulse_tick_delay-(pulse_icon==3||pulse_icon==2?1:0);
-            }
-            actual_pulse_pos = drawpos;
-        }
-        else
-        {
-            actual_pulse_pos = actual_pulse_pos-Vec2f(1.0f/pulse_tick_delay, 0);
-        }
+        next = gt + pulse_tick_delay - (pulse_icon >= 2 ? 1 : 0);
+        actual_pulse_pos = Vec2f(4, 29.5f) + const_drawpos;
     }
+    else
+    {
+        actual_pulse_pos -= Vec2f(1.0f / pulse_tick_delay, 0);
+    }
+}
+
+void DrawPulse(CSprite@ this, CBlob@ blob, CRules@ rules, CControls@ controls, Vec2f mpos, Vec2f drawpos)
+{
     for (u8 i = 0; i < frame_order.size(); i++)
     {
-        bool new = i > frame_order.size() - pulse_leading_length-pulse_leading_offset;
-        u16 actual_pulse_icon = (new ? frame_order_icon[i]+5 : frame_order_icon[i]) * pulse_width;
-        GUI::DrawIcon("Pulse.png", actual_pulse_icon + frame_order[i], Vec2f(1, pulse_height), actual_pulse_pos+Vec2f(i*2,0)+pulse_offset, 1.0f, 1.0f, SColor(hud_transparency,255,255,255));
+        bool is_new = i > frame_order.size() - pulse_leading_length - pulse_leading_offset;
+        u16 actual_pulse_icon = (is_new ? frame_order_icon[i] + 5 : frame_order_icon[i]) * pulse_width;
+        GUI::DrawIcon("Pulse.png", actual_pulse_icon + frame_order[i], Vec2f(1, pulse_height), actual_pulse_pos + Vec2f(i * 2, 0) + pulse_offset, 1.0f, 1.0f, SColor(hud_transparency, 255, 255, 255));
     }
 }

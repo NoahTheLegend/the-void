@@ -53,6 +53,7 @@ void onInit(CSprite@ this)
 void onTick(CBlob@ this)
 {
 	getHUD().HideCursor();
+	UpdatePulse(this);
 }
 
 void onAttach(CBlob@ this, CBlob@ attached, AttachmentPoint@ ap)

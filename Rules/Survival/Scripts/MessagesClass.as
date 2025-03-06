@@ -263,15 +263,18 @@ class MessageContainer
             }
             else was_press = false;
 
+            f32 rdt_factor = 60.0f * getRenderExactDeltaTime();
+            f32 lerp = 0.25f * rdt_factor;
+
             if (!hidden)
             {
-                tl.y = Maths::Lerp(tl.y, -dim.y+5, 0.25f);
-                br.y = Maths::Lerp(br.y, 5, 0.25f);
+                tl.y = Maths::Lerp(tl.y, -dim.y+5, lerp);
+                br.y = Maths::Lerp(br.y, 5, lerp);
             }
             else
             {
-                tl.y = Maths::Lerp(tl.y, 0, 0.25f);
-                br.y = Maths::Lerp(br.y, dim.y, 0.25f);             
+                tl.y = Maths::Lerp(tl.y, 0, lerp);
+                br.y = Maths::Lerp(br.y, dim.y, lerp);             
             }
 
             if (Maths::Ceil(hidebar_tl.y) != Maths::Ceil(br.y-10))

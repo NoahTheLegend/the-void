@@ -63,8 +63,10 @@ void onRender(CSprite@ this)
     CBlob@ blob = this.getBlob();
     if (blob is null) return;
 
+    f32 rdt_factor = 60.0f * getRenderSmoothDeltaTime();
+    f32 lerp = 0.5f * rdt_factor;
     bool render = blob.get_bool("render");
-    f32 fold = render ? Maths::Lerp(blob.get_f32("fold"), 1.0f, 0.5f) : 0;
+    f32 fold = render ? Maths::Lerp(blob.get_f32("fold"), 1.0f, lerp) : 0;
     blob.set_f32("fold", fold);
 
     //if (!render) return;
