@@ -17,7 +17,7 @@ void onInit(CBlob@ this)
 
     setNextMusicTime(this);
     if (XORRandom(3) == 0) this.set_u32("next_music", XORRandom(60 * 30 * 1)); // randomly set first music within first minute
-
+	
     this.set_u32("last_music_duration", 0);
 }
 
@@ -117,8 +117,10 @@ void GameMusicLogic(CBlob@ this, CMixer@ mixer)
 
 	if (mixer.getPlayingCount() == 0 && getGameTime() > this.get_u32("next_music"))
 	{
-		mixer.FadeInRandom(type, 10.0f+getRandomFadeOut(5));
-        setNextMusicTime(this);
+		bool is_track_playing = mixer.FadeInRandom(type, 10.0f+getRandomFadeOut(5));
+		
+		if (is_track_playing)
+			setNextMusicTime(this);
 	}
 
     if (mixer.getPlayingCount() != 0) this.add_u32("last_music_duration", 1);
