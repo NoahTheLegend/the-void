@@ -51,6 +51,10 @@ void AddGameMusic(CBlob@ this, CMixer@ mixer)
 	this.set_bool("initialized game", true);
 	mixer.ResetMixer();
 
+	//mixer.AddTrack("Menu/Hrad.ogg", 			    world_ambient); // menu_ambient
+	//mixer.AddTrack("Menu/Dedina.ogg", 			    world_ambient); // menu_ambient
+	//mixer.AddTrack("Menu/CertovaCasa.ogg", 			world_ambient); // menu_ambient
+	
 	mixer.AddTrack("Ambient.ogg",                   world_ambient);
 	mixer.AddTrack("StellarAmbient.ogg",            world_ambient);
 	mixer.AddTrack("Void_ambient_scary.ogg",        world_ambient);
