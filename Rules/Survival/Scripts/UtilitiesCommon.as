@@ -1,3 +1,5 @@
+#include "ClientVars.as"
+
 ClientVars@ getVars()
 {
     ClientVars@ vars;

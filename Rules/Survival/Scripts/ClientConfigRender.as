@@ -2,7 +2,7 @@
 
 #include "ClientVars.as";
 #include "ClientConfig.as";
-#include "Utilities.as";
+#include "UtilitiesCommon.as";
 #include "KUI.as";
 
 const u16 savetime_fadeout = 10;

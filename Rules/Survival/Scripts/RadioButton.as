@@ -23,7 +23,7 @@ class RadioButtonList
     RadioButtonList(string _title, Vec2f _pos, Vec2f _dim, Vec2f _grid = Vec2f_zero, Vec2f _item_dim = Vec2f_zero)
     {
         title = _title;
-        selected = -1;
+        selected = 0;
         hovered_index = -1;
 
         pos = _pos;
@@ -52,12 +52,6 @@ class RadioButtonList
             
         if (controls.isKeyJustPressed(KEY_LBUTTON) || controls.isKeyJustPressed(KEY_RBUTTON))
         {
-            if (hovered_index == selected)
-            {
-                select(-1);
-                return;
-            }
-
             select(hovered_index);
         }
     }

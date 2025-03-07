@@ -61,6 +61,18 @@ class Slider
         if (controls is null) return;
 
         mpos = controls.getInterpMouseScreenPos();
+        if (captured || hover())
+        {
+            if ((controls.isKeyPressed(KEY_LBUTTON) || controls.isKeyPressed(KEY_RBUTTON)))
+            {
+                requestUpdate(mpos, button_pos);
+                captured = true;
+                button_pos = mpos-(dim.x >= dim.y ? Vec2f(9,0) : Vec2f(0,8));
+            }
+            else captured = false;
+        }
+
+        /*
         if (hover() || captured)
         {
             if ((controls.isKeyPressed(KEY_LBUTTON) || controls.isKeyPressed(KEY_RBUTTON)))
@@ -71,6 +83,8 @@ class Slider
             }
             else captured = false;
         }
+        */
+
         GUI::SetFont("score-smaller");
         
         Vec2f snap_point = button_pos;

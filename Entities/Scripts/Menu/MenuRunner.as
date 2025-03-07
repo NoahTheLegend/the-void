@@ -2,6 +2,7 @@
 #include "ToolTipUtils.as"
 #include "MenuUtils.as"
 #include "MenuCommon.as"
+#include "MenuConsts.as"
 
 void onInit(CBlob@ this)
 {
@@ -9,6 +10,7 @@ void onInit(CBlob@ this)
     this.addCommandID("move_to");
     this.addCommandID("attach_player");
     this.addCommandID("detach_player");
+    this.addCommandID("test_cmd");
     
     resetAttached(this);
 
@@ -436,6 +438,81 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 
         Sync(this);
     }
+    else if (cmd == this.getCommandID("test_cmd"))
+	{
+		print("");
+		print("=== DEBUG ===");
+		print("[field][option]");
+		print("");
+
+		/*
+			0 - [u16]                   local id
+			1 - [u8]                    attached players quantity
+			2 - [u16[]]                 attached players
+			3 - [u8]                    fields quantity
+			4 - [u8]                    field type (e.g. create_blob)                 repeatable
+			5 - [u8]                    options quantity                              repeatable
+			6 - [u8]                    option type (e.g. slider)                     repeatable
+			7 - [s32]                   option enum tag (e.g. slider_quantity)        repeatable
+			8 - [f32 / bool / u8]       slider / checkbox / radio button values       repeatable
+		*/
+
+		u16 local_id = params.read_u16();
+		print("local_id: " + local_id);
+
+		u8 attached_players_quantity = params.read_u8();
+		print("attached_players_quantity: " + attached_players_quantity);
+
+		for (u8 i = 0; i < attached_players_quantity; i++)
+		{
+			u16 player_id = params.read_u16();
+			print("attached_player_id[" + i + "]: " + player_id);
+		}
+
+		u8 fields_quantity = params.read_u8();
+		print("fields_quantity: " + fields_quantity);
+
+		for (u8 i = 0; i < fields_quantity; i++)
+		{
+			u8 field_type = params.read_u8();
+			print("field_type[" + i + "]: " + field_type);
+
+			u8 options_quantity = params.read_u8();
+			print("options_quantity[" + i + "]: " + options_quantity);
+
+			for (u8 j = 0; j < options_quantity; j++)
+			{
+				print("");
+
+				u8 option_type = params.read_u8();
+				string option_type_str = (option_type == OptionType::slider) ? "slider" :
+										 (option_type == OptionType::check) ? "checkbox" :
+										 (option_type == OptionType::radio_button_list) ? "radio button list" : "unknown";
+				print("option_type[" + i + "][" + j + "]: " + option_type_str);
+
+				s32 option_enum_tag = params.read_s32();
+				print("option_enum_tag[" + i + "][" + j + "]: " + option_enum_tag);
+
+				if (option_type == OptionType::slider)
+				{
+					f32 slider_value = params.read_f32();
+					print("slider_value[" + i + "][" + j + "]: " + slider_value);
+				}
+				else if (option_type == OptionType::check)
+				{
+					bool checkbox_value = params.read_bool();
+					print("checkbox_value[" + i + "][" + j + "]: " + checkbox_value);
+				}
+				else if (option_type == OptionType::radio_button_list)
+				{
+					u8 radio_button_value = params.read_u8();
+					print("radio_button_value[" + i + "][" + j + "]: " + radio_button_value);
+				}
+			}
+		}
+
+		print("Buffer end? " + params.isBufferEnd());
+	}
 }
 
 void Sync(CBlob@ this, u16 pid = 0)

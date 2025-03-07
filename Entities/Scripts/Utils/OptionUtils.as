@@ -79,6 +79,7 @@ class Option
     RadioButtonList radio_button_list;
     
     bool debug;
+    int tag;
 
     Option(string _text, Vec2f _pos, Vec2f _dim, bool _has_slider = false, bool _has_check = false, bool _has_radio_button_list = false, bool _setting = false)
     {
@@ -106,6 +107,8 @@ class Option
         {
             radio_button_list = RadioButtonList("option_radio_list", pos + Vec2f(0, 50), Vec2f(100, 100));
         }
+
+        tag = 0;
     }
 
     void addSliderDescriptions(string[] descriptions)
@@ -203,6 +206,11 @@ class Option
         slider.update();
         check.update();
     }
+
+    void setEnumTag(int _tag)
+    {
+        tag = _tag;
+    }
 };
 
 class Button
@@ -225,6 +233,8 @@ class Button
     bool input;
     bool send_command;
 
+    int tag;
+
     Button(u16 _blob_id, string _text, Vec2f _pos, Vec2f _dim, string _cmd)
     {
         blob_id = _blob_id;
@@ -243,6 +253,8 @@ class Button
 
         input = false;
         send_command = false;
+
+        tag = 0;
     }
 
     void tick()
@@ -292,5 +304,10 @@ class Button
     bool hover()
     {
         return isMouseInScreenBox(mpos, tl, br);
+    }
+
+    void setEnumTag(int _tag)
+    {
+        tag = _tag;
     }
 };

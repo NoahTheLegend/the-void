@@ -1,5 +1,7 @@
-class CheckBox {
+class CheckBox
+{
     bool state;
+
     Vec2f pos;
     Vec2f dim;
 

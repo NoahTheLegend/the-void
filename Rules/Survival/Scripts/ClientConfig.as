@@ -1,7 +1,7 @@
 #define CLIENT_ONLY
 
 #include "ClientVars.as";
-#include "OptionsUtils.as";
+#include "OptionUtils.as";
 
 bool was_a1 = false;
 bool was_a2 = false;

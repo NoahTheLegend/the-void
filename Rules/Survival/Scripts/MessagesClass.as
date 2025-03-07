@@ -7,7 +7,7 @@
 #include "Slider.as";
 #include "ClientVars.as";
 #include "MessagesCommon.as";
-#include "Utilities.as";
+#include "UtilitiesCommon.as";
 
 const u16 scrw = getDriver().getScreenWidth();
 const u16 scrh = getDriver().getScreenHeight();
