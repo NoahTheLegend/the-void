@@ -88,12 +88,6 @@ void _drawTextCentered(string text, Vec2f tl, Vec2f br) {
   GUI::DrawText(text, tl + Vec2f(Maths::Floor(br.x - tl.x - dim.x) / 2 - 0.49, (br.y - tl.y - dim.y) / 2 - 1.49), FUI::Colors::FG);
 }
 
-/*
-void GUI::DrawText(const string&in text, Vec2f upperleft, Vec2f lowerright, SColor color, bool HorCenter, bool VerCenter, bool drawBackgroundPane)
-void GUI::DrawText(const string&in text, Vec2f upperleft, Vec2f lowerright, SColor color, bool HorCenter, bool VerCenter)
-void GUI::DrawText(const string&in text, Vec2f pos, SColor color)
-*/
-
 class Canvas {
   Vec2f canvas_tl = Vec2f(0, 0);
   Vec2f canvas_br = Vec2f(0, 0);
