@@ -362,7 +362,7 @@ class AnimationText : Animation {
     text.resize(Maths::Lerp(0, result.length(), frame / duration));
     text += "█";
     frame = Maths::Min(frame + 60 * getRenderDeltaTime(), duration);
-    Sound::Play("FUI_Write.ogg");
+    //Sound::Play("FUI_Write.ogg");
   }
 
   void playReverse() {
@@ -372,8 +372,14 @@ class AnimationText : Animation {
     text.resize(Maths::Lerp(0, result.length(), frame / duration));
     text += "█";
     frame = Maths::Max(frame - 60 * getRenderDeltaTime(), 0);
-    Sound::Play("FUI_Delete.ogg");
+    //Sound::Play("FUI_Delete.ogg");
   }
 }
+
+/*
+class Column {
+  void begin()
+}
+*/
 
 }

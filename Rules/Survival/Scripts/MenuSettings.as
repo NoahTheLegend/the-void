@@ -39,6 +39,7 @@ void onReload(CRules @rules) {
 }
 
 void onRender(CRules@ this) {
+
   canvas_buttons.begin();
   CBlob@ local_blob = getLocalPlayerBlob();
   CControls@ controls = getControls();

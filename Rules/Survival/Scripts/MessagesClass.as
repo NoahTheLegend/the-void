@@ -324,7 +324,7 @@ class MessageContainer
             // fill text from line to line 
             u8 l_size = msg.text_lines.size();
             string l_text = l_size == 0 ? msg.text_to_write : msg.text_to_write.substr(getLineIndex(msg)-1);
-            
+
             // get rid of spaces in beginning of lines
             l_text = ignoreEmpty(l_text);
 
