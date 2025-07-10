@@ -4,7 +4,7 @@
 #include "ToolTipUtils.as"
 #include "HoverUtils.as"
 #include "OptionUtils.as"
-#include "MenuConsts.as"
+#include "MenuUtils.as"
 #include "MenuCommands.as"
 
 /*
@@ -56,33 +56,6 @@ class MenuItemInfo
         list_dim = Vec2f_zero;
         
         mpos = Vec2f(-1, -1);
-        makeSidebar();
-    }
-
-    void makeSidebar()
-    {
-        sidebar_pos = list_pos + Vec2f(list_dim.x, 0);
-        sidebar = Sidebar(sidebar_pos);
-
-        sidebar.addField("root");
-
-        Option@ test_slider = sidebar.addSlider(0, "Slider", "Slider tooltip", Vec2f(32, 20), Vec2f(8, 8), 0, 5);
-        sidebar.fields[0].options[0].setSliderTextMode(1);
-        string[] slider_descs = {"yep1", "yep2", "yep3", "yep4", "yep5", "yep6"};
-        sidebar.fields[0].options[0].addSliderDescriptions(slider_descs);
-
-        sidebar.addCheckbox(0, "Checkbox", "Checkbox tooltip", Vec2f(24, 24), false);
-        
-        Option@ list = sidebar.addRadioList(0, "Radio List", "Radio List tooltip", Vec2f(4, 1), Vec2f(32, 32));
-        sidebar.addRadioListButton(0, "Radio List", "Radio 1", "Radio 1 description", "InteractionIcons.png", Vec2f(32, 32), 0, 1);
-        sidebar.addRadioListButton(0, "Radio List", "Radio 2", "Radio 2 description", "InteractionIcons.png", Vec2f(32, 32), 1, 1);
-        sidebar.addRadioListButton(0, "Radio List", "Radio 3", "Radio 3 description", "InteractionIcons.png", Vec2f(32, 32), 2, 1);
-        sidebar.addRadioListButton(0, "Radio List", "Radio 4", "Radio 4 description", "InteractionIcons.png", Vec2f(32, 32), 3, 1);
-
-        sidebar.addSubmit(blob_id, "Submit", "Send tooltip", Vec2f(64, 32), "test_cmd");
-        sidebar.addSerializer(blob_id);
-
-        sidebar.updateRects();
     }
 
     void tick()
@@ -212,23 +185,9 @@ class Sidebar
             if (submit.send_command)
             {
                 submit.send_command = false;
-                SerializeCommand();
+                SerializeThenSendCommand();
             }
         }
-    }
-
-    bool SerializeCommand()
-    {
-        if (serializer is null) return false;
-        if (submit is null) return false;
-
-        CBlob@ blob = getBlobByNetworkID(submit.blob_id);
-        if (blob is null) return false;
-
-        Serialize();
-        SendCommand(blob, submit.cmd, serializer);
-
-        return true;
     }
 
     void render(u8 alpha)
@@ -284,13 +243,25 @@ class Sidebar
         }
     }
 
+    void renderToolTip(u8 alpha, string tooltip)
+    {
+        if (tooltip_alpha == 0) return;
+        
+        Vec2f tooltip_dim = getToolTipDim(tooltip);
+        Vec2f tooltip_pos = mpos + Vec2f(16, 16);
+        tooltip_pos = mpos + Vec2f(24, 24);
+
+        drawRectangle(tooltip_pos, tooltip_pos + tooltip_dim, SColor(alpha, 0, 0, 0), 1, 2, SColor(alpha, 75, 75, 75));
+        GUI::DrawText(tooltip, tooltip_pos + tooltip_padding - Vec2f(1,0), SColor(alpha, 255, 255, 255));
+    }
+
     bool addField(string _title)
     {
         fields.push_back(OptionField());
         return true;
     }
 
-    Option@ addSlider(u8 field_index, string _title, string _tooltip, Vec2f _button_dim = Vec2f(16, 16), Vec2f _capture_margin = Vec2f_zero, f32 _start_pos = 0, u8 _snap_points = 0)
+    Option@ addSlider(u8 field_index, string _title, string _tooltip, Vec2f _button_dim = Vec2f(16, 16), Vec2f _capture_margin = Vec2f_zero, f32 _start_pos = 0, int _snap_points = 0)
     {
         if (field_index >= fields.length) return null;
 
@@ -342,20 +313,25 @@ class Sidebar
         return @option;
     }
     
-    bool addRadioListButton(u8 field_index, string radio_list_title, string _title, string _description,
-        string _icon, Vec2f _icon_dim, u8 _index = 0, f32 _scale = 1)
+    bool addRadioListButton(u8 field_index, string radio_list_title, string _title, string _tooltip,
+        string _icon, Vec2f _icon_dim, int _icon_index, f32 _scale = 1)
     {
         if (field_index >= fields.length) return false;
 
         for (uint i = 0; i < fields[field_index].options.length; i++)
         {
-            if (fields[field_index].options[i].default_text == radio_list_title)
+            Option@ option_radio_button_list = fields[field_index].options[i];
+            if (option_radio_button_list is null) continue;
+
+            if (option_radio_button_list.default_text == radio_list_title)
             {
-                fields[field_index].options[i].radio_button_list.addRadioButton(makeRadioButton(_title, _description, _icon, _icon_dim, _index, _scale));
-                if (_description != "") addTooltip(_description, pos, pos + Vec2f(dim.x, height_radio_button_list));
+                option_radio_button_list.radio_button_list.addRadioButton(makeRadioButton(_title, _tooltip, _icon, _icon_dim, _icon_index, _scale));
+                if (_tooltip != "") addTooltip(_tooltip, pos, pos + Vec2f(dim.x, height_radio_button_list));
+
                 return true;
             }
         }
+
         return false;
     }
 
@@ -370,18 +346,6 @@ class Sidebar
         if (_tooltip != "") addTooltip(_tooltip, pos, pos + Vec2f(dim.x, _dim.y));
 
         return @submit;
-    }
-
-    void renderToolTip(u8 alpha, string tooltip)
-    {
-        if (tooltip_alpha == 0) return;
-        
-        Vec2f tooltip_dim = getToolTipDim(tooltip);
-        Vec2f tooltip_pos = mpos + Vec2f(16, 16);
-        tooltip_pos = mpos + Vec2f(24, 24);
-
-        drawRectangle(tooltip_pos, tooltip_pos + tooltip_dim, SColor(alpha, 0, 0, 0), 1, 2, SColor(alpha, 75, 75, 75));
-        GUI::DrawText(tooltip, tooltip_pos + tooltip_padding - Vec2f(1,0), SColor(alpha, 255, 255, 255));
     }
 
     Vec2f getToolTipDim(string tooltip)
@@ -449,6 +413,20 @@ class Sidebar
     void addSerializer(u16 _blob_id)
     {
         @serializer = @Serializer(_blob_id);
+    }
+
+    bool SerializeThenSendCommand()
+    {
+        if (serializer is null) return false;
+        if (submit is null) return false;
+
+        CBlob@ blob = getBlobByNetworkID(submit.blob_id);
+        if (blob is null) return false;
+
+        Serialize();
+        SendCommand(blob, submit.cmd, serializer);
+
+        return true;
     }
 
     void Serialize()

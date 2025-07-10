@@ -1,9 +1,9 @@
 #include "ToolTipUtils.as"
 #include "HoverUtils.as"
 
-RadioButton makeRadioButton(string _name, string _description, string _icon, Vec2f _icon_dim, int _index = 0, f32 _scale = 1)
+RadioButton makeRadioButton(string _name, string _description, string _icon, Vec2f _icon_dim, int _icon_index = 0, f32 _scale = 1)
 {
-    return RadioButton(_name, _description, _icon, _icon_dim, _index, _scale);
+    return RadioButton(_name, _description, _icon, _icon_dim, _icon_index, _scale);
 }
 
 class RadioButtonList
@@ -165,13 +165,13 @@ class RadioButton
     Vec2f list_dim;
     Vec2f extra;
 
-    RadioButton(string _name, string _description, string _icon, Vec2f _icon_dim, int _index = 0, f32 _scale = 1)
+    RadioButton(string _name, string _description, string _icon, Vec2f _icon_dim, int _icon_index = 0, f32 _scale = 1)
     {
         name = _name;
         description = _description;
         icon = _icon;
         icon_dim = _icon_dim;
-        icon_index = _index;
+        icon_index = _icon_index;
         icon_scale = _scale;
         selected = false;
         hovered = false;

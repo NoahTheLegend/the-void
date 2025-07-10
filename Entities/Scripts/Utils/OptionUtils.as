@@ -1,7 +1,7 @@
 #include "Slider.as";
 #include "CheckBox.as";
 #include "RadioButton.as";
-#include "MenuConsts.as";
+#include "MenuUtils.as";
 
 class Section {
     string title;
@@ -149,7 +149,7 @@ class Option
         option_text = Maths::Round(slider.scrolled*100)+"%";
         if (slider.mode == 1)
             option_text = ""+(Maths::Abs(Maths::Clamp(slider.step.x+1,1,slider.snap_points+1)) * slider.description_step_mod - slider.description_step_mod);
-        else if (slider.mode == 2 && slider.descriptions.length > 0)
+        else if (slider.mode == 2 && slider.descriptions.length > 0 && slider.getSnapPoint() < slider.descriptions.length)
             option_text = slider.descriptions[slider.getSnapPoint()];
         else if (slider.mode == 3)
             option_text = default_text;

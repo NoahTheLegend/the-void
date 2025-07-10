@@ -1,4 +1,7 @@
 #include "GenericButtonCommon.as"
+#include "MenuCommon.as"
+#include "MenuUtils.as"
+#include "OptionUtils.as"
 
 const u8 update_frequency = 30;
 const Vec2f grinder_offset = Vec2f(23, 21);
@@ -23,6 +26,21 @@ void onInit(CBlob@ this)
 	sprite.getConsts().accurateLighting = true;
 	sprite.SetZ(-50.0f);
 	sprite.SetRelativeZ(-50.0f);
+
+	makeOptions(this);
+}
+
+void makeOptions(CBlob@ this)
+{
+	{
+		MenuItemInfo@ item = AddMenuItem(this, "Grinder", "Grind resources into dust");
+		
+		string[] descs = {"Slow", "Normal", "Fast"};
+		Option@ grinding = makeSliderOption(item, SliderTag::slider_factor, 0, "Grinder", "Grinding Speed", Vec2f(16, 16), Vec2f(8, 8), 1, descs.size()-1);
+		setSliderTextMode(grinding, 2, descs);
+
+		Option@ do_start = makeCheckBoxOption(item, 0, 0, "Start", "Start Grinding", Vec2f(24, 24), false);
+	}
 }
 
 void onTick(CBlob@ this)

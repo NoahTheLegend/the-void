@@ -2,7 +2,7 @@
 #include "CheckBox.as"
 #include "RadioButton.as"
 #include "OptionUtils.as"
-#include "MenuConsts.as"
+#include "MenuUtils.as"
 
 void SendCommand(CBlob@ this, string cmd, Serializer@ serializer)
 {
@@ -75,19 +75,20 @@ class Serializer
             if (option.has_slider)
             {
                 params.write_u8(OptionType::slider);
+
                 // 7 - option tag
                 params.write_s32(option.tag);
-                // 8 - slider value
 
+                // 8 - slider value
                 switch (option.tag)
                 {
-                    case SliderTag::slider_quantity:
+                    case SliderTag::slider_quantity: // u16 quantity
                     {
                         int step = option.slider.scrolled * option.slider.snap_points;
                         params.write_f32(step);
                         break;
                     }
-                    case SliderTag::slider_factor:
+                    case SliderTag::slider_factor: // percent from 0.0 to 1.0
                     {
                         params.write_f32(option.slider.scrolled);
                         break;
@@ -97,8 +98,10 @@ class Serializer
             else if (option.has_check)
             {
                 params.write_u8(OptionType::check);
+
                 // 7 - option tag
                 params.write_s32(option.tag);
+                
                 // 8 - checkbox value
                 params.write_bool(option.check.state);
             }

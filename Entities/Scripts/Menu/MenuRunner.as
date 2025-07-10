@@ -1,8 +1,9 @@
 #include "UtilityChecks.as"
 #include "ToolTipUtils.as"
 #include "MenuUtils.as"
+#include "OptionUtils.as"
 #include "MenuCommon.as"
-#include "MenuConsts.as"
+#include "MenuUtils.as"
 
 void onInit(CBlob@ this)
 {
@@ -21,17 +22,6 @@ void onInit(CBlob@ this)
     this.set_bool("draw_attached_players", false);
 
 	RequestSync(this);
-    initMenu(this);
-}
-
-void initMenu(CBlob@ this)
-{
-    AddMenuItem(this, "Test 0", "test descritpion amogus 0");
-    AddMenuItem(this, "Test 1", "test descritpion amogus 1");
-    AddMenuItem(this, "Test 2", "test descritpion amogus 2");
-    AddMenuItem(this, "Test 3", "test descritpion amogus 3");
-    AddMenuItem(this, "Test 4", "test descritpion amogus 4");
-    AddMenuItem(this, "Test 5", "test descritpion amogus 5");
 }
 
 void GetButtonsFor(CBlob@ this, CBlob@ caller)
@@ -155,7 +145,7 @@ void onRender(CSprite@ this)
 
                 if (update_sidebar)
                 {
-                    item.makeSidebar();
+                    item.sidebar.updateRects();
                 }
 
                 if (selected_item == i)
