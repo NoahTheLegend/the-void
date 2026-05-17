@@ -71,7 +71,7 @@ void onTick(CBlob@ this)
 	{
 		this.getSprite().SetEmitSoundVolume(0.75f * getSoundFallOff(this, 0, 64.0f));
 
-		bool has_gravity = false; // todo
+		bool has_gravity = hasGravity(this);
 		MakeParticle(this, Vec2f(0, !has_gravity ? 0.0f - XORRandom(11)*0.1f : 0), "RedFlareFire"+XORRandom(2));
 		//MakeParticle(this, Vec2f(0, 0.1f - XORRandom(5)*0.1f), "RedFlareGas");
 	}

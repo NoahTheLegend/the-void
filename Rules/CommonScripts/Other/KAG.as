@@ -61,13 +61,12 @@ void onRestart(CRules@ this)
 		if (!map.hasScript("RoomDetector.as"))
 			 map.AddScript("RoomDetector.as");
 	}
+
+	sv_gravity = 0; // 9.81f
 }
 
-
 void onTick(CRules@ this)
-{
-	sv_gravity = 0; // 9.81f
-	
+{	
 	//TODO: figure out a way to optimise so we don't need to keep running this hook
 	if (need_sky_check)
 	{

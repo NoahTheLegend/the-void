@@ -62,6 +62,9 @@ void onRender(CSprite@ this)
     blob.set_f32("fold", fold);
 
     //if (!render) return;
+
+    CRules@ rules = getRules();
+    if (rules is null) return;
     
     CBlob@ local = getLocalPlayerBlob();
     if (local is null) return;
@@ -83,6 +86,7 @@ void onRender(CSprite@ this)
                 GUI::DrawText("Blob name: "+blob.getName(), Vec2f(50, 50), SColor(255,255,255,5));
                 GUI::DrawText("Alpha: "+alpha, Vec2f(50, 70), SColor(255,255,255,5));
                 GUI::DrawText("Selected item: "+selected_item, Vec2f(50, 90), SColor(255,255,255,5));
+                GUI::DrawText("Gravity: "+rules.get_bool("debug_global_gravity"), Vec2f(50, 110), SColor(255,255,255,5));
         
                 u16[]@ attached_players;
                 blob.get("attached_players", @attached_players);

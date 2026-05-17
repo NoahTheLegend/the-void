@@ -99,7 +99,7 @@ class Slider
         button_pos = clampPos(snap_point);
         Vec2f button_drawpos = button_pos + (dim.y > dim.x ? Vec2f(-aligned_dim.x/2, 0) : Vec2f(0, -aligned_dim.y/2));
 
-        scrolled = Maths::Round((tl-button_pos).Length()/(dim.x > dim.y ? aligned_dim.x : aligned_dim.y)*100.0f)/100.0f;
+        scrolled = Maths::Round((tl-button_pos).Length() / Maths::Max(0.0001f, dim.x > dim.y ? aligned_dim.x : aligned_dim.y) * 100.0f) / 100.0f;
         // Debug prints
         if (debug)
         {
@@ -162,8 +162,8 @@ class Slider
     f32 adjust(f32 x, f32 a, f32 b, f32 n, int&out interval_pos) 
     {
         f32 interval = (b - a) / n;
-        f32 nearest_anchor = a + interval * Maths::Round((x - a) / interval);
-        interval_pos = Maths::Round((nearest_anchor - a) / interval);
+        f32 nearest_anchor = a + interval * Maths::Round((x - a) / Maths::Max(0.0001f, interval));
+        interval_pos = Maths::Round((nearest_anchor - a) / Maths::Max(0.0001f, interval));
 
         //printf("x: "+x+" a: "+a+" b: "+b+" n: "+n+" anch "+nearest_anchor);
         return Maths::Max(a, Maths::Min(b, nearest_anchor));

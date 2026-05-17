@@ -1,5 +1,7 @@
 // Runner Common
 
+const u8 time_force_jetpack = 15;
+
 shared class RunnerMoveVars
 {
 	//walking vars

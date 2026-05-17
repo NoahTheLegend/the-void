@@ -1,3 +1,4 @@
+#include "UtilityChecks.as";
 
 const int idle_time = 30 * 1;
 
@@ -17,7 +18,7 @@ void defaultIdleAnim(CSprite@ this, CBlob@ blob, int direction)
     const bool action1 = blob.isKeyPressed(key_action1);
     const bool action2 = blob.isKeyPressed(key_action2);
 
-    bool has_gravity = false; // todo
+    bool has_gravity = hasGravity(blob);
     bool on_ground = blob.isOnGround();
 
     if (!up && !down && !left && !right && !action1 && !action2 && has_gravity && on_ground)

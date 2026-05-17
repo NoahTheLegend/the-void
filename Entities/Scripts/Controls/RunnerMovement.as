@@ -6,7 +6,6 @@
 #include "KnockedCommon.as";
 #include "UtilityChecks.as";
 #include "CustomBlocks.as";
-#include "UtilityChecks.as";
 
 void onInit(CMovement@ this)
 {
@@ -53,7 +52,7 @@ void onTick(CMovement@ this)
 	const f32 vellen = shape.vellen;
 	const bool onground = blob.isOnGround() || blob.isOnLadder();
 
-	bool has_gravity = false; // todo
+	bool has_gravity = hasGravity(blob);
 	f32 energy_capacity = 100.0f; // todo
 
 	u8 crouch_through = blob.get_u8("crouch_through");
@@ -350,7 +349,7 @@ void onTick(CMovement@ this)
 				{
 					// allow 1st climb "unconditionally" (there were checks above)
 					// allow next climbs depending on a velocity condition
-					const bool should_trigger_climb = set_contact || (!set_contact_candidate && vel.y >= -2.0f);
+					const bool should_trigger_climb = set_contact || (!set_contact_candidate && vel.y >= -0.0f);
 
 					// limit climbs to an arbitrarily choosen number
 					if (should_trigger_climb && moveVars.wallrun_count < moveVars.wallrun_length)
@@ -361,9 +360,9 @@ void onTick(CMovement@ this)
 						// reduce sound spam, especially when climbing 2 air gap large towers
 						if (!set_contact && in_proximity)
 						{
-							blob.getSprite().PlayRandomSound("/StoneJump");
+							blob.getSprite().PlayRandomSound("/StoneJump", 1.0f, 1.35f);
 						}
-						dust = true;
+						dust = false; // todo add dust only on specific tiles
 
 						++moveVars.wallrun_count;
 						moveVars.walljumped = true;
@@ -382,7 +381,7 @@ void onTick(CMovement@ this)
 					vel.Set(surface_right ? -walljumpforce : walljumpforce, -2.0f);
 					blob.setVelocity(vel);
 
-					dust = true;
+					dust = false; // todo add dust only on specific tiles
 
 					moveVars.jumpCount = 0;
 
@@ -439,7 +438,7 @@ void onTick(CMovement@ this)
 					{
 						if (!moveVars.wallsliding)
 						{
-							blob.getSprite().PlayRandomSound("/Scrape");
+							blob.getSprite().PlayRandomSound("/Scrape", 1.0f, 1.35f);
 						}
 
 						//falling for almost a second so add effects
@@ -448,8 +447,8 @@ void onTick(CMovement@ this)
 							int gametime = getGameTime();
 							if (gametime % (uint(Maths::Max(0, 7 - int(Maths::Abs(vel.y)))) + 3) == 0)
 							{
-								MakeDustParticle(pos, "/dust2.png");
-								blob.getSprite().PlayRandomSound("/Scrape");
+								//MakeDustParticle(pos, "/dust2.png");
+								blob.getSprite().PlayRandomSound("/Scrape", 1.0f, 1.35f);
 							}
 						}
 					}
@@ -566,7 +565,6 @@ void onTick(CMovement@ this)
 			}
 
 			force *= moveVars.jumpFactor * moveVars.overallScale * 60.0f;
-
 			blob.AddForce(force);
 
 			// sound
@@ -724,17 +722,66 @@ void onTick(CMovement@ this)
 	            blob.AddForce(Vec2f(horzDrive, 0));
 	        }
 
+			bool force_jetpack = false;
+			if (up && !onground) blob.set_u8("force_jetpack", Maths::Min(blob.get_u8("force_jetpack") + 1, time_force_jetpack));
+			else if (onground) blob.set_u8("force_jetpack", 0);
+			force_jetpack = blob.get_u8("force_jetpack") == time_force_jetpack;
+
+			blob.Untag("flying_jetpack");
 	        // For vertical: similar logic applies
-	        if (currentVertSpeed < vertLimit ||
-	            (vertInput < 0 && vel.y > 0) || (vertInput > 0 && vel.y < 0))
+	        if ((!has_gravity || force_jetpack) && (currentVertSpeed < vertLimit ||
+	            (vertInput < 0 && vel.y > 0) || (vertInput > 0 && vel.y < 0)))
 	        {
 	            f32 vertDrive = vertInput * moveVars.walkFactor * moveVars.overallScale *
-	                            (onground && has_gravity ? 30.0f : 15.0f);
+	                            (onground && has_gravity ? 30.0f : 20.0f);
 	            blob.AddForce(Vec2f(0, vertDrive));
+
+				blob.Tag("flying_jetpack");
 	        }
 	    }
 	}
 
+	Vec2f stop_force;
+	bool greater = vel.x > 0;
+
+	f32 absx = greater ? vel.x : -vel.x;
+	bool stopped = false;
+
+	f32 force = 1.0f;
+	f32 lim = 0.0f;
+
+	Vec2f walkDirection = blob.getVelocity();
+	if (left_or_right)
+	{
+		lim = moveVars.walkSpeed;
+		if (!onground)
+		{
+			lim = moveVars.walkSpeedInAir;
+		}
+
+		lim *= moveVars.walkFactor * Maths::Abs(walkDirection.x);
+	}
+
+	if (has_gravity && absx > lim)
+	{
+		if (stop) //stopping
+		{
+			stopped = true;
+			stop_force.x -= (absx - lim) * (greater ? 1 : -1);
+
+			stop_force.x *= moveVars.overallScale * 30.0f * moveVars.stoppingFactor *
+			                (onground ? moveVars.stoppingForce : moveVars.stoppingForceAir * moveVars.stoppingForceAirFactor);
+
+			if (absx > 3.0f)
+			{
+				f32 extra = (absx - 3.0f);
+				f32 scale = (1.0f / ((1 + extra) * 2));
+				stop_force.x *= scale;
+			}
+
+			blob.AddForce(stop_force);
+		}
+	}
 
 	//falling count
 	if (!onground && vel.y > 0.1f)

@@ -185,7 +185,7 @@ void PositionCarried(CBlob@ this, CBlob@ carryBlob)
 				hands.offset.Set(0, 0);
 			}
 
-			bool has_gravity = false; // todo
+			bool has_gravity = hasGravity(this);
 			if (this.isKeyPressed(key_down) && has_gravity && this.isOnGround())      // hack for crouch
 			{
 				if (this.getName() == "archer" && sprite.isAnimation("crouch")) //hack for archer prone

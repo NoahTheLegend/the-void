@@ -45,6 +45,7 @@ void onReload(CRules@ this)
 		if(id != -1) Render::RemoveScript(id);
 
         id = Render::addScript(Render::layer_prehud, getCurrentScriptName(), "Render", 10);
+        id = Render::addScript(Render::layer_prehud, getCurrentScriptName(), "Render", 10); // fix for staging, ensure registering the file
 		this.set_s32("render_id", id);
 
         shadow_material.AddTexture("shadow_tex");

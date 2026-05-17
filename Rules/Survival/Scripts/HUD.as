@@ -40,10 +40,12 @@ void onRender(CRules@ this)
 			
 			if (hack <= 1)
 			{
-				id = Render::addScript(Render::layer_posthud, "HUD.as", "RenderHumanCursor", 10000);
+				id = Render::addScript(Render::layer_last, "HUD.as", "RenderHumanCursor", 10000);
+				id = Render::addScript(Render::layer_last, "HUD.as", "RenderHumanCursor", 10000); // fix for staging, ensure registering the file
 				
 				this.set_s32("cursor_id", id);
 				print("set cursor id: "+id);
+				
 			}
 		}
 
@@ -116,7 +118,7 @@ void blobTick(CBlob@ this)
 	}
 }
 
-Vec2f offset = Vec2f_zero;
+Vec2f offset = Vec2f(0, 0);
 bool has_sharp = false;
 bool has_weapon = false;
 

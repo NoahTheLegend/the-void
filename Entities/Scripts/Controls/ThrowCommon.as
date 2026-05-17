@@ -1,3 +1,5 @@
+#include "UtilityChecks.as";
+
 //throwing common functionality.
 
 void client_SendThrowOrActivateCommand(CBlob@ this)
@@ -137,7 +139,7 @@ void DoThrow(CBlob@ this, CBlob@ carried, Vec2f pos, Vec2f vector, Vec2f selfVel
 // delayed, rewrite teleport 
 Vec2f getThrowVelocity(CBlob@ this, CBlob@ carried, Vec2f vector, Vec2f selfVelocity, f32 this_vel_affect = 0.1f)
 {
-	bool has_gravity = false; // todo
+	bool has_gravity = hasGravity(this);
 
 	Vec2f vel = vector;
 	f32 len = vel.Normalize();

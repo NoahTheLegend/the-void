@@ -214,3 +214,16 @@ void resetMenu(CBlob@ blob)
     blob.set_bool("menu_open", false);
     blob.set_u16("menu_id", 0);
 }
+
+bool hasGravity(CBlob@ blob)
+{
+    if (debugGlobalGravity(getRules())) return true;
+    if (blob is null) return false;
+
+    return blob.hasTag("gravity");
+}
+
+bool debugGlobalGravity(CRules@ rules)
+{
+    return rules.get_bool("debug_global_gravity");
+}

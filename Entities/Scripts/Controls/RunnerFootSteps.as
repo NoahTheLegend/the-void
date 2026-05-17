@@ -20,7 +20,7 @@ void onTick(CSprite@ this)
 	if (!blob.isMyPlayer())
 		return;
 
-	bool has_gravity = false; // todo
+	bool has_gravity = hasGravity(blob);
 	if (!has_gravity) return;
 
 	const bool left		= blob.isKeyPressed(key_left);

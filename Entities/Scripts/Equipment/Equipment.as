@@ -111,7 +111,7 @@ void onCreateInventoryMenu(CBlob@ this, CBlob@ forBlob, CGridMenu@ gridmenu)
 			CGridButton@ head = extraequipments.AddButton("$decor_headimage$", "Spacesuit Helmet", this.getCommandID("switch_helmet"), Vec2f(1, 1), params);
 			if (head !is null)
 			{
-				head.SetHoverText("Equip helmet\nconsumes Oxygen\n");
+				head.SetHoverText("Equip helmet\nConsumes Oxygen\n");
 			}
 
 			CGridButton@ torso = extraequipments.AddButton("$decor_torsoimage$", "Flashlight", this.getCommandID("switch_flashlight"), Vec2f(1, 1), params);

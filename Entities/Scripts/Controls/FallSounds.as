@@ -6,7 +6,7 @@ void Sound(CBlob@ this, Vec2f normal)
 {
 	const f32 vellen = this.getShape().vellen;
 	
-	bool has_gravity = false; // todo
+	bool has_gravity = hasGravity(this);
 	bool airspace = isInAirSpace(this);
     
 	if (vellen > 5.0f)

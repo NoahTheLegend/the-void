@@ -82,12 +82,17 @@ void onTick(CSprite@ this)
 		const bool inair = (!blob.isOnGround() && !blob.isOnLadder());
 		const bool onladder = blob.isOnLadder();
 		Vec2f pos = blob.getPosition();
-		bool has_gravity = false; // todo
+		bool has_gravity = hasGravity(blob);
 		const bool fl = blob.isFacingLeft();
 
 		if (isInMenu(blob))
 		{
 			left = right = up = down = false;
+			moving = false;
+		}
+
+		if (has_gravity && !blob.hasTag("flying_jetpack"))
+		{
 			moving = false;
 		}
 
@@ -124,7 +129,7 @@ void onTick(CSprite@ this)
 			{
 				this.SetAnimation("run");
 			}
-			else if (has_gravity)
+			else if (has_gravity && !inair)
 			{
 				this.SetAnimation("fall");
 
@@ -157,6 +162,10 @@ void onTick(CSprite@ this)
 				{
 					min_vel = 0.05f;
 					max_vel = 0.5f;
+				}
+				if (!moving)
+				{
+					max_vel = 3.0f;
 				}
 
 				bool fl = blob.isFacingLeft();
@@ -261,15 +270,15 @@ void onTick(CSprite@ this)
 
 					if (particle_main)
 					{
-						CParticle@ p = ParticleAnimated("MediumSteam", ppos + offset, pvel, XORRandom(360), 0.4f, 2, 0.0f, false);
+						CParticle@ p = ParticleAnimated("MediumSteam", ppos + offset, pvel, XORRandom(360), 0.5f, 2, 0.0f, false);
 						if (p !is null)
 						{
 							p.Z = -1;
 							p.collides = true;
 							p.fastcollision = false;
-							p.growth = -0.1f;
+							p.growth = -0.02f;
 							#ifdef STAGING
-							p.growth = -0.05f;
+							p.growth = -0.01f;
 							#endif
 							p.timeout = 10;
 							p.gravity = Vec2f_zero;
@@ -280,15 +289,15 @@ void onTick(CSprite@ this)
 
 					if (particle_secondary)
 					{
-						CParticle@ p_s = ParticleAnimated("MediumSteam", ppos + offset_s, pvel_s, XORRandom(360), 0.25f, 2, 0.0f, false);
+						CParticle@ p_s = ParticleAnimated("MediumSteam", ppos + offset_s, pvel_s, XORRandom(360), 0.33f, 2, 0.0f, false);
 						if (p_s !is null)
 						{
 							p_s.Z = -1;
 							p_s.collides = true;
 							p_s.fastcollision = false;
-							p_s.growth = -0.1f;
+							p_s.growth = -0.02f;
 							#ifdef STAGING
-							p_s.growth = -0.04f;
+							p_s.growth = -0.01f;
 							#endif
 							p_s.timeout = 10;
 							p_s.gravity = Vec2f_zero;
@@ -304,7 +313,12 @@ void onTick(CSprite@ this)
 		else if (has_gravity && ((left || right) ||
 		         (onladder && (up || down))))
 		{
-			this.SetAnimation("run");
+			if (fl && right) this.SetAnimation("run_back");
+			else if (!fl && left) this.SetAnimation("run_back");
+			else
+			{
+				this.SetAnimation("run");
+			}
 		}
 		else
 		{
