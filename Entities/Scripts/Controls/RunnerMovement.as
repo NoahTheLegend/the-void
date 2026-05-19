@@ -727,7 +727,7 @@ void onTick(CMovement@ this)
 			else if (onground) blob.set_u8("force_jetpack", 0);
 			force_jetpack = blob.get_u8("force_jetpack") == time_force_jetpack;
 
-			blob.Untag("flying_jetpack");
+			if (!up) blob.Untag("flying_jetpack");
 	        // For vertical: similar logic applies
 	        if ((!has_gravity || force_jetpack) && (currentVertSpeed < vertLimit ||
 	            (vertInput < 0 && vel.y > 0) || (vertInput > 0 && vel.y < 0)))

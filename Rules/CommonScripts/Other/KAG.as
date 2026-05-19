@@ -4,6 +4,7 @@
 #include "EmotesCommon.as"
 #include "CustomBlocks.as"
 #include "GameplayEvents.as"
+#include "UtilityChecks.as"
 
 void onInit(CRules@ this)
 {
@@ -44,6 +45,9 @@ void onInit(CRules@ this)
 bool need_sky_check = true;
 void onRestart(CRules@ this)
 {
+	this.set_bool("debug_global_gravity", false);
+	ToggleGlobalGravity(this, 0);
+
 	//map borders
 	CMap@ map = getMap();
 	if (map !is null)
@@ -61,8 +65,6 @@ void onRestart(CRules@ this)
 		if (!map.hasScript("RoomDetector.as"))
 			 map.AddScript("RoomDetector.as");
 	}
-
-	sv_gravity = 0; // 9.81f
 }
 
 void onTick(CRules@ this)

@@ -227,3 +227,11 @@ bool debugGlobalGravity(CRules@ rules)
 {
     return rules.get_bool("debug_global_gravity");
 }
+
+void ToggleGlobalGravity(CRules@ rules, u8 force_state = 255)
+{
+    // gravity
+    rules.set_bool("debug_global_gravity", force_state == 1 ? true : force_state == 0 ? false : !rules.get_bool("debug_global_gravity"));
+    sv_gravity = rules.get_bool("debug_global_gravity") ? 9.81f / 2 : 0;
+    warn("Global gravity " + (rules.get_bool("debug_global_gravity") ? "enabled" : "disabled"));
+}

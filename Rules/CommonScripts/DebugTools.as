@@ -1,3 +1,5 @@
+#include "UtilityChecks.as";
+
 void onInit(CRules@ this)
 {
     this.set_bool("debug_global_gravity", false);
@@ -14,9 +16,7 @@ void onTick(CRules@ this)
     {
         if (controls.isKeyJustPressed(KEY_KEY_1))
         {
-            // gravity
-            sv_gravity = this.get_bool("debug_global_gravity") ? 0.0f : 9.81f / 2;
-            this.set_bool("debug_global_gravity", !this.get_bool("debug_global_gravity"));
+            ToggleGlobalGravity(this);
         }
     }
 }

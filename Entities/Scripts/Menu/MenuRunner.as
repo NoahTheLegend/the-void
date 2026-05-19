@@ -105,7 +105,6 @@ void onRender(CSprite@ this)
             }
 
     bool draw_attached = blob.get_bool("draw_attached_players");
-
     Vec2f screen_center = getDriver().getScreenCenterPos();
     Vec2f menu_pos = screen_center - menu_dim / 2;
 
@@ -150,6 +149,27 @@ void onRender(CSprite@ this)
                 if (update_sidebar)
                 {
                     item.sidebar.updateRects();
+                    item.sidebar.pos = menu_pos + Vec2f(menu_dim.x + 2, 0);
+
+                    f32 max_height = 0;
+                    for (u8 j = 0; j < item.sidebar.fields.length; j++)
+                    {
+                        f32 field_height = 0;
+                        for (u8 k = 0; k < item.sidebar.fields[j].options.length; k++)
+                        {
+                            Option@ option = item.sidebar.fields[j].options[k];
+                            if (option !is null)
+                            {
+                                field_height += option.dim.y + 8;
+                            }
+                        }
+
+                        max_height = Maths::Max(max_height, field_height);
+                    }
+
+                    item.sidebar.padding = Vec2f(8, 8);
+                    max_height += -item.sidebar.padding.y + 23;
+                    item.sidebar.dim = Vec2f(item.sidebar.fields.length * 150, max_height);
                 }
 
                 if (selected_item == i)

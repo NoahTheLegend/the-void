@@ -1,6 +1,6 @@
 #include "UtilityChecks.as";
 
-const int idle_time = 30 * 1;
+const int idle_time = 150 * 1;
 
 void defaultIdleAnim(CSprite@ this, CBlob@ blob, int direction)
 {
