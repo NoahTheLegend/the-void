@@ -1,11 +1,14 @@
 #include "MenuCommon.as"
 
+const f32 DEFAULT_SIDEBAR_WIDTH = 150;
 const u8 TOOLTIP_HOLD_TIME = 30;
 
 const f32 height_text = 20;
 const f32 height_slider = 64;
 const f32 height_checkbox = 16;
 const f32 height_radio_button_list = 24;
+
+const bool _debug = false;
 
 namespace FieldTag
 {

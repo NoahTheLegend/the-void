@@ -1,7 +1,10 @@
-#include "Slider.as";
-#include "CheckBox.as";
-#include "RadioButton.as";
-#include "MenuUtils.as";
+#include "Slider.as"
+#include "CheckBox.as"
+#include "RadioButton.as"
+#include "MenuUtils.as"
+
+funcdef void CLICK_CALLBACK(int, int, bool, string, Option@, CBlob@); // x, y, state, name, option, blob
+funcdef void SLIDE_CALLBACK(int, int, f32, string, Option@, CBlob@); // x, y, 0-1, name, option, blob
 
 class Section {
     string title;
@@ -74,12 +77,16 @@ class Option
     string hover_tooltip;
     bool setting;
 
+    u16 associated_blob_id;
     Slider slider;
     CheckBox check;
     RadioButtonList radio_button_list;
     
     bool debug;
     int tag;
+
+    CLICK_CALLBACK@[] click_listeners;
+    SLIDE_CALLBACK@[] slide_listeners;
 
     Option(string _text, Vec2f _pos, Vec2f _dim, bool _has_slider = false, bool _has_check = false, bool _has_radio_button_list = false, bool _setting = false)
     {
@@ -97,15 +104,15 @@ class Option
 
         if (has_slider)
         {
-            slider = Slider("option_slider", pos+Vec2f(0,23), Vec2f(this.parent_dim.x,15), Vec2f(15,15), Vec2f(8,8), slider_startpos, 0, this.setting);
+            slider = Slider(this, "option_slider", pos+Vec2f(0,23), Vec2f(this.parent_dim.x,15), Vec2f(15,15), Vec2f(8,8), slider_startpos, 0, this.setting);
         }
         if (has_check)
         {
-            check = CheckBox(false, pos+Vec2f(0,1), Vec2f(18,18), this.setting);
+            check = CheckBox(this, false, pos+Vec2f(0,1), Vec2f(18,18), this.setting);
         }
         if (has_radio_button_list)
         {
-            radio_button_list = RadioButtonList("option_radio_list", pos + Vec2f(0, 50), Vec2f(100, 100));
+            radio_button_list = RadioButtonList(this, "option_radio_list", pos + Vec2f(0, 50), Vec2f(100, 100));
         }
 
         tag = 0;
@@ -116,9 +123,19 @@ class Option
         slider.descriptions = descriptions;
     }
 
-    void setSliderPos(f32 scroll)
+    void setScroll(f32 scroll)
     {
         slider.setScroll(scroll);
+        this.invokeSlideListeners(0, 0, scroll);
+    }
+
+    void invokeSlideListeners(int x, int y, f32 scroll)
+    {
+        for (u8 i = 0; i < slide_listeners.length; i++)
+        {
+            CBlob@ blob = getBlobByNetworkID(associated_blob_id);
+            slide_listeners[i](x, y, scroll, default_text, this, blob);
+        }
     }
 
     void setSliderTextMode(u8 mode)
@@ -129,6 +146,16 @@ class Option
     void setCheck(bool flagged)
     {
         check.state = flagged;
+        this.invokeClickListeners(0, 0, flagged);
+    }
+
+    void invokeClickListeners(int x, int y, bool state)
+    {
+        for (u8 i = 0; i < click_listeners.length; i++)
+        {
+            CBlob@ blob = getBlobByNetworkID(associated_blob_id);
+            click_listeners[i](x, y, state, default_text, this, blob);
+        }
     }
 
     void tick()

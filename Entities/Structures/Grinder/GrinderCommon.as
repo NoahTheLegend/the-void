@@ -131,11 +131,11 @@ void Sync(CBlob@ this, u16 pid = 0)
 	{
 		CPlayer@ p = getPlayerByNetworkId(pid);
 		if (p !is null)
-			this.server_SendCommandToPlayer(this.getCommandID("sync"), params, p);
+			this.server_SendCommandToPlayer(this.getCommandID("sync_grinder"), params, p);
 	}
 
 	if (pid == 0)
-		this.SendCommand(this.getCommandID("sync"), params);
+		this.SendCommand(this.getCommandID("sync_grinder"), params);
 }
 
 void RequestSync(CBlob@ this)
@@ -145,5 +145,5 @@ void RequestSync(CBlob@ this)
 	CBitStream params;
 	params.write_bool(true);
 	params.write_u16(getLocalPlayer().getNetworkID());
-	this.SendCommand(this.getCommandID("sync"), params);
+	this.SendCommand(this.getCommandID("sync_grinder"), params);
 }

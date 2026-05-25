@@ -1,7 +1,7 @@
 #include "Slider.as"
 #include "CheckBox.as"
 #include "RadioButton.as"
-#include "ToolTipUtils.as"
+#include "Indicators.as"
 #include "HoverUtils.as"
 #include "OptionUtils.as"
 #include "MenuUtils.as"
@@ -26,6 +26,7 @@
     6 - [u8]                    option type (e.g. slider)                     repeatable
     7 - [s32]                   option enum tag (e.g. slider_quantity)        repeatable
     8 - [f32 / bool / u8]       slider / checkbox / radio button values       repeatable
+    9 - [u16]                   associated_blob_id
 */
 
 class MenuItemInfo
@@ -56,6 +57,7 @@ class MenuItemInfo
         list_dim = Vec2f_zero;
         
         mpos = Vec2f(-1, -1);
+        sidebar = Sidebar(Vec2f_zero);
     }
 
     void tick()
@@ -118,8 +120,9 @@ class Sidebar
     Vec2f tooltip_padding;
     int[] hovered;
 
+    bool request_update;
     u8 tooltip_alpha;
-    u8 tooltip_hold_time;
+    u8 max_hold_time;
     u8 current_hold_time;
 
     Button@ submit;
@@ -132,16 +135,17 @@ class Sidebar
         pos = _pos;
 
         padding = Vec2f(8,8);
-        dim = Vec2f(150, padding.y);
+        dim = Vec2f(DEFAULT_SIDEBAR_WIDTH, padding.y);
 
         mpos = Vec2f(-1,-1);
         tooltip_padding = Vec2f(6,4);
 
         tooltip_alpha = 0;
-        tooltip_hold_time = TOOLTIP_HOLD_TIME;
+        max_hold_time = TOOLTIP_HOLD_TIME;
         current_hold_time = 0;
         
         require_tick_update = true;
+        print("constr");
     }
 
     void tick()
@@ -166,10 +170,10 @@ class Sidebar
         if (hovered.size() > 0)
         {
             current_hold_time++;
-            if (current_hold_time >= tooltip_hold_time)
+            if (current_hold_time >= max_hold_time)
             {
                 tooltip_alpha = Maths::Lerp(tooltip_alpha, 255, 0.25f);
-                current_hold_time = tooltip_hold_time;
+                current_hold_time = max_hold_time;
             }
         }
         else
@@ -177,6 +181,7 @@ class Sidebar
             current_hold_time = 0;
             tooltip_alpha = 0;
         }
+        //print("hovered: " + hovered.length + " hold time: " + current_hold_time + " alpha: " + tooltip_alpha);
 
         if (submit !is null)
         {
@@ -201,17 +206,33 @@ class Sidebar
             current_hold_time = 0;
             tooltip_alpha = 0;
         }
+
         mpos = new_mpos;
         drawRectangle(pos, pos + dim, SColor(alpha, 0, 0, 0), 1, 2, SColor(alpha, 75, 75, 75));
 
         // debug
-        //for (u8 i = 0; i < tl_rects.length; i++)
-        //{
-        //    drawRectangle(tl_rects[i], br_rects[i], SColor(alpha, 0, 0, 0), 1, 2, SColor(alpha, 75, 255, 75));
-        //}
+        if (_debug)
+        {
+            for (u8 i = 0; i < tl_rects.length; i++)
+            {
+                drawRectangle(tl_rects[i], br_rects[i], SColor(alpha, 0, 0, 0), 1, 2, SColor(alpha, 75, 255, 75));
+            }
+
+            if (getGameTime()%90==0)
+            {
+                // print all tl_ and br_
+
+                for (u8 i = 0; i < tl_rects.length; i++)
+                {
+                    print("Tooltip "+i+": TL("+tl_rects[i].x+","+tl_rects[i].y+") BR("+br_rects[i].x+","+br_rects[i].y+")" + " Size" + (br_rects[i] - tl_rects[i]).x + "x" + (br_rects[i] - tl_rects[i]).y);
+                }
+            }
+        }
 
         // render options in order they added
-        bool request_update = false;
+        bool request_update = this.request_update;
+        this.request_update = false;
+
         Vec2f current_pos = pos + padding;
         for (uint i = 0; i < fields.length; i++)
         {
@@ -265,11 +286,13 @@ class Sidebar
     {
         if (field_index >= fields.length) return null;
 
+        dim.x += DEFAULT_SIDEBAR_WIDTH;
         dim.y += _button_dim.y + padding.y + height_text * 2;
         Option option = Option(_title, pos, Vec2f(dim.x - padding.x * 2, height_text * 2 + _button_dim.y), true);
+        
         option.parent_dim = dim;
         option.hover_tooltip = _tooltip;
-        option.slider = Slider(_title, pos + Vec2f(padding.x, 0), Vec2f(dim.x - padding.x * 2, _button_dim.y), _button_dim, _capture_margin, _start_pos, _snap_points);
+        option.slider = Slider(@option, _title, pos + Vec2f(padding.x, 0), Vec2f(dim.x - padding.x * 2, _button_dim.y), _button_dim, _capture_margin, _start_pos, _snap_points);
         fields[field_index].addOption(option);
 
         if (_tooltip != "") addTooltip(_tooltip, pos, pos + Vec2f(dim.x, _button_dim.y));
@@ -281,11 +304,13 @@ class Sidebar
     {
         if (field_index >= fields.length) return null;
 
+        dim.x += DEFAULT_SIDEBAR_WIDTH;
         dim.y += _dim.y + padding.y;
+
         Option option = Option(_title, pos, Vec2f(dim.x - padding.x * 2, _dim.y), false, true);
         option.parent_dim = dim;
         option.hover_tooltip = _tooltip;
-        option.check = CheckBox(_state, pos, _dim);
+        option.check = CheckBox(@option, _state, pos, _dim);
         fields[field_index].addOption(option);
 
         if (_tooltip != "") addTooltip(_tooltip, pos, pos + Vec2f(dim.x, height_checkbox));
@@ -300,12 +325,13 @@ class Sidebar
 
         f32 height = _item_dim.y * _grid.y + height_radio_button_list;
         dim.y += height + padding.y;
-        
+        dim.x += DEFAULT_SIDEBAR_WIDTH;
+
         Vec2f radio_dim = Vec2f(dim.x - padding.x * 2, height);
         Option option = Option(_title, pos, radio_dim, false, false, true);
         option.parent_dim = dim;
         option.hover_tooltip = _tooltip;
-        option.radio_button_list = RadioButtonList(_title, pos + height_radio_button_list, radio_dim, _grid, _item_dim);
+        option.radio_button_list = RadioButtonList(@option, _title, pos + height_radio_button_list, radio_dim, _grid, _item_dim);
         fields[field_index].addOption(option);
 
         if (_tooltip != "") addTooltip(_tooltip, pos, pos + Vec2f(dim.x, height_radio_button_list));
@@ -339,7 +365,9 @@ class Sidebar
     {
         if (submit !is null) return null;
 
+        dim.x += DEFAULT_SIDEBAR_WIDTH;
         dim.y += _dim.y + padding.y;
+
         @submit = @Button(_blob_id, _title, pos, _dim, _cmd);
         submit.hover_tooltip = _tooltip;
 

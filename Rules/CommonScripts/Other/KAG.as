@@ -68,7 +68,7 @@ void onRestart(CRules@ this)
 }
 
 void onTick(CRules@ this)
-{	
+{
 	//TODO: figure out a way to optimise so we don't need to keep running this hook
 	if (need_sky_check)
 	{

@@ -81,11 +81,11 @@ void SetupUI(CRules@ this) // add options here
         messages.addOption(mute);
 
         Option volume("Sound volume modifier", mute.pos+Vec2f(0,30), Vec2f(colwidth, height_slider), true, false, false, true);
-        volume.setSliderPos(vars.msg_volume/max_vol);
+        volume.setScroll(vars.msg_volume/max_vol);
         messages.addOption(volume);
 
         Option pitch("Sound pitch modifier", volume.pos+Vec2f(0,60), Vec2f(colwidth, height_slider), true, false, false, true);
-        pitch.setSliderPos(vars.msg_pitch/max_pitch);
+        pitch.setScroll(vars.msg_pitch/max_pitch);
         messages.addOption(pitch);
 
         setmenu.addSection(messages);

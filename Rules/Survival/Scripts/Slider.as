@@ -1,4 +1,5 @@
 #include "HoverUtils.as"
+#include "OptionUtils.as"
 
 class Slider
 {
@@ -25,10 +26,12 @@ class Slider
     bool setting;
 
     bool debug;
+    Option@ parent;
 
-    Slider(string _name, Vec2f _pos, Vec2f _dim, Vec2f _button_dim, Vec2f _capture_margin = Vec2f_zero,
+    Slider(Option@ _parent, string _name, Vec2f _pos, Vec2f _dim, Vec2f _button_dim, Vec2f _capture_margin = Vec2f_zero,
         f32 _start_pos = 0, u8 _snap_points = 0, bool _setting = false)
     {
+        @parent = @_parent;
         name = _name;
         pos = _pos;
         dim = _dim;
@@ -187,6 +190,11 @@ class Slider
     {
         scrolled = dist;
         button_pos = pos + (dim-button_dim)*dist;
+
+        if (parent !is null)
+        {
+            parent.invokeSlideListeners(0, 0, dist);
+        }
     }
 
     void scrollBy(f32 dist, const bool do_snap = false) // positive/negative value corresponds by x and y axis

@@ -146,7 +146,7 @@ class MessageContainer
         tl = Vec2f(scrw-dim.x, 0);              // box top left
         br = Vec2f(scrw, dim.y);                // box bottom right
 
-        slider = Slider("scroll", tl-Vec2f(15,0), Vec2f(15, dim.y), Vec2f(15,15), Vec2f(16,16), 1.0f, 0);
+        slider = Slider(null, "scroll", tl-Vec2f(15,0), Vec2f(15, dim.y), Vec2f(15,15), Vec2f(16,16), 1.0f, 0);
 
         max_history_size = _max_history_size;   // max amount of messages to buffer in array
         wait_time = 0;                          // initial wait time for next symbol to write

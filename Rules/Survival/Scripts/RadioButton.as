@@ -1,4 +1,4 @@
-#include "ToolTipUtils.as"
+#include "Indicators.as"
 #include "HoverUtils.as"
 
 RadioButton makeRadioButton(string _name, string _description, string _icon, Vec2f _icon_dim, int _icon_index = 0, f32 _scale = 1)
@@ -19,9 +19,11 @@ class RadioButtonList
     Vec2f item_dim;
     
     Vec2f mpos;
+    Option@ parent;
 
-    RadioButtonList(string _title, Vec2f _pos, Vec2f _dim, Vec2f _grid = Vec2f_zero, Vec2f _item_dim = Vec2f_zero)
+    RadioButtonList(Option@ _parent, string _title, Vec2f _pos, Vec2f _dim, Vec2f _grid = Vec2f_zero, Vec2f _item_dim = Vec2f_zero)
     {
+        @parent = @_parent;
         title = _title;
         selected = 0;
         hovered_index = -1;

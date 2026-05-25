@@ -1,5 +1,5 @@
 #include "UtilityChecks.as"
-#include "ToolTipUtils.as"
+#include "Indicators.as"
 #include "MenuUtils.as"
 #include "OptionUtils.as"
 #include "MenuCommon.as"
@@ -148,9 +148,6 @@ void onRender(CSprite@ this)
 
                 if (update_sidebar)
                 {
-                    item.sidebar.updateRects();
-                    item.sidebar.pos = menu_pos + Vec2f(menu_dim.x + 2, 0);
-
                     f32 max_height = 0;
                     for (u8 j = 0; j < item.sidebar.fields.length; j++)
                     {
@@ -169,13 +166,32 @@ void onRender(CSprite@ this)
 
                     item.sidebar.padding = Vec2f(8, 8);
                     max_height += -item.sidebar.padding.y + 23;
-                    item.sidebar.dim = Vec2f(item.sidebar.fields.length * 150, max_height);
+                    item.sidebar.dim = Vec2f(item.sidebar.fields.length * DEFAULT_SIDEBAR_WIDTH, max_height);
+                    item.sidebar.request_update = true;
+
+                    // update each slider to have new max width and set new slider position on ratio
+                    for (u8 j = 0; j < item.sidebar.fields.length; j++)
+                    {
+                        for (u8 k = 0; k < item.sidebar.fields[j].options.length; k++)
+                        {
+                            Option@ option = item.sidebar.fields[j].options[k];
+                            if (option !is null && option.has_slider)
+                            {
+                                f32 ratio = option.slider.scrolled;
+                                option.slider.dim = Vec2f(item.sidebar.dim.x - item.sidebar.padding.x * 2, option.slider.dim.y);
+                                option.slider.update();
+                            }
+                        }
+                    }
                 }
 
                 if (selected_item == i)
                     drawRectangle(item_pos, item_pos + item_dim, SColor(alpha, 0, 0, 0), 1, 2, SColor(alpha,255,255,255));
 
                 GUI::DrawTextCentered(item.text, item_pos + Vec2f(item_dim.x / 2, item_dim.y / 2), SColor(alpha,255,255,255));
+
+                item.sidebar.updateRects();
+                item.sidebar.pos = menu_pos + Vec2f(menu_dim.x + 2, 0);
             }
         
             if (selected_item != -1 && selected_item < menuItems.length)

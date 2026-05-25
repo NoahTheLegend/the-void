@@ -10,8 +10,11 @@ class CheckBox
     bool capture;
     bool setting;
 
-    CheckBox(bool _state, Vec2f _pos, Vec2f _dim, bool _setting = false)
+    Option@ parent;
+
+    CheckBox(Option@ _parent, bool _state, Vec2f _pos, Vec2f _dim, bool _setting = false)
     {
+        @parent = @_parent;
         state = _state;
         pos = _pos;
         dim = _dim;
@@ -26,6 +29,11 @@ class CheckBox
     {
         Sound::Play("select.ogg"); // make sure this plays for local player and they hear it
         state = !state;
+        
+        if (parent !is null)
+        {
+            parent.invokeClickListeners(0, 0, state);
+        }
 
         if (setting) getRules().Tag("update_clientvars");
         return state;

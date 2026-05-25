@@ -59,7 +59,7 @@ class Serializer
     
         for (u8 i = 0; i < sidebar.fields.length; i++)
         {
-            auto@ field = sidebar.fields[i];
+            auto@ field = sidebar.fields[i]; // todo: VANILLA CLIENT WILL NOT COMPILE!!!
 
             // 4 - field type
             params.write_u8(field.tag);
@@ -69,65 +69,67 @@ class Serializer
 
             for (u8 j = 0; j < field.options.length; j++)
             {
-            auto@ option = field.options[j];
+                auto@ option = field.options[j];
 
-            // 6 - option type
-            if (option.has_slider)
-            {
-                params.write_u8(OptionType::slider);
-
-                // 7 - option tag
-                params.write_s32(option.tag);
-
-                // 8 - slider value
-                switch (option.tag)
+                // 6 - option type
+                if (option.has_slider)
                 {
-                    case SliderTag::slider_quantity: // u16 quantity
+                    params.write_u8(OptionType::slider);
+
+                    // 7 - option tag
+                    params.write_s32(option.tag);
+
+                    // 8 - slider value
+                    switch (option.tag)
                     {
-                        int step = option.slider.scrolled * option.slider.snap_points;
-                        params.write_f32(step);
-                        break;
+                        case SliderTag::slider_quantity: // u16 quantity
+                        {
+                            int step = option.slider.scrolled * option.slider.snap_points;
+                            params.write_f32(step);
+                            break;
+                        }
+                        case SliderTag::slider_factor: // percent from 0.0 to 1.0
+                        {
+                            params.write_f32(option.slider.scrolled);
+                            break;
+                        }
                     }
-                    case SliderTag::slider_factor: // percent from 0.0 to 1.0
+                }
+                else if (option.has_check)
+                {
+                    params.write_u8(OptionType::check);
+
+                    // 7 - option tag
+                    params.write_s32(option.tag);
+
+                    // 8 - checkbox value
+                    params.write_bool(option.check.state);
+                }
+                else if (option.has_radio_button_list)
+                {
+                    RadioButtonList@ list = @option.radio_button_list;
+                    if (list is null)
                     {
-                        params.write_f32(option.slider.scrolled);
-                        break;
+                    print("Couldn't serialize command "+sidebar.submit.cmd+": radio_button_list is null");
+                    return;
                     }
-                }
-            }
-            else if (option.has_check)
-            {
-                params.write_u8(OptionType::check);
 
-                // 7 - option tag
-                params.write_s32(option.tag);
-                
-                // 8 - checkbox value
-                params.write_bool(option.check.state);
-            }
-            else if (option.has_radio_button_list)
-            {
-                RadioButtonList@ list = @option.radio_button_list;
-                if (list is null)
-                {
-                print("Couldn't serialize command "+sidebar.submit.cmd+": radio_button_list is null");
-                return;
-                }
+                    RadioButton@ button = @list.buttons[list.selected];
+                    if (button is null)
+                    {
+                    print("Couldn't serialize command "+sidebar.submit.cmd+": radio_button is null");
+                    return;
+                    }
 
-                RadioButton@ button = @list.buttons[list.selected];
-                if (button is null)
-                {
-                print("Couldn't serialize command "+sidebar.submit.cmd+": radio_button is null");
-                return;
+                    params.write_u8(OptionType::radio_button_list);
+                    // 7 - option tag
+                    params.write_s32(option.tag);
+                    // 8 - radio button value
+                    params.write_u8(list.selected);
                 }
-
-                params.write_u8(OptionType::radio_button_list);
-                // 7 - option tag
-                params.write_s32(option.tag);
-                // 8 - radio button value
-                params.write_u8(list.selected);
-            }
             }
         }
+
+        params.write_u16(blob.getNetworkID());
     }
 }
